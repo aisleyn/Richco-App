@@ -1,0 +1,129 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Clock, TrendingUp, Calendar } from 'lucide-react'
+import { AppLayout } from '../components/layout/AppLayout'
+import { ClockInCard } from '../components/home/ClockInCard'
+import { ClockOutModal } from '../components/timesheet/ClockOutModal'
+import { TimecardList } from '../components/timesheet/Timecard'
+import { useAppStore } from '../store/appStore'
+import { useElapsedTime } from '../hooks/useTimer'
+
+const weekStats = { today: 0, week: 34.93, remaining: 5.07, overtimeWeek: 2.73, month: 134.18 }
+
+interface Props {
+  onNavigate: (s: string) => void
+}
+
+export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
+  const { clockedIn, clockIn, clockInTime } = useAppStore()
+  const elapsed = useElapsedTime(clockedIn ? clockInTime : null)
+  const [showClockOut, setShowClockOut] = useState(false)
+  const hours = elapsed / 3600000
+
+  function handleClockIn(isOvernight: boolean) {
+    clockIn('site1', 'Grandview Heights Phase 3', isOvernight, { lat: 49.1234, lng: -122.7654, address: '18955 Fraser Hwy, Surrey, BC' })
+  }
+
+  const todayHours = clockedIn ? hours : 0
+
+  return (
+    <AppLayout>
+      <div className="pt-14">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-white text-2xl font-bold">Timesheet</h1>
+          <p className="text-slate-500 text-sm mt-1">Track your hours and shifts</p>
+        </motion.div>
+
+        {/* Stats grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mt-5 grid grid-cols-2 gap-3"
+        >
+          <div className="bg-bg-surface rounded-2xl p-4 border border-white/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock size={14} className="text-brand-amber" />
+              <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Today</span>
+            </div>
+            <p className="text-white text-2xl font-bold">{todayHours.toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
+            {clockedIn && <p className="text-emerald-400 text-xs mt-1">Currently clocked in</p>}
+          </div>
+
+          <div className="bg-bg-surface rounded-2xl p-4 border border-white/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar size={14} className="text-blue-400" />
+              <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Week</span>
+            </div>
+            <p className="text-white text-2xl font-bold">{(weekStats.week + todayHours).toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
+            <p className="text-slate-500 text-xs mt-1">{Math.max(0, weekStats.remaining - todayHours).toFixed(2)}h remaining</p>
+          </div>
+
+          <div className={`bg-bg-surface rounded-2xl p-4 border ${weekStats.overtimeWeek > 0 ? 'border-amber-500/20' : 'border-white/5'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp size={14} className="text-amber-400" />
+              <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Overtime</span>
+            </div>
+            <p className={`text-2xl font-bold ${weekStats.overtimeWeek > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+              {weekStats.overtimeWeek.toFixed(2)}<span className="text-sm font-normal">h</span>
+            </p>
+            <p className="text-slate-500 text-xs mt-1">This week</p>
+          </div>
+
+          <div className="bg-bg-surface rounded-2xl p-4 border border-white/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar size={14} className="text-purple-400" />
+              <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Month</span>
+            </div>
+            <p className="text-white text-2xl font-bold">{(weekStats.month + todayHours).toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
+          </div>
+        </motion.div>
+
+        {/* Week progress bar */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-3 bg-bg-surface rounded-2xl p-4 border border-white/5"
+        >
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-slate-400 text-xs font-medium">Weekly Progress</span>
+            <span className="text-slate-400 text-xs">{(weekStats.week + todayHours).toFixed(1)} / 40h</span>
+          </div>
+          <div className="h-2 bg-bg-elevated rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, ((weekStats.week + todayHours) / 40) * 100)}%` }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="h-full rounded-full bg-gradient-to-r from-brand-amber to-amber-400"
+            />
+          </div>
+          {weekStats.overtimeWeek > 0 && (
+            <p className="text-amber-400 text-xs mt-2 flex items-center gap-1">
+              <TrendingUp size={10} /> {weekStats.overtimeWeek.toFixed(2)}h overtime this week
+            </p>
+          )}
+        </motion.div>
+
+        {/* Clock in card */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-5">
+          <ClockInCard
+            onClockIn={handleClockIn}
+            onClockOut={() => setShowClockOut(true)}
+            onNavigateTime={() => {}}
+            isOvernightShift={false}
+          />
+        </motion.div>
+
+        {/* Timecards */}
+        <div className="mt-6">
+          <TimecardList />
+        </div>
+      </div>
+
+      {showClockOut && (
+        <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => setShowClockOut(false)} />
+      )}
+    </AppLayout>
+  )
+}
