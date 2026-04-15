@@ -17,6 +17,7 @@ async function apiCall(method: string, endpoint: string, data?: unknown): Promis
   }
 
   const url = `${DATAVERSE_URL}${endpoint}`
+  console.log(`[Dataverse] ${method} ${url}`)
 
   try {
     const res = await fetch(url, {
