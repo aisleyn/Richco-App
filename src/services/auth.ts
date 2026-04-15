@@ -133,12 +133,33 @@ export async function getAccessToken(): Promise<string | null> {
 
 export async function getCurrentUser(): Promise<User | null> {
   const instance = await getMsalInstance()
-  if (!instance) return null
+  if (!instance) {
+    console.log('[AUTH] getCurrentUser - No MSAL instance')
+    return null
+  }
+
+  // Check all accounts in cache
+  const allAccounts = instance.getAllAccounts()
+  console.log('[AUTH] getCurrentUser - All accounts:', allAccounts.map(a => a.name))
 
   const account = instance.getActiveAccount()
   console.log('[AUTH] getCurrentUser - Active account:', account?.name || 'none')
 
-  if (!account) return null
+  if (!account) {
+    console.log('[AUTH] No active account found. Setting first available account...')
+    // If no active account but accounts exist, set the first one
+    if (allAccounts.length > 0) {
+      instance.setActiveAccount(allAccounts[0])
+      console.log('[AUTH] Set active account to:', allAccounts[0].name)
+      const user = {
+        displayName: allAccounts[0].name || '',
+        mail: allAccounts[0].username || '',
+        id: allAccounts[0].homeAccountId?.split('.')[0] || '',
+      }
+      return user
+    }
+    return null
+  }
 
   const user = {
     displayName: account.name || '',
