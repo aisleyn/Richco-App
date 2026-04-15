@@ -173,11 +173,18 @@ export interface DataverseTimeEntry {
 
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
   try {
+    console.log('[Dataverse] Creating time entry with data:', entry)
     const res = (await apiCall('POST', '/tables/craa5_timeentries', entry)) as any
-    console.log('[Dataverse] Created time entry:', res)
-    return res?.id || null
+    console.log('[Dataverse] Created time entry response:', res)
+    if (res?.id) {
+      console.log('[Dataverse] ✅ Time entry created with ID:', res.id)
+      return res.id
+    } else {
+      console.error('[Dataverse] ❌ No ID returned from create:', res)
+      return null
+    }
   } catch (err) {
-    console.error('Failed to create time entry:', err)
+    console.error('[Dataverse] ❌ Failed to create time entry:', err)
     return null
   }
 }
