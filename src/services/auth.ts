@@ -5,10 +5,15 @@
 
 import * as msal from '@azure/msal-browser'
 
+// Debug: log env vars to verify they're loaded
+const clientId = import.meta.env.VITE_AZURE_CLIENT_ID || 'e9b090d5-e7a1-43c2-abe3-761a64c828f9'
+const tenantId = import.meta.env.VITE_AZURE_TENANT_ID || '59114aa8-a5cf-4ff9-9edd-affc40d640a9'
+console.log('[AUTH] Config loaded:', { clientId, tenantId, origin: window.location.origin })
+
 const config: msal.Configuration = {
   auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID || 'e9b090d5-e7a1-43c2-abe3-761a64c828f9',
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID || '59114aa8-a5cf-4ff9-9edd-affc40d640a9'}`,
+    clientId,
+    authority: `https://login.microsoftonline.com/${tenantId}`,
     redirectUri: window.location.origin,
   },
   cache: {
@@ -25,10 +30,16 @@ let msalInstance: msal.PublicClientApplication | null = null
 export function getMsalInstance() {
   if (!msalInstance) {
     if (!config.auth.clientId) {
-      console.warn('VITE_AZURE_CLIENT_ID not set — auth disabled')
+      console.error('❌ MSAL Config Error: clientId is not set. This will cause login to fail.', { config })
       return null
     }
-    msalInstance = new msal.PublicClientApplication(config)
+    try {
+      msalInstance = new msal.PublicClientApplication(config)
+      console.log('✅ MSAL initialized successfully')
+    } catch (err) {
+      console.error('❌ Failed to initialize MSAL:', err, { config })
+      return null
+    }
   }
   return msalInstance
 }
