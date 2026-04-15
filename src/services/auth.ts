@@ -51,11 +51,18 @@ export async function getMsalInstance() {
       // Handle redirect from Azure AD (clears any pending errors/redirects)
       // This may throw if there's no pending redirect, which is fine
       try {
-        await msalInstance.handleRedirectPromise()
+        console.log('[AUTH] Handling redirect promise...')
+        const result = await msalInstance.handleRedirectPromise()
+        if (result) {
+          console.log('[AUTH] ✅ Redirect handled successfully, user:', result.account?.name)
+        } else {
+          console.log('[AUTH] No redirect result (user may not be logging in)')
+        }
       } catch (redirectErr: unknown) {
         // Ignore "no token request cache" errors - just means no pending redirect
         const err = redirectErr as { errorCode?: string }
         if (err?.errorCode !== 'no_token_request_cache_error') {
+          console.error('[AUTH] Redirect error:', err)
           throw redirectErr
         }
       }
@@ -126,11 +133,15 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!instance) return null
 
   const account = instance.getActiveAccount()
+  console.log('[AUTH] getCurrentUser - Active account:', account?.name || 'none')
+
   if (!account) return null
 
-  return {
+  const user = {
     displayName: account.name || '',
     mail: account.username || '',
     id: account.homeAccountId?.split('.')[0] || '',
   }
+  console.log('[AUTH] getCurrentUser - Returning user:', user.displayName)
+  return user
 }
