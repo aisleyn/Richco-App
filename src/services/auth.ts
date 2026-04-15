@@ -22,7 +22,7 @@ const config: msal.Configuration = {
 }
 
 const scopes = [
-  'https://org.crm.dynamics.com/.default', // Dataverse
+  `https://${import.meta.env.VITE_DATAVERSE_ORG || 'richcogroup'}.crm.dynamics.com/.default`, // Dataverse
 ]
 
 let msalInstance: msal.PublicClientApplication | null = null
