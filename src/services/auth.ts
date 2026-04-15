@@ -55,6 +55,11 @@ export async function getMsalInstance() {
         const result = await msalInstance.handleRedirectPromise()
         if (result) {
           console.log('[AUTH] ✅ Redirect handled successfully, user:', result.account?.name)
+          // Set the account as active so getCurrentUser() can find it
+          if (result.account) {
+            msalInstance.setActiveAccount(result.account)
+            console.log('[AUTH] ✅ Set active account:', result.account.name)
+          }
         } else {
           console.log('[AUTH] No redirect result (user may not be logging in)')
         }
