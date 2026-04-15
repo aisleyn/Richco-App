@@ -47,6 +47,10 @@ export async function getMsalInstance() {
   if (!msalInitialized) {
     try {
       await msalInstance.initialize()
+
+      // Handle redirect from Azure AD (clears any pending errors/redirects)
+      await msalInstance.handleRedirectPromise()
+
       msalInitialized = true
       console.log('✅ MSAL initialized successfully')
     } catch (err) {
