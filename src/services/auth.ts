@@ -82,17 +82,13 @@ export async function login(): Promise<User | null> {
   if (!instance) return null
 
   try {
-    const result = await instance.loginPopup({
+    // Use redirect instead of popup to avoid nested popup blocking
+    await instance.loginRedirect({
       scopes,
       prompt: 'select_account',
     })
-
-    const user: User = {
-      displayName: result.account?.name || '',
-      mail: result.account?.username || '',
-      id: result.account?.homeAccountId?.split('.')[0] || '',
-    }
-    return user
+    // loginRedirect doesn't return — it redirects to Azure AD and back
+    return null
   } catch (err) {
     console.error('Login failed:', err)
     return null
@@ -102,7 +98,7 @@ export async function login(): Promise<User | null> {
 export async function logout(): Promise<void> {
   const instance = await getMsalInstance()
   if (instance) {
-    await instance.logoutPopup()
+    await instance.logoutRedirect()
   }
 }
 
