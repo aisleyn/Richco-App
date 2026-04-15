@@ -22,7 +22,7 @@ const config: msal.Configuration = {
 }
 
 const scopes = [
-  `https://${import.meta.env.VITE_DATAVERSE_ORG || 'richcogroup'}.crm.dynamics.com/.default`, // Dataverse
+  'https://admin.services.crm.dynamics.com/user_impersonation', // Dataverse API
 ]
 
 let msalInstance: msal.PublicClientApplication | null = null
