@@ -59,12 +59,10 @@ export async function getMsalInstance() {
           console.log('[AUTH] No redirect result (user may not be logging in)')
         }
       } catch (redirectErr: unknown) {
-        // Ignore "no token request cache" errors - just means no pending redirect
-        const err = redirectErr as { errorCode?: string }
-        if (err?.errorCode !== 'no_token_request_cache_error') {
-          console.error('[AUTH] Redirect error:', err)
-          throw redirectErr
-        }
+        // Log redirect errors but don't fail initialization
+        const err = redirectErr as { errorCode?: string; message?: string }
+        console.error('[AUTH] Redirect error (continuing anyway):', err?.errorCode || err?.message || err)
+        // Don't throw - let the app continue even if redirect handling fails
       }
 
       msalInitialized = true
