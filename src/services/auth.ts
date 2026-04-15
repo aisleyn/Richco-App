@@ -26,8 +26,9 @@ const scopes = [
 ]
 
 let msalInstance: msal.PublicClientApplication | null = null
+let msalInitialized = false
 
-export function getMsalInstance() {
+export async function getMsalInstance() {
   if (!msalInstance) {
     if (!config.auth.clientId) {
       console.error('❌ MSAL Config Error: clientId is not set. This will cause login to fail.', { config })
@@ -35,12 +36,25 @@ export function getMsalInstance() {
     }
     try {
       msalInstance = new msal.PublicClientApplication(config)
-      console.log('✅ MSAL initialized successfully')
+      console.log('✅ MSAL instance created')
     } catch (err) {
-      console.error('❌ Failed to initialize MSAL:', err, { config })
+      console.error('❌ Failed to create MSAL instance:', err, { config })
       return null
     }
   }
+
+  // Initialize if not already done
+  if (!msalInitialized) {
+    try {
+      await msalInstance.initialize()
+      msalInitialized = true
+      console.log('✅ MSAL initialized successfully')
+    } catch (err) {
+      console.error('❌ Failed to initialize MSAL:', err)
+      return null
+    }
+  }
+
   return msalInstance
 }
 
@@ -51,7 +65,7 @@ export interface User {
 }
 
 export async function login(): Promise<User | null> {
-  const instance = getMsalInstance()
+  const instance = await getMsalInstance()
   if (!instance) return null
 
   try {
@@ -73,14 +87,14 @@ export async function login(): Promise<User | null> {
 }
 
 export async function logout(): Promise<void> {
-  const instance = getMsalInstance()
+  const instance = await getMsalInstance()
   if (instance) {
     await instance.logoutPopup()
   }
 }
 
 export async function getAccessToken(): Promise<string | null> {
-  const instance = getMsalInstance()
+  const instance = await getMsalInstance()
   if (!instance) return null
 
   const account = instance.getActiveAccount()
@@ -98,8 +112,8 @@ export async function getAccessToken(): Promise<string | null> {
   }
 }
 
-export function getCurrentUser(): User | null {
-  const instance = getMsalInstance()
+export async function getCurrentUser(): Promise<User | null> {
+  const instance = await getMsalInstance()
   if (!instance) return null
 
   const account = instance.getActiveAccount()
