@@ -49,7 +49,16 @@ export async function getMsalInstance() {
       await msalInstance.initialize()
 
       // Handle redirect from Azure AD (clears any pending errors/redirects)
-      await msalInstance.handleRedirectPromise()
+      // This may throw if there's no pending redirect, which is fine
+      try {
+        await msalInstance.handleRedirectPromise()
+      } catch (redirectErr: unknown) {
+        // Ignore "no token request cache" errors - just means no pending redirect
+        const err = redirectErr as { errorCode?: string }
+        if (err?.errorCode !== 'no_token_request_cache_error') {
+          throw redirectErr
+        }
+      }
 
       msalInitialized = true
       console.log('✅ MSAL initialized successfully')
