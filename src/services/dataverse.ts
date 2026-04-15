@@ -49,16 +49,16 @@ async function apiCall(method: string, endpoint: string, data?: unknown): Promis
 // ─── Sites (Projects) ──────────────────────────────────────────────────────
 
 export interface DataverseSite {
-  richco_projectid: string
-  richco_name: string
-  richco_address?: string
+  craa5_projectid: string
+  craa5_projectname: string
+  craa5_client?: string
 }
 
 export async function fetchSites(): Promise<DataverseSite[]> {
   try {
     const res = (await apiCall(
       'GET',
-      "/tables/craa5_Project?$select=craa5_projectid,craa5_name,craa5_address&$filter=craa5_status eq 'active'"
+      "/tables/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'active'"
     )) as any
     console.log('[Dataverse] Fetched sites:', res?.value)
     return res?.value || []
@@ -141,21 +141,16 @@ export async function fetchEmployeeShifts(employeeId: string, date: string): Pro
 // ─── Time Entries ──────────────────────────────────────────────────────────
 
 export interface DataverseTimeEntry {
-  richco_timeentryid: string
-  richco_employeeid: string // Lookup to employees
-  richco_aadid: string // Azure AD ID for Power Automate email reports
-  richco_email: string // Employee email
-  richco_projectid: string // Lookup to projects
-  richco_clockintime: string // ISO 8601
-  richco_clockouttime?: string
-  richco_totalhours?: number // Decimal
-  richco_breakhours?: number // Decimal (actual breaks taken)
-  richco_regularhours?: number // Decimal (after mandatory deduction)
-  richco_overtimehours?: number // Decimal
-  richco_breakstart?: string // ISO 8601
-  richco_breakend?: string // ISO 8601
-  richco_breakduration?: number // Minutes
-  richco_vehicleid?: string
+  craa5_timeentriesid: string
+  craa5_employee: string // Employee email
+  craa5_project?: string // Project lookup
+  craa5_clockin: string // ISO 8601
+  craa5_clockout?: string
+  craa5_totalhours?: number // Decimal
+  craa5_status?: string // active, completed, etc.
+  craa5_breakstart?: string // ISO 8601
+  craa5_breakend?: string // ISO 8601
+  craa5_breakduration?: number // Minutes
   richco_shiftsummary?: string
   richco_concerns?: string
   richco_photossubmitted?: number
@@ -166,9 +161,9 @@ export interface DataverseTimeEntry {
   richco_gpsaddress?: string
 }
 
-export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'richco_timeentryid'>): Promise<string | null> {
+export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
   try {
-    const res = (await apiCall('POST', '/tables/craa5_TimeEntries', entry)) as any
+    const res = (await apiCall('POST', '/tables/craa5_timeentries', entry)) as any
     console.log('[Dataverse] Created time entry:', res)
     return res?.id || null
   } catch (err) {
@@ -179,7 +174,7 @@ export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'richco_ti
 
 export async function updateTimeEntry(entryId: string, data: Partial<DataverseTimeEntry>): Promise<boolean> {
   try {
-    await apiCall('PATCH', `/tables/craa5_TimeEntries(${entryId})`, data)
+    await apiCall('PATCH', `/tables/craa5_timeentries(${entryId})`, data)
     console.log('[Dataverse] Updated time entry:', entryId)
     return true
   } catch (err) {

@@ -32,7 +32,7 @@ export function HomeScreen({ onNavigate }: Props) {
     async function loadSites() {
       setIsLoadingSites(true)
       const fetchedSites = await fetchSites()
-      setSites(fetchedSites.length > 0 ? fetchedSites : [{ richco_projectid: 'site1', richco_name: 'Grandview Heights Phase 3', richco_address: '18955 Fraser Hwy, Surrey, BC' }])
+      setSites(fetchedSites.length > 0 ? fetchedSites : [{ craa5_projectid: 'site1', craa5_projectname: 'Grandview Heights Phase 3', craa5_client: '18955 Fraser Hwy, Surrey, BC' }])
       setIsLoadingSites(false)
     }
     loadSites()
@@ -44,7 +44,7 @@ export function HomeScreen({ onNavigate }: Props) {
 
   function confirmClockIn(isOvernight: boolean) {
     if (!selectedSite) return
-    clockIn(selectedSite.richco_projectid, selectedSite.richco_name, isOvernight, { lat: 49.1234, lng: -122.7654, address: selectedSite.richco_address || '18955 Fraser Hwy, Surrey, BC' })
+    clockIn(selectedSite.craa5_projectid, selectedSite.craa5_projectname, isOvernight, { lat: 49.1234, lng: -122.7654, address: selectedSite.craa5_client || '18955 Fraser Hwy, Surrey, BC' })
     setShowSitePicker(false)
     setSelectedSite(null)
   }
@@ -193,17 +193,17 @@ export function HomeScreen({ onNavigate }: Props) {
               <div className="space-y-2">
                 {sites.map((site) => (
                   <motion.button
-                    key={site.richco_projectid}
+                    key={site.craa5_projectid}
                     onClick={() => setSelectedSite(site)}
                     className={`w-full p-4 rounded-xl text-left transition-colors ${
-                      selectedSite?.richco_projectid === site.richco_projectid
+                      selectedSite?.craa5_projectid === site.craa5_projectid
                         ? 'bg-brand-amber/20 border border-brand-amber text-white'
                         : 'bg-bg-surface border border-white/5 text-slate-300 hover:border-white/10'
                     }`}
                   >
-                    <p className="font-semibold">{site.richco_name}</p>
-                    {site.richco_address && (
-                      <p className="text-xs text-slate-500 mt-1">{site.richco_address}</p>
+                    <p className="font-semibold">{site.craa5_projectname}</p>
+                    {site.craa5_client && (
+                      <p className="text-xs text-slate-500 mt-1">{site.craa5_client}</p>
                     )}
                   </motion.button>
                 ))}

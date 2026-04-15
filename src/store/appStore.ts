@@ -90,17 +90,11 @@ export const useAppStore = create<AppState>()(
 
         // Create Dataverse entry
         const entryId = await createTimeEntry({
-          richco_employeeid: currentUserAadId,
-          richco_aadid: currentUserAadId,
-          richco_email: currentUserEmail,
-          richco_projectid: siteId,
-          richco_clockintime: new Date(now).toISOString(),
-          richco_status: 'active',
-          richco_gpslat: gps?.lat,
-          richco_gpslng: gps?.lng,
-          richco_gpsaddress: gps?.address,
-          richco_geofenceflag: false,
-        })
+          craa5_employee: currentUserEmail,
+          craa5_project: siteId,
+          craa5_clockin: new Date(now).toISOString(),
+          craa5_status: 'active',
+        } as any)
 
         set({
           clockedIn: true,
@@ -157,15 +151,10 @@ export const useAppStore = create<AppState>()(
         // Update Dataverse entry with final data
         if (activeTimesheetId) {
           await updateTimeEntry(activeTimesheetId, {
-            richco_clockouttime: new Date(now).toISOString(),
-            richco_totalhours: parseFloat(rawHours.toFixed(4)),
-            richco_breakhours: parseFloat(breakHours.toFixed(4)),
-            richco_regularhours: parseFloat(regularHours.toFixed(4)),
-            richco_overtimehours: parseFloat(overtimeHours.toFixed(4)),
-            richco_vehicleid: data.vehicleUsed,
-            richco_shiftsummary: data.shiftSummary ?? '',
-            richco_concerns: data.concerns,
-            richco_status: 'complete',
+            craa5_clockout: new Date(now).toISOString(),
+            craa5_totalhours: parseFloat(rawHours.toFixed(4)),
+            craa5_breakduration: Math.round(breakDurationMs / 60000), // Convert to minutes
+            craa5_status: 'complete',
           })
         }
 
@@ -209,7 +198,7 @@ export const useAppStore = create<AppState>()(
         // Update Dataverse entry
         if (activeTimesheetId) {
           await updateTimeEntry(activeTimesheetId, {
-            richco_breakstart: new Date(now).toISOString(),
+            craa5_breakstart: new Date(now).toISOString(),
           })
         }
 
@@ -236,8 +225,8 @@ export const useAppStore = create<AppState>()(
         // Update Dataverse entry
         if (activeTimesheetId) {
           await updateTimeEntry(activeTimesheetId, {
-            richco_breakend: new Date().toISOString(),
-            richco_breakduration: breakDurationMinutes,
+            craa5_breakend: new Date().toISOString(),
+            craa5_breakduration: breakDurationMinutes,
           })
         }
 
