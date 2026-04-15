@@ -58,8 +58,9 @@ export async function fetchSites(): Promise<DataverseSite[]> {
   try {
     const res = (await apiCall(
       'GET',
-      "/tables/richco_projects?$select=richco_projectid,richco_name,richco_address&$filter=richco_status eq 'active'"
+      "/tables/craa5_Project?$select=craa5_projectid,craa5_name,craa5_address&$filter=craa5_status eq 'active'"
     )) as any
+    console.log('[Dataverse] Fetched sites:', res?.value)
     return res?.value || []
   } catch (err) {
     console.error('Failed to fetch sites:', err)
@@ -167,7 +168,8 @@ export interface DataverseTimeEntry {
 
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'richco_timeentryid'>): Promise<string | null> {
   try {
-    const res = (await apiCall('POST', '/tables/richco_timeentries', entry)) as any
+    const res = (await apiCall('POST', '/tables/craa5_TimeEntries', entry)) as any
+    console.log('[Dataverse] Created time entry:', res)
     return res?.id || null
   } catch (err) {
     console.error('Failed to create time entry:', err)
@@ -177,7 +179,8 @@ export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'richco_ti
 
 export async function updateTimeEntry(entryId: string, data: Partial<DataverseTimeEntry>): Promise<boolean> {
   try {
-    await apiCall('PATCH', `/tables/richco_timeentries(${entryId})`, data)
+    await apiCall('PATCH', `/tables/craa5_TimeEntries(${entryId})`, data)
+    console.log('[Dataverse] Updated time entry:', entryId)
     return true
   } catch (err) {
     console.error('Failed to update time entry:', err)
