@@ -35,8 +35,18 @@ async function apiCall(method: string, endpoint: string, data?: unknown): Promis
       throw new Error(`Dataverse API error: ${res.status} ${res.statusText}`)
     }
 
-    if (method === 'POST' || method === 'PATCH') {
-      return { success: true, id: res.headers.get('odata-entityid') }
+    if (method === 'POST') {
+      // Extract GUID from odata-entityid header
+      // Format: https://org.crm.dynamics.com/api/data/v9.2/tables/tablename(guid)
+      const entityId = res.headers.get('odata-entityid')
+      const guidMatch = entityId?.match(/\(([^)]+)\)/)
+      const guid = guidMatch ? guidMatch[1] : null
+      console.log('[Dataverse] Created record with ID:', guid)
+      return { success: true, id: guid }
+    }
+
+    if (method === 'PATCH') {
+      return { success: true }
     }
 
     return res.json()
