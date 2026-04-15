@@ -21,12 +21,15 @@ export default function App() {
 
   // Check if user is already logged in
   useEffect(() => {
-    const user = getCurrentUser()
-    if (user) {
-      initializeUser(user.displayName, user.mail, user.id)
-      setAuthenticated(true)
+    const checkUser = async () => {
+      const user = await getCurrentUser()
+      if (user) {
+        initializeUser(user.displayName, user.mail, user.id)
+        setAuthenticated(true)
+      }
+      setChecking(false)
     }
-    setChecking(false)
+    checkUser()
   }, [initializeUser])
 
   if (checking) {
