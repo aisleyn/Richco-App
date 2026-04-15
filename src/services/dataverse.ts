@@ -69,7 +69,7 @@ export async function fetchSites(): Promise<DataverseSite[]> {
   try {
     const res = (await apiCall(
       'GET',
-      "/tables/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'active'"
+      "/tables/craa5_project?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'active'"
     )) as any
     console.log('[Dataverse] Fetched sites:', res?.value)
     return res?.value || []
