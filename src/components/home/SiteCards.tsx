@@ -13,7 +13,7 @@ export function SiteCards() {
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.07 }}
-            className="bg-bg-surface rounded-xl border border-white/5 p-3.5 flex items-center gap-3 active:bg-bg-elevated transition-colors"
+            className="bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3 active:bg-bg-elevated transition-colors"
           >
             <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${site.status === 'active' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
             <div className="flex-1 min-w-0">
@@ -41,7 +41,7 @@ export function SiteCards() {
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.21 }}
-          className="bg-bg-surface rounded-xl border border-white/5 p-3.5 flex items-center gap-3"
+          className="bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3"
         >
           <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-slate-600" />
           <div className="flex-1 min-w-0">

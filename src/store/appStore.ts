@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { TimesheetEntry, Alert, ChatMessage } from '../types'
-import { mockAlerts, currentUser } from '../data/mockData'
+import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
+import { mockAlerts, mockMessages, currentUser } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
 import { createTimeEntry, updateTimeEntry, getMandatoryBreakHours } from '../services/dataverse'
 
@@ -28,6 +28,8 @@ interface AppState {
 
   // Messages
   unreadMessageCount: number
+  crewMessages: Record<string, Message[]>
+  crewActiveThread: string | null
 
   // Active screen
   activeScreen: string
@@ -51,6 +53,9 @@ interface AppState {
 
   // Messages
   setUnreadMessageCount: (count: number) => void
+  setCrewMessages: (msgs: Record<string, Message[]>) => void
+  setCrewActiveThread: (id: string | null) => void
+  addCrewMessage: (msg: Message) => void
 
   // AI
   addChatMessage: (msg: ChatMessage) => void
@@ -80,6 +85,8 @@ export const useAppStore = create<AppState>()(
       alerts: mockAlerts,
       unreadAlertCount: mockAlerts.filter(a => !a.read).length,
       unreadMessageCount: 4,
+      crewMessages: mockMessages,
+      crewActiveThread: null,
       activeScreen: 'home',
       chatMessages: [],
 
@@ -264,6 +271,17 @@ export const useAppStore = create<AppState>()(
 
       setUnreadMessageCount: (count) => set({ unreadMessageCount: count }),
 
+      setCrewMessages: (msgs) => set({ crewMessages: msgs }),
+
+      setCrewActiveThread: (id) => set({ crewActiveThread: id }),
+
+      addCrewMessage: (msg) => set(state => ({
+        crewMessages: {
+          ...state.crewMessages,
+          [msg.threadId]: [...(state.crewMessages[msg.threadId] ?? []), msg]
+        }
+      })),
+
       addChatMessage: (msg) => set(state => ({ chatMessages: [...state.chatMessages, msg] })),
 
       clearChat: () => set({ chatMessages: [] }),
@@ -280,6 +298,8 @@ export const useAppStore = create<AppState>()(
         activeSheetEntry: state.activeSheetEntry,
         currentShiftIsOvernight: state.currentShiftIsOvernight,
         currentUserAadId: state.currentUserAadId,
+        crewMessages: state.crewMessages,
+        crewActiveThread: state.crewActiveThread,
       }),
     }
   )

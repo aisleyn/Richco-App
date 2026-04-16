@@ -11,7 +11,7 @@ const typeConfig: Record<string, { color: string; border: string; icon: typeof I
   urgent:      { color: 'border-l-red-500',    border: 'border-red-500/20',    icon: AlertTriangle, iconColor: 'text-red-400',    label: 'Urgent' },
   ceo:         { color: 'border-l-amber-500',  border: 'border-amber-500/20',  icon: MessageSquare, iconColor: 'text-amber-400',  label: 'CEO' },
   weather:     { color: 'border-l-blue-500',   border: 'border-blue-500/20',   icon: Cloud,         iconColor: 'text-blue-400',   label: 'Weather' },
-  general:     { color: 'border-l-slate-500',  border: 'border-white/5',       icon: Info,          iconColor: 'text-slate-400',  label: 'General' },
+  general:     { color: 'border-l-slate-500',  border: 'border-slate-200',       icon: Info,          iconColor: 'text-slate-400',  label: 'General' },
   schedule:    { color: 'border-l-purple-500', border: 'border-purple-500/20', icon: CalendarDays,  iconColor: 'text-purple-400', label: 'Schedule' },
   vendor:      { color: 'border-l-teal-500',   border: 'border-teal-500/20',   icon: Truck,         iconColor: 'text-teal-400',   label: 'Vendor' },
   timesheet:   { color: 'border-l-orange-500', border: 'border-orange-500/20', icon: Clock,         iconColor: 'text-orange-400', label: 'Timesheet' },
@@ -122,7 +122,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 pb-4 pt-0 border-t border-white/5">
+                      <div className="px-4 pb-4 pt-0 border-t border-slate-200">
                         <p className="text-slate-300 text-sm leading-relaxed mt-3">{alert.body}</p>
                         {alert.author && (
                           <p className="text-slate-500 text-xs mt-3">— {alert.author}</p>
@@ -148,7 +148,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="bg-bg-base w-full rounded-t-3xl overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/5">
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200">
                 <h2 className="text-white font-bold text-lg">Post Notification</h2>
                 <button onClick={() => setShowCompose(false)} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
                   <X size={18} className="text-slate-400" />

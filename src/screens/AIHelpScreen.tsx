@@ -132,7 +132,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
             <span className="text-emerald-400 text-xs">Online · Richco Knowledge Base</span>
           </div>
         </div>
-        <button onClick={clearChat} className="w-9 h-9 rounded-full bg-bg-surface flex items-center justify-center border border-white/5">
+        <button onClick={clearChat} className="w-9 h-9 rounded-full bg-bg-surface flex items-center justify-center border border-slate-200">
           <RotateCcw size={15} className="text-slate-400" />
         </button>
       </div>
@@ -170,7 +170,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08 }}
                       onClick={() => handleSend(q)}
-                      className="w-full text-left bg-bg-surface border border-white/5 rounded-xl px-4 py-3 flex items-center justify-between group active:bg-bg-elevated transition-colors"
+                      className="w-full text-left bg-bg-surface border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-between group active:bg-bg-elevated transition-colors"
                     >
                       <span className="text-slate-300 text-sm">{q}</span>
                       <ChevronRight size={14} className="text-slate-600 group-active:text-brand-amber transition-colors shrink-0 ml-2" />
@@ -203,7 +203,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                     {msg.sources && msg.sources.length > 0 && (
                       <div className="space-y-1">
                         {msg.sources.map((s, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-bg-surface border border-white/5 rounded-lg px-3 py-2">
+                          <div key={i} className="flex items-center gap-2 bg-bg-surface border border-slate-200 rounded-lg px-3 py-2">
                             <FileText size={11} className="text-slate-500 shrink-0" />
                             <span className="text-slate-400 text-xs">{s}</span>
                           </div>
@@ -236,7 +236,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
           </div>
 
           {/* Input bar */}
-          <div className="px-4 pb-4 pt-2 border-t border-white/5 shrink-0">
+          <div className="px-4 pb-4 pt-2 border-t border-slate-200 shrink-0">
             <div className="flex items-center gap-2 bg-bg-surface rounded-2xl border border-white/10 px-4 py-3">
               <input
                 value={input}
@@ -271,7 +271,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.07 }}
-                  className="bg-bg-surface border border-white/5 rounded-xl overflow-hidden flex items-center gap-3 p-3 active:bg-bg-elevated transition-colors"
+                  className="bg-bg-surface border border-slate-200 rounded-xl overflow-hidden flex items-center gap-3 p-3 active:bg-bg-elevated transition-colors"
                 >
                   <div className="w-20 h-14 rounded-xl overflow-hidden shrink-0 relative">
                     <img src={v.thumbnail} alt="" className="w-full h-full object-cover" />
@@ -299,7 +299,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-bg-surface border border-white/5 rounded-xl p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
+                  className="bg-bg-surface border border-slate-200 rounded-xl p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
                 >
                   <div className="w-9 h-9 rounded-xl bg-brand-amber/15 flex items-center justify-center shrink-0">
                     <FileText size={16} className="text-brand-amber" />

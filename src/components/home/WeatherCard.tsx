@@ -29,7 +29,7 @@ export function WeatherCard() {
       )}
 
       {/* Main card with video background */}
-      <div className="rounded-2xl overflow-hidden border border-white/5 shadow-card relative">
+      <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-card relative">
         {/* Background video */}
         <div className="absolute inset-0 w-full h-64">
           <video
@@ -85,7 +85,7 @@ export function WeatherCard() {
         {/* Expand toggle */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-center gap-1 py-2.5 border-t border-white/5 text-slate-400 text-xs hover:text-slate-200 active:bg-white/5 transition-colors bg-bg-surface"
+          className="w-full flex items-center justify-center gap-1 py-2.5 border-t border-slate-200 text-slate-400 text-xs hover:text-slate-200 active:bg-white/5 transition-colors bg-bg-surface"
         >
           {expanded ? 'Hide' : 'Show'} Forecast
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>

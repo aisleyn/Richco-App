@@ -11,7 +11,9 @@
       "Bash(git commit:*)",
       "Bash(git branch:*)",
       "Bash(git remote:*)",
-      "Bash(pkill -f \"vite\")"
+      "Bash(pkill -f \"vite\")",
+      "Bash(curl -s https://mango-rock-0fadbc31e.7.azurestaticapps.net)",
+      "Bash(curl -I https://mango-rock-0fadbc31e.7.azurestaticapps.net)"
     ]
   }
 }

@@ -58,7 +58,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
           </div>
         </div>
 
-        <div className="flex border-t border-white/5">
+        <div className="flex border-t border-slate-200">
           <button
             onClick={breakActive ? endBreak : startBreak}
             className="flex-1 flex items-center justify-center gap-1.5 py-3 text-amber-400 text-sm font-medium active:bg-white/5 transition-colors"
@@ -83,13 +83,13 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-bg-surface rounded-2xl border border-white/5 overflow-hidden"
+      className="bg-bg-surface rounded-2xl border border-slate-200 overflow-hidden"
     >
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="text-slate-400 text-xs uppercase tracking-wider font-medium mb-1">Today's Shift</p>
-            <p className="text-white font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
+            <p className="text-slate-800 font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
             <p className="text-slate-400 text-sm flex items-center gap-1 mt-0.5">
               <Clock size={12} />
               {shift ? `${shift.startTime} – ${shift.endTime}` : '07:00 – 15:30'}
@@ -103,7 +103,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
 
       <button
         onClick={() => onClockIn(isOvernightShift)}
-        className="w-full flex items-center justify-center gap-2 py-4 bg-brand-amber active:bg-brand-amberDark transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-4 bg-brand-green active:bg-brand-greenDark transition-colors"
       >
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}
@@ -111,7 +111,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
         >
           <Play size={18} fill="white" className="text-white ml-0.5" />
         </motion.div>
-        <span className="text-slate-900 font-bold text-base">Clock In</span>
+        <span className="text-white font-bold text-base">Clock In</span>
       </button>
     </motion.div>
   )

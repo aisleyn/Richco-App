@@ -24,7 +24,7 @@ export function TimecardList() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className={`bg-bg-surface rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-amber-500/20' : 'border-white/5'}`}
+            className={`bg-bg-surface rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-amber-500/20' : 'border-slate-200'}`}
           >
             <div className="flex items-start justify-between mb-2">
               <div>

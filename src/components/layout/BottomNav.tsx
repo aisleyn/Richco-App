@@ -20,7 +20,7 @@ export function BottomNav({ active, onChange }: Props) {
   const { unreadAlertCount, unreadMessageCount } = useAppStore()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-bg-surface/95 backdrop-blur-lg border-t border-white/5 safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-bg-surface/95 backdrop-blur-lg border-t border-slate-200 safe-bottom">
       <div className="flex items-stretch max-w-lg mx-auto">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = active === id
