@@ -21,9 +21,11 @@ const config: msal.Configuration = {
   },
 }
 
+const dataverseOrg = import.meta.env.VITE_DATAVERSE_ORG || 'richcogroup'
 const scopes = [
-  'https://admin.services.crm.dynamics.com/user_impersonation', // Dataverse API
+  `https://${dataverseOrg}.crm.dynamics.com/user_impersonation`, // Dataverse API - environment-specific scope
 ]
+console.log('[AUTH] Dataverse org:', dataverseOrg, 'Scope:', scopes[0])
 
 let msalInstance: msal.PublicClientApplication | null = null
 let msalInitialized = false
@@ -120,13 +122,15 @@ export async function getAccessToken(): Promise<string | null> {
   if (!account) return null
 
   try {
+    console.log('[AUTH] Acquiring token for scopes:', scopes)
     const result = await instance.acquireTokenSilent({
       account,
       scopes,
     })
+    console.log('[AUTH] ✅ Token acquired. Audience claim:', result.accessToken.split('.')[1])
     return result.accessToken
   } catch (err) {
-    console.error('Failed to get token:', err)
+    console.error('[AUTH] ❌ Failed to get token:', err)
     return null
   }
 }
