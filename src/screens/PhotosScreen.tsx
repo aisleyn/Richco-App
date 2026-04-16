@@ -42,7 +42,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             </button>
           )}
           <div className={activeSite ? '' : 'flex-1'}>
-            <h1 className="text-white text-2xl font-bold">{currentSite?.name ?? 'Photos'}</h1>
+            <h1 className="text-slate-800 text-2xl font-bold">{currentSite?.name ?? 'Photos'}</h1>
             <p className="text-slate-500 text-sm mt-0.5">
               {activeSite ? `${filtered.length} photos` : `${sites.length} active projects`}
             </p>
@@ -82,7 +82,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 </div>
                 <div className="p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-white font-semibold text-sm">{site.name}</p>
+                    <p className="text-slate-800 font-semibold text-sm">{site.name}</p>
                     <p className="text-slate-500 text-xs mt-0.5">{sitePhotos.length} photos</p>
                   </div>
                   {flagged > 0 && (
@@ -127,12 +127,12 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 {/* AI flag */}
                 {photo.aiFlags && photo.aiFlags.length > 0 && (
                   <div className="absolute top-1 left-1 bg-amber-500/90 rounded-md p-0.5">
-                    <AlertTriangle size={10} className="text-white" />
+                    <AlertTriangle size={10} className="text-slate-800" />
                   </div>
                 )}
                 {/* Category chip */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 group-active:opacity-100 transition-opacity">
-                  <p className="text-white text-[9px]">{photo.category}</p>
+                  <p className="text-slate-800 text-[9px]">{photo.category}</p>
                 </div>
               </motion.button>
             ))}
@@ -150,7 +150,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             className="fixed inset-0 z-50 bg-black/95 flex flex-col"
           >
             <div className="flex items-center justify-between px-4 pt-12 pb-4">
-              <button onClick={() => setSelectedPhoto(null)} className="text-white">
+              <button onClick={() => setSelectedPhoto(null)} className="text-slate-800">
                 <ChevronLeft size={24} />
               </button>
               <span className="text-slate-300 text-sm">{selectedPhoto.category}</span>
@@ -164,7 +164,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             <div className="px-4 py-6 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white font-semibold">{selectedPhoto.submittedBy}</p>
+                  <p className="text-slate-800 font-semibold">{selectedPhoto.submittedBy}</p>
                   <p className="text-slate-400 text-sm">{format(selectedPhoto.timestamp, 'MMM d, yyyy · h:mm a')}</p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-lg px-2.5 py-1.5">
@@ -200,7 +200,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               className="bg-bg-base w-full rounded-t-3xl overflow-hidden"
             >
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200">
-                <h2 className="text-white font-bold text-lg">Submit Site Photo</h2>
+                <h2 className="text-slate-800 font-bold text-lg">Submit Site Photo</h2>
                 <button onClick={() => { setShowUpload(false); setPendingPhoto(null) }} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
                   <X size={18} className="text-slate-400" />
                 </button>
@@ -213,7 +213,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                   <div className="relative rounded-xl overflow-hidden">
                     <img src={pendingPhoto} alt="" className="w-full h-48 object-cover" />
                     <button onClick={() => setPendingPhoto(null)} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/70 flex items-center justify-center">
-                      <X size={14} className="text-white" />
+                      <X size={14} className="text-slate-800" />
                     </button>
                   </div>
                 ) : (
@@ -229,7 +229,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 {/* Site */}
                 <div>
                   <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Project Site</label>
-                  <select value={uploadSite} onChange={e => setUploadSite(e.target.value)} className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white text-sm appearance-none">
+                  <select value={uploadSite} onChange={e => setUploadSite(e.target.value)} className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm appearance-none">
                     {jobSites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
@@ -253,7 +253,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 {/* Caption */}
                 <div>
                   <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Caption (Optional)</label>
-                  <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Describe what's shown..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-slate-600" />
+                  <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Describe what's shown..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm placeholder:text-slate-600" />
                 </div>
 
                 <button

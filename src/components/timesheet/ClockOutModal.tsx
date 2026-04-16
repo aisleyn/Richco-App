@@ -85,7 +85,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           >
             <CheckCircle size={72} className="text-emerald-400" />
           </motion.div>
-          <p className="text-white text-xl font-semibold">Clocked Out</p>
+          <p className="text-slate-800 text-xl font-semibold">Clocked Out</p>
           <p className="text-slate-400 text-sm">{paidHours.toFixed(2)} hours recorded</p>
         </motion.div>
       </div>
@@ -105,7 +105,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
             <div>
-              <h2 className="text-white font-bold text-lg">Clock Out</h2>
+              <h2 className="text-slate-800 font-bold text-lg">Clock Out</h2>
               <p className="text-slate-400 text-sm">Complete before clocking out</p>
             </div>
             <button onClick={onClose} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
@@ -117,7 +117,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           <div className="mx-5 mt-4 bg-bg-surface rounded-xl p-4 space-y-3 shrink-0">
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
-                <p className="text-white font-mono text-lg">{formatElapsed(elapsed)}</p>
+                <p className="text-slate-800 font-mono text-lg">{formatElapsed(elapsed)}</p>
                 <p className="text-slate-500 text-[10px] mt-0.5">Work Time</p>
               </div>
               <div className="text-center border-x border-slate-200">
@@ -144,7 +144,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 <select
                   value={siteId}
                   onChange={e => { setSiteId(e.target.value); setErrors(p => ({ ...p, site: '' })) }}
-                  className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white appearance-none text-sm"
+                  className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 appearance-none text-sm"
                 >
                   {jobSites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
@@ -172,7 +172,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                   <select
                     value={vehicleId}
                     onChange={e => { setVehicleId(e.target.value); setErrors(p => ({ ...p, vehicle: '' })) }}
-                    className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white appearance-none text-sm"
+                    className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 appearance-none text-sm"
                   >
                     <option value="">Select vehicle...</option>
                     {mockVehicles.map(v => <option key={v.id} value={v.id}>{v.name} – {v.plate}</option>)}
@@ -208,7 +208,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 onChange={e => setConcerns(e.target.value)}
                 placeholder="Any safety issues, equipment problems, or incidents to report..."
                 rows={3}
-                className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white text-sm resize-none placeholder:text-slate-600"
+                className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600"
               />
             </div>
 
@@ -220,7 +220,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 onChange={e => { setSummary(e.target.value); setErrors(p => ({ ...p, summary: '' })) }}
                 placeholder="Describe work completed today..."
                 rows={4}
-                className={`w-full bg-bg-surface border rounded-xl px-4 py-3 text-white text-sm resize-none placeholder:text-slate-600 ${errors.summary ? 'border-red-500/50' : 'border-white/10'}`}
+                className={`w-full bg-bg-surface border rounded-xl px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600 ${errors.summary ? 'border-red-500/50' : 'border-white/10'}`}
               />
               {errors.summary && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.summary}</p>}
             </div>
@@ -242,7 +242,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                         onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
                         className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center"
                       >
-                        <X size={10} className="text-white" />
+                        <X size={10} className="text-slate-800" />
                       </button>
                     </div>
                   ))}
@@ -266,7 +266,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           <div className="px-5 py-4 border-t border-slate-200 shrink-0">
             <button
               onClick={handleSubmit}
-              className="w-full py-4 bg-red-500 active:bg-red-600 rounded-xl text-white font-bold text-base transition-colors"
+              className="w-full py-4 bg-red-500 active:bg-red-600 rounded-xl text-slate-800 font-bold text-base transition-colors"
             >
               Finalize Clock Out
             </button>

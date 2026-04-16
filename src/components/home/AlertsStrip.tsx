@@ -45,7 +45,7 @@ export function AlertsStrip({ onSeeAll, onTapAlert }: Props) {
             >
               <Icon size={14} className={`${cfg.iconColor} mt-0.5 shrink-0`} />
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">{alert.title}</p>
+                <p className="text-slate-800 text-sm font-medium truncate">{alert.title}</p>
                 <p className="text-slate-400 text-xs truncate mt-0.5">{alert.body}</p>
                 <p className="text-slate-600 text-[10px] mt-1">
                   {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}

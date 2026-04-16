@@ -181,7 +181,7 @@ export function HomeScreen({ onNavigate }: Props) {
               <h2 className="text-slate-900 text-lg font-bold">Select Job Site</h2>
               <button
                 onClick={() => setShowSitePicker(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-800"
               >
                 <X size={20} />
               </button>
@@ -197,7 +197,7 @@ export function HomeScreen({ onNavigate }: Props) {
                     onClick={() => setSelectedSite(site)}
                     className={`w-full p-4 rounded-xl text-left transition-colors ${
                       selectedSite?.craa5_projectid === site.craa5_projectid
-                        ? 'bg-brand-green/20 border border-brand-green text-white'
+                        ? 'bg-brand-green/20 border border-brand-green text-slate-800'
                         : 'bg-bg-surface border border-slate-200 text-slate-300 hover:border-white/10'
                     }`}
                   >
@@ -213,7 +213,7 @@ export function HomeScreen({ onNavigate }: Props) {
             <button
               onClick={() => confirmClockIn(false)}
               disabled={!selectedSite || isLoadingSites}
-              className="w-full mt-6 py-3 bg-brand-green text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-6 py-3 bg-brand-green text-slate-800 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Clock In
             </button>

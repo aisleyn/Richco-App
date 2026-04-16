@@ -56,7 +56,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
       <div className="pt-14">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-white text-2xl font-bold">Alerts</h1>
+            <h1 className="text-slate-800 text-2xl font-bold">Alerts</h1>
             <p className="text-slate-500 text-sm mt-0.5">
               {unreadAlertCount > 0 ? `${unreadAlertCount} unread` : 'All caught up'}
             </p>
@@ -98,7 +98,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                   <Icon size={15} className={`${cfg.iconColor} mt-0.5 shrink-0`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-semibold truncate ${!alert.read ? 'text-white' : 'text-slate-300'}`}>{alert.title}</p>
+                      <p className={`text-sm font-semibold truncate ${!alert.read ? 'text-slate-800' : 'text-slate-300'}`}>{alert.title}</p>
                       {!alert.read && <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />}
                     </div>
                     <p className="text-slate-400 text-xs truncate mt-0.5">{alert.body}</p>
@@ -149,7 +149,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
               className="bg-bg-base w-full rounded-t-3xl overflow-hidden"
             >
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200">
-                <h2 className="text-white font-bold text-lg">Post Notification</h2>
+                <h2 className="text-slate-800 font-bold text-lg">Post Notification</h2>
                 <button onClick={() => setShowCompose(false)} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
                   <X size={18} className="text-slate-400" />
                 </button>
@@ -174,12 +174,12 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
 
                 <div>
                   <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Title</label>
-                  <input value={postTitle} onChange={e => setPostTitle(e.target.value)} placeholder="Notification title..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-slate-600" />
+                  <input value={postTitle} onChange={e => setPostTitle(e.target.value)} placeholder="Notification title..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm placeholder:text-slate-600" />
                 </div>
 
                 <div>
                   <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Message</label>
-                  <textarea value={postBody} onChange={e => setPostBody(e.target.value)} rows={4} placeholder="Full notification message..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-white text-sm resize-none placeholder:text-slate-600" />
+                  <textarea value={postBody} onChange={e => setPostBody(e.target.value)} rows={4} placeholder="Full notification message..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600" />
                 </div>
 
                 <button

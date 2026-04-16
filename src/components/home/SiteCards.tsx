@@ -17,7 +17,7 @@ export function SiteCards() {
           >
             <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${site.status === 'active' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">{site.name}</p>
+              <p className="text-slate-800 text-sm font-medium truncate">{site.name}</p>
               <div className="flex items-center gap-3 mt-0.5">
                 <span className="text-slate-500 text-xs flex items-center gap-1 truncate">
                   <MapPin size={10} />{site.zone ?? site.address}

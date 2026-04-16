@@ -31,7 +31,7 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   const colors = ['bg-amber-500', 'bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-pink-500', 'bg-teal-500']
   const color = colors[name.charCodeAt(0) % colors.length]
   return (
-    <div className={`${color} rounded-full flex items-center justify-center shrink-0 text-white font-bold`} style={{ width: size, height: size, fontSize: size * 0.36 }}>
+    <div className={`${color} rounded-full flex items-center justify-center shrink-0 text-slate-800 font-bold`} style={{ width: size, height: size, fontSize: size * 0.36 }}>
       {initials}
     </div>
   )
@@ -102,7 +102,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     {!isMe && <Avatar name={msg.senderName} size={28} />}
                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                       {!isMe && <p className="text-slate-500 text-[10px] px-1">{msg.senderName}</p>}
-                      <div className={`px-4 py-2.5 rounded-2xl ${isMe ? 'bg-brand-amber text-slate-900 rounded-br-md' : 'bg-bg-elevated text-white rounded-bl-md'}`}>
+                      <div className={`px-4 py-2.5 rounded-2xl ${isMe ? 'bg-brand-amber text-slate-900 rounded-br-md' : 'bg-bg-elevated text-slate-800 rounded-bl-md'}`}>
                         <p className="text-sm">{msg.body}</p>
                       </div>
                       <p className="text-slate-600 text-[10px] px-1">{formatDistanceToNow(msg.timestamp, { addSuffix: true })}</p>
@@ -158,7 +158,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search crew..."
-                    className="w-full bg-bg-surface border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-slate-600"
+                    className="w-full bg-bg-surface border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-slate-800 text-sm placeholder:text-slate-600"
                   />
                   {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={14} className="text-slate-500" /></button>}
                 </div>
@@ -219,7 +219,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                   >
                     <Avatar name={thread.groupName ?? thread.participantNames[0]} size={44} />
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${thread.unreadCount > 0 ? 'text-white' : 'text-slate-300'}`}>
+                      <p className={`text-sm font-semibold truncate ${thread.unreadCount > 0 ? 'text-slate-800' : 'text-slate-300'}`}>
                         {thread.groupName ?? thread.participantNames[0]}
                       </p>
                       <p className="text-slate-500 text-xs truncate mt-0.5">{thread.lastMessage}</p>
