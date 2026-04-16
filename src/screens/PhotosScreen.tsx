@@ -69,7 +69,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
                 onClick={() => setActiveSite(site.id)}
-                className="w-full text-left bg-bg-surface rounded-2xl border border-white/5 overflow-hidden active:bg-bg-elevated transition-colors"
+                className="w-full text-left bg-bg-surface rounded-2xl border border-slate-200 overflow-hidden active:bg-bg-elevated transition-colors"
               >
                 {/* Photo strip preview */}
                 <div className="flex h-24 gap-0.5 overflow-hidden">
@@ -199,7 +199,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="bg-bg-base w-full rounded-t-3xl overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/5">
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200">
                 <h2 className="text-white font-bold text-lg">Submit Site Photo</h2>
                 <button onClick={() => { setShowUpload(false); setPendingPhoto(null) }} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
                   <X size={18} className="text-slate-400" />

@@ -41,7 +41,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           transition={{ delay: 0.1 }}
           className="mt-5 grid grid-cols-2 gap-3"
         >
-          <div className="bg-bg-surface rounded-2xl p-4 border border-white/5">
+          <div className="bg-bg-surface rounded-2xl p-4 border border-slate-200">
             <div className="flex items-center gap-2 mb-2">
               <Clock size={14} className="text-brand-amber" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Today</span>
@@ -50,7 +50,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             {clockedIn && <p className="text-emerald-400 text-xs mt-1">Currently clocked in</p>}
           </div>
 
-          <div className="bg-bg-surface rounded-2xl p-4 border border-white/5">
+          <div className="bg-bg-surface rounded-2xl p-4 border border-slate-200">
             <div className="flex items-center gap-2 mb-2">
               <Calendar size={14} className="text-blue-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Week</span>
@@ -59,7 +59,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             <p className="text-slate-500 text-xs mt-1">{Math.max(0, weekStats.remaining - todayHours).toFixed(2)}h remaining</p>
           </div>
 
-          <div className={`bg-bg-surface rounded-2xl p-4 border ${weekStats.overtimeWeek > 0 ? 'border-amber-500/20' : 'border-white/5'}`}>
+          <div className={`bg-bg-surface rounded-2xl p-4 border ${weekStats.overtimeWeek > 0 ? 'border-amber-500/20' : 'border-slate-200'}`}>
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp size={14} className="text-amber-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Overtime</span>
@@ -70,7 +70,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             <p className="text-slate-500 text-xs mt-1">This week</p>
           </div>
 
-          <div className="bg-bg-surface rounded-2xl p-4 border border-white/5">
+          <div className="bg-bg-surface rounded-2xl p-4 border border-slate-200">
             <div className="flex items-center gap-2 mb-2">
               <Calendar size={14} className="text-purple-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Month</span>
@@ -84,7 +84,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-3 bg-bg-surface rounded-2xl p-4 border border-white/5"
+          className="mt-3 bg-bg-surface rounded-2xl p-4 border border-slate-200"
         >
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-slate-400 text-xs font-medium">Weekly Progress</span>

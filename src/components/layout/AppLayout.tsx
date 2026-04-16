@@ -7,7 +7,7 @@ interface Props {
 
 export function AppLayout({ children, noPad }: Props) {
   return (
-    <div className={`min-h-screen bg-bg-base text-slate-100 pb-20 ${noPad ? '' : 'px-4'} overflow-x-hidden`}>
+    <div className={`min-h-screen bg-bg-base text-slate-800 pb-20 ${noPad ? '' : 'px-4'} overflow-x-hidden`}>
       {children}
     </div>
   )

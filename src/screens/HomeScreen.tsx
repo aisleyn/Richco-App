@@ -58,7 +58,7 @@ export function HomeScreen({ onNavigate }: Props) {
       <div className="pt-14 pb-2 flex items-start justify-between">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-slate-400 text-sm">{format(today, 'EEEE, MMMM d')}</p>
-          <h1 className="text-white text-2xl font-bold mt-0.5">{greeting}</h1>
+          <h1 className="text-slate-900 text-2xl font-bold mt-0.5">{greeting}</h1>
           <p className="text-slate-500 text-xs mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
         </motion.div>
         <div className="flex items-center gap-3 pt-1">
@@ -94,7 +94,7 @@ export function HomeScreen({ onNavigate }: Props) {
             { label: 'Flagged', value: '2', color: 'text-red-400' },
             { label: 'Pending', value: '4', color: 'text-amber-400' },
           ].map(({ label, value, color }) => (
-            <div key={label} className="bg-bg-surface rounded-xl py-3 text-center border border-white/5">
+            <div key={label} className="bg-bg-surface rounded-xl py-3 text-center border border-slate-200">
               <p className={`text-2xl font-bold ${color}`}>{value}</p>
               <p className="text-slate-500 text-[10px] mt-0.5">{label}</p>
             </div>
@@ -135,14 +135,14 @@ export function HomeScreen({ onNavigate }: Props) {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
           <button
             onClick={() => onNavigate('crew')}
-            className="w-full bg-bg-surface rounded-2xl border border-white/5 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
+            className="w-full bg-bg-surface rounded-2xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
           >
             <div className="w-9 h-9 rounded-full bg-brand-amber/15 flex items-center justify-center shrink-0">
               <MessageSquare size={16} className="text-brand-amber" />
             </div>
             <div className="flex-1 text-left min-w-0">
               <p className="text-slate-400 text-xs">Tyler Nash</p>
-              <p className="text-white text-sm truncate">Roger that, on my way to Zone A now</p>
+              <p className="text-slate-800 text-sm truncate">Roger that, on my way to Zone A now</p>
             </div>
             {unreadMessageCount > 0 && (
               <span className="bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
@@ -178,7 +178,7 @@ export function HomeScreen({ onNavigate }: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white text-lg font-bold">Select Job Site</h2>
+              <h2 className="text-slate-900 text-lg font-bold">Select Job Site</h2>
               <button
                 onClick={() => setShowSitePicker(false)}
                 className="text-slate-400 hover:text-white"
@@ -197,8 +197,8 @@ export function HomeScreen({ onNavigate }: Props) {
                     onClick={() => setSelectedSite(site)}
                     className={`w-full p-4 rounded-xl text-left transition-colors ${
                       selectedSite?.craa5_projectid === site.craa5_projectid
-                        ? 'bg-brand-amber/20 border border-brand-amber text-white'
-                        : 'bg-bg-surface border border-white/5 text-slate-300 hover:border-white/10'
+                        ? 'bg-brand-green/20 border border-brand-green text-white'
+                        : 'bg-bg-surface border border-slate-200 text-slate-300 hover:border-white/10'
                     }`}
                   >
                     <p className="font-semibold">{site.craa5_projectname}</p>
@@ -213,7 +213,7 @@ export function HomeScreen({ onNavigate }: Props) {
             <button
               onClick={() => confirmClockIn(false)}
               disabled={!selectedSite || isLoadingSites}
-              className="w-full mt-6 py-3 bg-brand-amber text-slate-900 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-6 py-3 bg-brand-green text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Clock In
             </button>

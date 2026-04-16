@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Phone, ChevronLeft, Send, X, Users } from 'lucide-react'
+import { Search, ChevronLeft, Send, X, Users } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { mockCrew, mockThreads, mockMessages, currentUser } from '../data/mockData'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
-import type { CrewMember, MessageThread } from '../types'
+import type { CrewMember, MessageThread, Message } from '../types'
 
 const statusConfig = {
   onsite:    { label: 'On Site',   color: 'bg-emerald-400', text: 'text-emerald-400' },
@@ -41,10 +41,8 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const [tab, setTab] = useState<'directory' | 'messages'>('directory')
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('All')
-  const [activeThread, setActiveThread] = useState<string | null>(null)
   const [messageInput, setMessageInput] = useState('')
-  const [localMessages, setLocalMessages] = useState(mockMessages)
-  const { setUnreadMessageCount } = useAppStore()
+  const { setUnreadMessageCount, crewMessages, crewActiveThread, setCrewActiveThread, addCrewMessage } = useAppStore()
 
   const filtered = mockCrew
     .filter(m => m.id !== currentUser.id)
@@ -54,37 +52,37 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const threads = mockThreads
 
   function sendMessage() {
-    if (!messageInput.trim() || !activeThread) return
-    const msg = {
+    if (!messageInput.trim() || !crewActiveThread) return
+    const msg: Message = {
       id: `msg-${Date.now()}`,
-      threadId: activeThread,
+      threadId: crewActiveThread,
       senderId: currentUser.id,
       senderName: `${currentUser.firstName} ${currentUser.lastName}`,
       body: messageInput.trim(),
       timestamp: Date.now(),
       read: true,
     }
-    setLocalMessages(prev => ({ ...prev, [activeThread]: [...(prev[activeThread] ?? []), msg] }))
+    addCrewMessage(msg)
     setMessageInput('')
   }
 
-  const currentThreadMsgs = activeThread ? (localMessages[activeThread] ?? []) : []
-  const currentThread = threads.find(t => t.id === activeThread)
+  const currentThreadMsgs = crewActiveThread ? (crewMessages[crewActiveThread] ?? []) : []
+  const currentThread = threads.find(t => t.id === crewActiveThread)
 
   return (
     <AppLayout>
       <div className="pt-14">
-        {activeThread ? (
+        {crewActiveThread ? (
           /* Message thread view */
           <div className="flex flex-col h-[calc(100vh-5rem)] -mx-4">
             {/* Thread header */}
-            <div className="flex items-center gap-3 px-4 pb-4 border-b border-white/5 shrink-0">
-              <button onClick={() => setActiveThread(null)} className="text-brand-amber">
+            <div className="flex items-center gap-3 px-4 pb-4 border-b border-slate-200 shrink-0">
+              <button onClick={() => setCrewActiveThread(null)} className="text-brand-amber">
                 <ChevronLeft size={22} />
               </button>
               <Avatar name={currentThread?.groupName ?? currentThread?.participantNames[0] ?? ''} size={36} />
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm truncate">
+                <p className="text-slate-800 font-semibold text-sm truncate">
                   {currentThread?.groupName ?? currentThread?.participantNames[0]}
                 </p>
                 {currentThread?.isGroup && (
@@ -115,14 +113,14 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             </div>
 
             {/* Input */}
-            <div className="px-4 pb-4 pt-2 border-t border-white/5 shrink-0">
+            <div className="px-4 pb-4 pt-2 border-t border-slate-200 shrink-0">
               <div className="flex items-center gap-2 bg-bg-surface rounded-2xl border border-white/10 px-4 py-2.5">
                 <input
                   value={messageInput}
                   onChange={e => setMessageInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && sendMessage()}
                   placeholder="Message..."
-                  className="flex-1 bg-transparent text-white text-sm placeholder:text-slate-600 outline-none"
+                  className="flex-1 bg-transparent text-slate-800 text-sm placeholder:text-slate-600 outline-none"
                 />
                 <button
                   onClick={sendMessage}
@@ -137,8 +135,8 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
-              <h1 className="text-white text-2xl font-bold">Crew</h1>
-              <div className="flex bg-bg-surface rounded-xl border border-white/5 p-0.5">
+              <h1 className="text-slate-900 text-2xl font-bold">Crew</h1>
+              <div className="flex bg-bg-surface rounded-xl border border-slate-200 p-0.5">
                 {(['directory', 'messages'] as const).map(t => (
                   <button
                     key={t}
@@ -160,7 +158,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search crew..."
-                    className="w-full bg-bg-surface border border-white/5 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-slate-600"
+                    className="w-full bg-bg-surface border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-slate-600"
                   />
                   {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={14} className="text-slate-500" /></button>}
                 </div>
@@ -188,22 +186,19 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
-                        className="bg-bg-surface rounded-xl border border-white/5 p-3.5 flex items-center gap-3"
+                        className="bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3"
                       >
                         <div className="relative">
                           <Avatar name={`${member.firstName} ${member.lastName}`} size={42} />
                           <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${sc.color} border-2 border-bg-base`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium text-sm">{member.firstName} {member.lastName}</p>
+                          <p className="text-slate-800 font-medium text-sm">{member.firstName} {member.lastName}</p>
                           <p className="text-slate-500 text-xs">{member.roleLabel}</p>
                           {member.currentSite && <p className="text-slate-600 text-[10px] truncate mt-0.5">{member.currentSite}</p>}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className={`text-[10px] font-semibold ${sc.text}`}>{sc.label}</span>
-                          <a href={`tel:${member.phone}`} className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center">
-                            <Phone size={13} className="text-slate-400" />
-                          </a>
                         </div>
                       </motion.div>
                     )
@@ -219,8 +214,8 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    onClick={() => { setActiveThread(thread.id); setUnreadMessageCount(Math.max(0, mockThreads.reduce((a, t) => a + t.unreadCount, 0) - thread.unreadCount)) }}
-                    className="w-full text-left bg-bg-surface rounded-xl border border-white/5 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
+                    onClick={() => { setCrewActiveThread(thread.id); setUnreadMessageCount(Math.max(0, mockThreads.reduce((a, t) => a + t.unreadCount, 0) - thread.unreadCount)) }}
+                    className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
                   >
                     <Avatar name={thread.groupName ?? thread.participantNames[0]} size={44} />
                     <div className="flex-1 min-w-0">

@@ -103,7 +103,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           className="bg-bg-base w-full max-h-[92vh] rounded-t-3xl overflow-hidden flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/5 shrink-0">
+          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
             <div>
               <h2 className="text-white font-bold text-lg">Clock Out</h2>
               <p className="text-slate-400 text-sm">Complete before clocking out</p>
@@ -120,7 +120,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 <p className="text-white font-mono text-lg">{formatElapsed(elapsed)}</p>
                 <p className="text-slate-500 text-[10px] mt-0.5">Work Time</p>
               </div>
-              <div className="text-center border-x border-white/5">
+              <div className="text-center border-x border-slate-200">
                 <p className="text-emerald-400 font-semibold text-lg">{regularHours.toFixed(2)}h</p>
                 <p className="text-slate-500 text-[10px] mt-0.5">Regular</p>
               </div>
@@ -129,7 +129,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 <p className="text-slate-500 text-[10px] mt-0.5">Overtime</p>
               </div>
             </div>
-            <div className="text-center text-[10px] border-t border-white/5 pt-2">
+            <div className="text-center text-[10px] border-t border-slate-200 pt-2">
               <p className="text-slate-500">Raw: {rawHours.toFixed(2)}h | Breaks: {breakHours.toFixed(2)}h | Mandatory: -{mandatoryBreakHours.toFixed(1)}h ({currentShiftIsOvernight ? 'Overnight' : 'Day shift'})</p>
             </div>
           </div>
@@ -263,7 +263,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-4 border-t border-white/5 shrink-0">
+          <div className="px-5 py-4 border-t border-slate-200 shrink-0">
             <button
               onClick={handleSubmit}
               className="w-full py-4 bg-red-500 active:bg-red-600 rounded-xl text-white font-bold text-base transition-colors"
