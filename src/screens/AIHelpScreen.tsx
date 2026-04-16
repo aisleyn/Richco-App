@@ -126,7 +126,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
     <AppLayout noPad>
       <div className="pt-14 px-4 flex items-center justify-between">
         <div>
-          <h1 className="text-white text-2xl font-bold">AI Help</h1>
+          <h1 className="text-slate-800 text-2xl font-bold">AI Help</h1>
           <div className="flex items-center gap-1.5 mt-0.5">
             <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span className="text-emerald-400 text-xs">Online · Richco Knowledge Base</span>
@@ -159,7 +159,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                 <div className="w-16 h-16 rounded-2xl bg-brand-amber/15 border border-brand-amber/20 flex items-center justify-center mb-4">
                   <Bot size={28} className="text-brand-amber" />
                 </div>
-                <p className="text-white font-semibold mb-1">Richco AI Assistant</p>
+                <p className="text-slate-800 font-semibold mb-1">Richco AI Assistant</p>
                 <p className="text-slate-400 text-sm max-w-xs">Ask me anything about safety procedures, OSHA regulations, or company policies.</p>
 
                 <div className="mt-6 w-full space-y-2">
@@ -216,11 +216,11 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                         <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 relative">
                           <img src={msg.videoCard.thumbnail} alt="" className="w-full h-full object-cover" />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                            <Play size={14} fill="white" className="text-white ml-0.5" />
+                            <Play size={14} fill="white" className="text-slate-800 ml-0.5" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white text-xs font-medium truncate">{msg.videoCard.title}</p>
+                          <p className="text-slate-800 text-xs font-medium truncate">{msg.videoCard.title}</p>
                           <p className="text-slate-500 text-[10px] mt-0.5">{msg.videoCard.duration} · Training Video</p>
                         </div>
                         <Play size={16} className="text-brand-amber shrink-0" />
@@ -243,7 +243,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
                 placeholder="Ask about safety, procedures..."
-                className="flex-1 bg-transparent text-white text-sm placeholder:text-slate-600 outline-none"
+                className="flex-1 bg-transparent text-slate-800 text-sm placeholder:text-slate-600 outline-none"
               />
               <button className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center shrink-0">
                 <Mic size={14} className="text-slate-400" />
@@ -276,11 +276,11 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                   <div className="w-20 h-14 rounded-xl overflow-hidden shrink-0 relative">
                     <img src={v.thumbnail} alt="" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                      <Play size={16} fill="white" className="text-white ml-0.5" />
+                      <Play size={16} fill="white" className="text-slate-800 ml-0.5" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{v.title}</p>
+                    <p className="text-slate-800 text-sm font-medium truncate">{v.title}</p>
                     <p className="text-slate-500 text-xs mt-0.5">{v.duration} · Training</p>
                   </div>
                   <ChevronRight size={16} className="text-slate-600 shrink-0" />
@@ -305,7 +305,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                     <FileText size={16} className="text-brand-amber" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{d.title}</p>
+                    <p className="text-slate-800 text-sm font-medium truncate">{d.title}</p>
                     <p className="text-slate-500 text-xs">{d.category} · {d.pages} pages</p>
                   </div>
                   <ChevronRight size={16} className="text-slate-600 shrink-0" />

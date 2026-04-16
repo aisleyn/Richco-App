@@ -75,7 +75,7 @@ export function WeatherCard() {
             ].map(({ icon: Icon, label, value, warn }) => (
               <div key={label} className="flex flex-col items-center gap-1">
                 <Icon size={13} className={warn ? 'text-amber-400' : 'text-slate-400'} />
-                <span className={`text-xs font-semibold ${warn ? 'text-amber-400' : 'text-white'}`}>{value}</span>
+                <span className={`text-xs font-semibold ${warn ? 'text-amber-400' : 'text-slate-800'}`}>{value}</span>
                 <span className="text-slate-500 text-[9px]">{label}</span>
               </div>
             ))}
@@ -111,7 +111,7 @@ export function WeatherCard() {
                     <div key={i} className="flex flex-col items-center gap-1.5 shrink-0 bg-white/5 rounded-xl px-3 py-2.5">
                       <span className="text-slate-400 text-[11px]">{h.time}</span>
                       <span className="text-base">{h.condition.toLowerCase().includes('rain') ? '🌧️' : h.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️'}</span>
-                      <span className="text-white text-sm font-medium">{h.temp}°</span>
+                      <span className="text-slate-800 text-sm font-medium">{h.temp}°</span>
                       {h.precipChance > 20 && <span className="text-blue-400 text-[10px]">{h.precipChance}%</span>}
                     </div>
                   ))}
@@ -135,7 +135,7 @@ export function WeatherCard() {
                             style={{ width: `${Math.round(((d.high - d.low) / 40) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-white text-sm font-medium w-6 text-right">{d.high}°</span>
+                        <span className="text-slate-800 text-sm font-medium w-6 text-right">{d.high}°</span>
                       </div>
                     </div>
                   ))}

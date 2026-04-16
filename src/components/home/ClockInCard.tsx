@@ -40,7 +40,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white text-2xl font-mono font-light tracking-widest">
+              <p className="text-slate-800 text-2xl font-mono font-light tracking-widest">
                 {formatElapsed(elapsed)}
               </p>
               {breakActive && (
@@ -50,7 +50,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               )}
             </div>
             <div className="text-right">
-              <p className="text-white text-sm font-medium">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
+              <p className="text-slate-800 text-sm font-medium">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
               <p className="text-slate-400 text-xs flex items-center gap-1 justify-end">
                 <MapPin size={10} /> Zone A – Foundation
               </p>

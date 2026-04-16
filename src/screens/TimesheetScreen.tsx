@@ -30,7 +30,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     <AppLayout>
       <div className="pt-14">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-white text-2xl font-bold">Timesheet</h1>
+          <h1 className="text-slate-800 text-2xl font-bold">Timesheet</h1>
           <p className="text-slate-500 text-sm mt-1">Track your hours and shifts</p>
         </motion.div>
 
@@ -46,7 +46,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               <Clock size={14} className="text-brand-amber" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Today</span>
             </div>
-            <p className="text-white text-2xl font-bold">{todayHours.toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
+            <p className="text-slate-800 text-2xl font-bold">{todayHours.toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
             {clockedIn && <p className="text-emerald-400 text-xs mt-1">Currently clocked in</p>}
           </div>
 
@@ -55,7 +55,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               <Calendar size={14} className="text-blue-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Week</span>
             </div>
-            <p className="text-white text-2xl font-bold">{(weekStats.week + todayHours).toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
+            <p className="text-slate-800 text-2xl font-bold">{(weekStats.week + todayHours).toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
             <p className="text-slate-500 text-xs mt-1">{Math.max(0, weekStats.remaining - todayHours).toFixed(2)}h remaining</p>
           </div>
 
@@ -75,7 +75,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               <Calendar size={14} className="text-purple-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Month</span>
             </div>
-            <p className="text-white text-2xl font-bold">{(weekStats.month + todayHours).toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
+            <p className="text-slate-800 text-2xl font-bold">{(weekStats.month + todayHours).toFixed(2)}<span className="text-slate-500 text-sm font-normal">h</span></p>
           </div>
         </motion.div>
 

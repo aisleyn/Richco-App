@@ -36,7 +36,7 @@ export function LoginScreen({ onLoginSuccess }: Props) {
           <div className="w-16 h-16 rounded-2xl bg-brand-amber/15 border border-brand-amber/30 flex items-center justify-center mx-auto mb-4">
             <div className="text-3xl font-bold text-brand-amber">RC</div>
           </div>
-          <h1 className="text-white text-3xl font-bold">Richco Construction</h1>
+          <h1 className="text-slate-800 text-3xl font-bold">Richco Construction</h1>
           <p className="text-slate-400 text-sm mt-2">Field Operations App</p>
         </div>
 

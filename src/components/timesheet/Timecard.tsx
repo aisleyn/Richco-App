@@ -28,13 +28,13 @@ export function TimecardList() {
           >
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="text-white text-sm font-medium">
+                <p className="text-slate-800 text-sm font-medium">
                   {new Date(tc.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
                 <p className="text-slate-400 text-xs mt-0.5">{tc.siteName}</p>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-amber-400' : 'text-white'}`}>
+                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-amber-400' : 'text-slate-800'}`}>
                   {tc.totalHours?.toFixed(2)}h
                 </p>
                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
