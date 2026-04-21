@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -18,9 +19,13 @@ export default {
         },
         bg: {
           base: '#f7f8fa',
+          'base-dark': '#0f1419',
           surface: '#ffffff',
+          'surface-dark': '#1a1f2e',
           elevated: '#f0f1f4',
+          'elevated-dark': '#252d3d',
           card: '#ffffff',
+          'card-dark': '#1a1f2e',
         },
         brand: {
           amber: '#F59E0B',

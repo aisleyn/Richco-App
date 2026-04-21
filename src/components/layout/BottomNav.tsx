@@ -20,7 +20,7 @@ export function BottomNav({ active, onChange }: Props) {
   const { unreadAlertCount, unreadMessageCount } = useAppStore()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-bg-surface/95 backdrop-blur-lg border-t border-slate-200 safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-bg-surface/95 dark:bg-bg-surface-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 safe-bottom">
       <div className="flex items-stretch max-w-lg mx-auto">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = active === id
@@ -35,7 +35,7 @@ export function BottomNav({ active, onChange }: Props) {
                 <Icon
                   size={22}
                   strokeWidth={isActive ? 2.5 : 1.8}
-                  className={isActive ? 'text-brand-amber' : 'text-slate-500 group-active:text-slate-300 transition-colors'}
+                  className={isActive ? 'text-brand-amber' : 'text-slate-500 dark:text-slate-400 group-active:text-slate-300 dark:group-active:text-slate-500 transition-colors'}
                 />
                 {badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
@@ -43,7 +43,7 @@ export function BottomNav({ active, onChange }: Props) {
                   </span>
                 )}
               </div>
-              <span className={`text-[9px] font-medium ${isActive ? 'text-brand-amber' : 'text-slate-500'}`}>
+              <span className={`text-[9px] font-medium ${isActive ? 'text-brand-amber' : 'text-slate-500 dark:text-slate-400'}`}>
                 {label}
               </span>
               {isActive && (
