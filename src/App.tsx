@@ -10,6 +10,7 @@ import { CrewScreen } from './screens/CrewScreen'
 import { AIHelpScreen } from './screens/AIHelpScreen'
 import { getCurrentUser } from './services/auth'
 import { useAppStore } from './store/appStore'
+import { useDarkMode } from './hooks/useDarkMode'
 
 type ScreenProps = { onNavigate: (s: string) => void }
 
@@ -18,6 +19,7 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [checking, setChecking] = useState(true)
   const { initializeUser } = useAppStore()
+  useDarkMode() // Initialize dark mode on app load
 
   // Check if user is already logged in
   useEffect(() => {

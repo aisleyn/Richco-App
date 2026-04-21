@@ -8,6 +8,7 @@ import { ClockInCard } from '../components/home/ClockInCard'
 import { SiteCards } from '../components/home/SiteCards'
 import { AlertsStrip } from '../components/home/AlertsStrip'
 import { ClockOutModal } from '../components/timesheet/ClockOutModal'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { useGreeting } from '../hooks/useGreeting'
 import { currentUser } from '../data/mockData'
 import { useAppStore } from '../store/appStore'
@@ -57,13 +58,14 @@ export function HomeScreen({ onNavigate }: Props) {
       {/* Header */}
       <div className="pt-14 pb-2 flex items-start justify-between">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          <p className="text-slate-400 text-sm">{format(today, 'EEEE, MMMM d')}</p>
-          <h1 className="text-slate-900 text-2xl font-bold mt-0.5">{greeting}</h1>
-          <p className="text-slate-500 text-xs mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm">{format(today, 'EEEE, MMMM d')}</p>
+          <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold mt-0.5">{greeting}</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
         </motion.div>
-        <div className="flex items-center gap-3 pt-1">
+        <div className="flex items-center gap-2 pt-1">
+          <ThemeToggle />
           <button onClick={() => onNavigate('crew')} className="relative">
-            <MessageSquare size={22} className="text-slate-400" />
+            <MessageSquare size={22} className="text-slate-400 dark:text-slate-500" />
             {unreadMessageCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                 {unreadMessageCount}
@@ -71,7 +73,7 @@ export function HomeScreen({ onNavigate }: Props) {
             )}
           </button>
           <button onClick={() => onNavigate('alerts')} className="relative">
-            <Bell size={22} className="text-slate-400" />
+            <Bell size={22} className="text-slate-400 dark:text-slate-500" />
             {unreadAlertCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                 {unreadAlertCount}

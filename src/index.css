@@ -3,6 +3,24 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg-base: #f7f8fa;
+    --bg-surface: #ffffff;
+    --bg-elevated: #f0f1f4;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+  }
+
+  .dark {
+    --bg-base: #0f1419;
+    --bg-surface: #1a1f2e;
+    --bg-elevated: #252d3d;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+  }
+
   * {
     -webkit-tap-highlight-color: transparent;
     box-sizing: border-box;
@@ -10,17 +28,18 @@
 
   html {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background-color: #f7f8fa;
+    background-color: var(--bg-base);
   }
 
   body {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    background-color: #f7f8fa;
-    color: #1e293b;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s, color 0.2s;
   }
 
   /* iOS safe area */
@@ -47,13 +66,14 @@
   }
 
   select option {
-    background-color: #ffffff;
-    color: #1e293b;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
   }
 
   input, textarea {
     outline: none;
-    color: #1e293b;
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
   }
 
   /* Smooth scrolling */
