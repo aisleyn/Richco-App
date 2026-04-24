@@ -106,30 +106,21 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
           </div>
           <div className="flex gap-2">
             {activeSite && !deleteMode && (
-              <>
-                <button
-                  onClick={() => setShowImport(true)}
-                  className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
-                  title="Import from folder"
-                >
-                  <Upload size={15} /> Import
-                </button>
-                <button
-                  onClick={() => setShowBulkUpload(true)}
-                  className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
-                  title="Bulk upload photos"
-                >
-                  <Upload size={15} />
-                </button>
-              </>
-            )}
-            {activeSite && !deleteMode && (
               <button
                 onClick={() => setDeleteMode(true)}
                 className="flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-xl text-red-500 text-sm font-semibold transition-colors"
                 title="Delete photos"
               >
                 <Trash2 size={15} />
+              </button>
+            )}
+            {activeSite && !deleteMode && (
+              <button
+                onClick={() => setShowImport(true)}
+                className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
+                title="Import from folder"
+              >
+                <Upload size={15} /> Import
               </button>
             )}
             {deleteMode && (
