@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { X, Trash2 } from 'lucide-react'
-import { updatePhoto, deletePhoto } from '../../services/photoStorage'
+import { updatePhoto, deletePhoto } from '../../services/photoDatabase'
 import type { Photo, PhotoCategory } from '../../types'
 import { format } from 'date-fns'
 

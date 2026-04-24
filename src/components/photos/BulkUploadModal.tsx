@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Upload, ChevronLeft, Edit2 } from 'lucide-react'
 import { jobSites } from '../../data/mockData'
-import { extractDateFromFilename, addPhotos } from '../../services/photoStorage'
+import { extractDateFromFilename, addPhotos } from '../../services/photoDatabase'
 import type { Photo, PhotoCategory } from '../../types'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
