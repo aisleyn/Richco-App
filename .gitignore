@@ -1,3 +1,4 @@
 public/videos/
 dist/videos/
 dist/**/*.mp4
+scripts/photoMigration.js

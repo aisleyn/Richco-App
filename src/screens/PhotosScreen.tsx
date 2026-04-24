@@ -41,6 +41,17 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
     .filter(p => activeCategory === 'All' ? true : p.category === activeCategory)
     .sort((a, b) => b.timestamp - a.timestamp)
 
+  // Group photos by month
+  const photosByMonth = filtered.reduce((acc, photo) => {
+    const date = new Date(photo.timestamp)
+    const monthKey = `${date.toLocaleString('en-US', { month: 'short', year: 'numeric' })}`
+    if (!acc[monthKey]) {
+      acc[monthKey] = []
+    }
+    acc[monthKey].push(photo)
+    return acc
+  }, {} as Record<string, Photo[]>)
+
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (f) setPendingPhoto(URL.createObjectURL(f))
@@ -198,9 +209,13 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             ))}
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-3 gap-0.5 mt-3">
-            {filtered.map((photo, i) => (
+          {/* Grid by month */}
+          <div className="mt-3 space-y-6">
+            {Object.entries(photosByMonth).map(([month, photos]) => (
+              <div key={month}>
+                <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">{month}</h3>
+                <div className="grid grid-cols-3 gap-0.5">
+                  {photos.map((photo, i) => (
               <motion.div
                 key={photo.id}
                 initial={{ opacity: 0 }}
@@ -242,7 +257,10 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                     <Edit2 size={12} className="text-slate-900" />
                   </button>
                 )}
-              </motion.div>
+                  </motion.div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
