@@ -1,10 +1,13 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Camera, X, ChevronLeft, AlertTriangle, CheckCircle, Upload } from 'lucide-react'
+import { Camera, X, ChevronLeft, AlertTriangle, CheckCircle, Upload, Edit2 } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { mockPhotos, jobSites } from '../data/mockData'
 import { format } from 'date-fns'
 import type { Photo, PhotoCategory } from '../types'
+import { getStoredPhotos } from '../services/photoStorage'
+import { BulkUploadModal } from '../components/photos/BulkUploadModal'
+import { EditPhotoModal } from '../components/photos/EditPhotoModal'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
 
@@ -12,17 +15,26 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
   const [activeSite, setActiveSite] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
   const [showUpload, setShowUpload] = useState(false)
+  const [showBulkUpload, setShowBulkUpload] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null)
   const [uploadCategory, setUploadCategory] = useState<PhotoCategory>('Site Conditions')
   const [uploadSite, setUploadSite] = useState(jobSites[0].id)
   const [caption, setCaption] = useState('')
+  const [allPhotos, setAllPhotos] = useState<Photo[]>([])
+  const [refresh, setRefresh] = useState(0)
 
-  const sites = jobSites.filter(s => mockPhotos.some(p => p.siteId === s.id))
+  useEffect(() => {
+    const stored = getStoredPhotos()
+    setAllPhotos([...stored, ...mockPhotos])
+  }, [refresh])
+
+  const sites = jobSites.filter(s => allPhotos.some(p => p.siteId === s.id))
   const currentSite = sites.find(s => s.id === activeSite)
 
-  const filtered = mockPhotos
+  const filtered = allPhotos
     .filter(p => activeSite ? p.siteId === activeSite : true)
     .filter(p => activeCategory === 'All' ? true : p.category === activeCategory)
     .sort((a, b) => b.timestamp - a.timestamp)
@@ -47,12 +59,23 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               {activeSite ? `${filtered.length} photos` : `${sites.length} active projects`}
             </p>
           </div>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex items-center gap-1.5 bg-brand-amber px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold"
-          >
-            <Camera size={15} /> Submit
-          </button>
+          <div className="flex gap-2">
+            {activeSite && (
+              <button
+                onClick={() => setShowBulkUpload(true)}
+                className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
+                title="Bulk upload photos"
+              >
+                <Upload size={15} />
+              </button>
+            )}
+            <button
+              onClick={() => setShowUpload(true)}
+              className="flex items-center gap-1.5 bg-brand-amber px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold"
+            >
+              <Camera size={15} /> Submit
+            </button>
+          </div>
         </div>
       </div>
 
@@ -115,26 +138,41 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
           {/* Grid */}
           <div className="grid grid-cols-3 gap-0.5 mt-3">
             {filtered.map((photo, i) => (
-              <motion.button
+              <motion.div
                 key={photo.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => setSelectedPhoto(photo)}
                 className="aspect-square relative overflow-hidden group"
               >
-                <img src={photo.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                {/* AI flag */}
-                {photo.aiFlags && photo.aiFlags.length > 0 && (
-                  <div className="absolute top-1 left-1 bg-amber-500/90 rounded-md p-0.5">
-                    <AlertTriangle size={10} className="text-slate-800" />
+                <button
+                  onClick={() => setSelectedPhoto(photo)}
+                  className="w-full h-full"
+                >
+                  <img src={photo.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                  {/* AI flag */}
+                  {photo.aiFlags && photo.aiFlags.length > 0 && (
+                    <div className="absolute top-1 left-1 bg-amber-500/90 rounded-md p-0.5">
+                      <AlertTriangle size={10} className="text-slate-800" />
+                    </div>
+                  )}
+                  {/* Category chip */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 group-active:opacity-100 transition-opacity">
+                    <p className="text-slate-800 text-[9px]">{photo.category}</p>
                   </div>
-                )}
-                {/* Category chip */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 group-active:opacity-100 transition-opacity">
-                  <p className="text-slate-800 text-[9px]">{photo.category}</p>
-                </div>
-              </motion.button>
+                </button>
+                {/* Edit button */}
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    setEditingPhoto(photo)
+                  }}
+                  className="absolute top-1 right-1 bg-brand-amber/90 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Edit photo"
+                >
+                  <Edit2 size={12} className="text-slate-900" />
+                </button>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -266,6 +304,29 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit photo modal */}
+      <AnimatePresence>
+        {editingPhoto && (
+          <EditPhotoModal
+            photo={editingPhoto}
+            onClose={() => setEditingPhoto(null)}
+            onUpdated={() => setRefresh(prev => prev + 1)}
+            onDeleted={() => setRefresh(prev => prev + 1)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Bulk upload modal */}
+      <AnimatePresence>
+        {showBulkUpload && activeSite && (
+          <BulkUploadModal
+            siteId={activeSite}
+            onClose={() => setShowBulkUpload(false)}
+            onPhotosAdded={() => setRefresh(prev => prev + 1)}
+          />
         )}
       </AnimatePresence>
     </AppLayout>
