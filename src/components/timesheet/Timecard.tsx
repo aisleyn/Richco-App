@@ -34,7 +34,9 @@ export function TimecardList({ isAdmin = false, onEditTimecard }: TimecardListPr
 
   useEffect(() => {
     const cards = getLocalTimecards()
-    setTimecards(cards)
+    const today = new Date().toISOString().split('T')[0]
+    const todayCards = cards.filter(tc => tc.date === today)
+    setTimecards(todayCards)
 
     const handleStorageChange = () => {
       setTimecards(getLocalTimecards())
@@ -89,7 +91,7 @@ export function TimecardList({ isAdmin = false, onEditTimecard }: TimecardListPr
             <div className="flex items-center gap-4 text-xs text-slate-500 mb-3">
               <span>{fmt(tc.clockInTime)} – {tc.clockOutTime ? fmt(tc.clockOutTime) : '--'}</span>
               {tc.breakTaken
-                ? <span className="text-emerald-500/60">Break ✓</span>
+                ? <span className="text-emerald-500/60">Break ✓ {tc.breakMinutes}m</span>
                 : <span className="text-red-400">No Break</span>
               }
               {tc.overtimeHours && tc.overtimeHours > 0 && (

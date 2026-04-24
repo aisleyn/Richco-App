@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { X, Loader } from 'lucide-react'
 import { getAllCrew } from '../../services/crew'
+import { jobSites } from '../../data/mockData'
 import type { TimesheetEntry } from '../../types'
 
 interface Props {
@@ -191,15 +192,18 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
 
           <div>
             <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
-              Site Name
+              Site
             </label>
-            <input
-              type="text"
+            <select
               value={formData.siteName}
               onChange={e => setFormData({ ...formData, siteName: e.target.value })}
-              placeholder="e.g., Grandview Heights Phase 3"
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-brand-amber"
-            />
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-brand-amber"
+            >
+              <option value="">Select a site...</option>
+              {jobSites.map(site => (
+                <option key={site.id} value={site.name}>{site.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>
