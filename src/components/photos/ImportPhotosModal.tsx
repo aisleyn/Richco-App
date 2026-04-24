@@ -61,7 +61,7 @@ export function ImportPhotosModal({ siteId, siteName, onClose, onPhotosAdded }: 
         })
       }
 
-      addPhotos(photos)
+      await addPhotos(photos)
       onPhotosAdded()
       onClose()
     } catch (err) {

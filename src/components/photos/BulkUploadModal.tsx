@@ -92,7 +92,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
         caption: pp.caption,
       }))
 
-      addPhotos(photosToAdd)
+      await addPhotos(photosToAdd)
       setPendingPhotos([])
       setEditingIndex(null)
       onPhotosAdded()
