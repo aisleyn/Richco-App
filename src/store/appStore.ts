@@ -4,6 +4,7 @@ import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
 import { mockAlerts, mockMessages, currentUser } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
 import { createTimeEntry, updateTimeEntry, getMandatoryBreakHours } from '../services/dataverse'
+import { generateLeaveRequestAlerts } from '../services/timeoff'
 
 interface AppState {
   // Authentication
@@ -47,6 +48,7 @@ interface AppState {
   markAlertRead: (id: string) => void
   markAllAlertsRead: () => void
   addAlert: (alert: Alert) => void
+  refreshLeaveRequestAlerts: () => void
 
   // Navigation
   setActiveScreen: (screen: string) => void
@@ -82,8 +84,8 @@ export const useAppStore = create<AppState>()(
       activeTimesheetId: null,
       activeSheetEntry: null,
       currentShiftIsOvernight: false,
-      alerts: mockAlerts,
-      unreadAlertCount: mockAlerts.filter(a => !a.read).length,
+      alerts: [...mockAlerts, ...generateLeaveRequestAlerts()] as Alert[],
+      unreadAlertCount: [...mockAlerts, ...generateLeaveRequestAlerts()].filter(a => !a.read).length,
       unreadMessageCount: 4,
       crewMessages: mockMessages,
       crewActiveThread: null,
@@ -154,6 +156,36 @@ export const useAppStore = create<AppState>()(
         const paidHours = Math.max(0, rawHours - mandatoryBreak)
         const regularHours = Math.min(paidHours, 8)
         const overtimeHours = Math.max(0, paidHours - 8)
+
+        // Save completed timecard to localStorage
+        const completedTimecard: TimesheetEntry = {
+          id: activeTimesheetId ?? `ts-${now}`,
+          date: new Date(clockInTime ?? now).toISOString().split('T')[0],
+          siteName: data.siteName ?? '',
+          siteId: data.siteId ?? '',
+          clockInTime: clockInTime ?? now,
+          clockOutTime: now,
+          breakMinutes: Math.round(breakDurationMs / 60000),
+          totalHours: parseFloat(rawHours.toFixed(2)),
+          overtimeHours: parseFloat(overtimeHours.toFixed(2)),
+          status: 'complete',
+          breakTaken: (data.breakTaken ?? false) || breakDurationMs > 0,
+          shiftSummary: data.shiftSummary,
+          concerns: data.concerns,
+          vehicleUsed: data.vehicleUsed,
+          photos: data.photos,
+          gpsIn: data.gpsIn,
+        }
+
+        try {
+          const existing = localStorage.getItem('richco-completed-timecards')
+          const timecards: TimesheetEntry[] = existing ? JSON.parse(existing) : []
+          timecards.unshift(completedTimecard) // Add to front (most recent first)
+          localStorage.setItem('richco-completed-timecards', JSON.stringify(timecards.slice(0, 30))) // Keep last 30
+          console.log('[Store] Saved timecard to localStorage:', completedTimecard)
+        } catch (err) {
+          console.error('[Store] Failed to save timecard to localStorage:', err)
+        }
 
         // Update Dataverse entry with final data
         if (activeTimesheetId) {
@@ -265,6 +297,19 @@ export const useAppStore = create<AppState>()(
           alerts: [alert, ...state.alerts],
           unreadAlertCount: state.unreadAlertCount + 1,
         }))
+      },
+
+      refreshLeaveRequestAlerts: () => {
+        set(state => {
+          const leaveAlerts = generateLeaveRequestAlerts()
+          // Remove old leave request alerts and add new ones
+          const nonLeaveAlerts = state.alerts.filter(a => a.type !== 'leave_request')
+          const updatedAlerts = [...leaveAlerts, ...nonLeaveAlerts]
+          return {
+            alerts: updatedAlerts,
+            unreadAlertCount: updatedAlerts.filter(a => !a.read).length,
+          }
+        })
       },
 
       setActiveScreen: (screen) => set({ activeScreen: screen }),

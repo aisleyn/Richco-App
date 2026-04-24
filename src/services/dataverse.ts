@@ -205,6 +205,22 @@ export async function updateTimeEntry(entryId: string, data: Partial<DataverseTi
   }
 }
 
+// ─── Time Entries (fetch recent) ──────────────────────────────────────
+
+export async function fetchRecentTimeEntries(employeeEmail: string, limit: number = 10): Promise<DataverseTimeEntry[]> {
+  try {
+    const res = (await apiCall(
+      'GET',
+      `/tables/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'complete'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockin,craa5_clockout,craa5_totalhours,craa5_breakduration,craa5_status,richco_shiftsummary,richco_concerns,richco_geofenceflag,richco_gpslat,richco_gpslng,richco_gpsaddress&$orderby=craa5_clockout desc&$top=${limit}`
+    )) as any
+    console.log('[Dataverse] Fetched recent time entries:', res?.value)
+    return res?.value || []
+  } catch (err) {
+    console.error('Failed to fetch recent time entries:', err)
+    return []
+  }
+}
+
 // ─── Helper: Determine if shift is overnight ───────────────────────────────
 
 export function isOvernightShift(startTime: string, endTime: string): boolean {

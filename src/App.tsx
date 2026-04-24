@@ -11,6 +11,7 @@ import { AIHelpScreen } from './screens/AIHelpScreen'
 import { getCurrentUser } from './services/auth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
+import { initializeCrew, ensureCrewMemberExists, setAdminStatus } from './services/crew'
 
 type ScreenProps = { onNavigate: (s: string) => void }
 
@@ -27,6 +28,14 @@ export default function App() {
       const user = await getCurrentUser()
       if (user) {
         initializeUser(user.displayName, user.mail, user.id)
+        // Initialize crew system and ensure user is in crew list
+        initializeCrew()
+        const nameParts = user.displayName.split(' ')
+        ensureCrewMemberExists(user.mail, nameParts[0], nameParts.slice(1).join(' ') || 'User')
+        // Set Aisley as admin
+        if (user.mail === 'aisley@richcogroup.com') {
+          setAdminStatus(user.mail, true)
+        }
         setAuthenticated(true)
       }
       setChecking(false)
@@ -52,13 +61,13 @@ export default function App() {
 
   const renderScreen = () => {
     switch (active) {
-      case 'home':    return <HomeScreen onNavigate={setActive} />
-      case 'time':    return <TimesheetScreen onNavigate={setActive} />
-      case 'photos':  return <PhotosScreen onNavigate={setActive} />
-      case 'alerts':  return <AlertsScreen onNavigate={setActive} />
-      case 'crew':    return <CrewScreen onNavigate={setActive} />
-      case 'ai':      return <AIHelpScreen onNavigate={setActive} />
-      default:        return <HomeScreen onNavigate={setActive} />
+      case 'home':   return <HomeScreen onNavigate={setActive} />
+      case 'time':   return <TimesheetScreen onNavigate={setActive} />
+      case 'photos': return <PhotosScreen onNavigate={setActive} />
+      case 'alerts': return <AlertsScreen onNavigate={setActive} />
+      case 'crew':   return <CrewScreen onNavigate={setActive} />
+      case 'ai':     return <AIHelpScreen onNavigate={setActive} />
+      default:       return <HomeScreen onNavigate={setActive} />
     }
   }
 

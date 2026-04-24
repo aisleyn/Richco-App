@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { MapPin, Clock } from 'lucide-react'
-import { jobSites, tomorrowShift } from '../../data/mockData'
+import { MapPin } from 'lucide-react'
+import { jobSites } from '../../data/mockData'
 
 export function SiteCards() {
   return (
@@ -35,25 +35,6 @@ export function SiteCards() {
             </div>
           </motion.div>
         ))}
-
-        {/* Tomorrow's shift */}
-        <motion.div
-          initial={{ opacity: 0, x: -12 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.21 }}
-          className="bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3"
-        >
-          <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-slate-600" />
-          <div className="flex-1 min-w-0">
-            <p className="text-slate-300 text-sm font-medium truncate">{tomorrowShift.siteName}</p>
-            <p className="text-slate-500 text-xs flex items-center gap-1 mt-0.5">
-              <Clock size={10} /> Tomorrow · {tomorrowShift.startTime} – {tomorrowShift.endTime}
-            </p>
-          </div>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-700 text-slate-400 shrink-0">
-            Tomorrow
-          </span>
-        </motion.div>
       </div>
     </div>
   )

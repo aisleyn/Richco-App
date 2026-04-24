@@ -90,13 +90,19 @@ export interface DailyForecast {
 
 export interface Alert {
   id: string
-  type: 'urgent' | 'ceo' | 'weather' | 'general' | 'schedule' | 'vendor' | 'timesheet' | 'certification'
+  type: 'urgent' | 'ceo' | 'weather' | 'general' | 'schedule' | 'vendor' | 'timesheet' | 'certification' | 'leave_request'
   title: string
   body: string
   timestamp: number
   read: boolean
   author?: string
   targetRoles?: UserRole[]
+  leaveRequestId?: string
+  employeeName?: string
+  leaveType?: string
+  startDate?: string
+  endDate?: string
+  totalDays?: number
 }
 
 export interface CrewMember {
