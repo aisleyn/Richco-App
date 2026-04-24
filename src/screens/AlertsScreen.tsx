@@ -84,8 +84,8 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
       <div className="pt-14">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-slate-800 text-2xl font-bold">Alerts</h1>
-            <p className="text-slate-500 text-sm mt-0.5">
+            <h1 className="text-slate-800 text-xl md:text-2xl font-bold">Alerts</h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-0.5">
               {unreadAlertCount > 0 ? `${unreadAlertCount} unread` : 'All caught up'}
             </p>
           </div>

@@ -31,7 +31,7 @@ export function WeatherCard() {
       {/* Main card with video background */}
       <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-card relative">
         {/* Background video */}
-        <div className="absolute inset-0 w-full h-64">
+        <div className="absolute inset-0 w-full h-48 md:h-64">
           <video
             src={videoUrl}
             autoPlay
@@ -44,7 +44,7 @@ export function WeatherCard() {
         </div>
 
         {/* Content overlay */}
-        <div className="relative z-10 p-4 h-64 flex flex-col justify-between">
+        <div className="relative z-10 p-4 h-48 md:h-64 flex flex-col justify-between">
           {/* Top: Time of day label */}
           <div className="flex items-center justify-between">
             <span className="text-white/70 text-xs font-medium uppercase tracking-wider bg-black/40 px-3 py-1 rounded-full">
@@ -55,7 +55,7 @@ export function WeatherCard() {
           {/* Bottom: Temperature and condition */}
           <div>
             <div className="flex items-end gap-3 mb-2">
-              <span className="text-6xl font-light text-white drop-shadow-lg">{weather.temp}°</span>
+              <span className="text-4xl md:text-6xl font-light text-white drop-shadow-lg">{weather.temp}°</span>
               <div>
                 <p className="text-white font-semibold drop-shadow-lg">{weather.condition}</p>
                 <p className="text-white/80 text-sm drop-shadow-lg">Feels like {weather.feelsLike}°F</p>

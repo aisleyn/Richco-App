@@ -72,7 +72,7 @@ export default function App() {
   }
 
   return (
-    <div className="max-w-lg mx-auto relative min-h-screen bg-bg-base">
+    <div className="mx-auto relative min-h-screen bg-bg-base max-w-md lg:max-w-6xl">
       <AnimatePresence mode="wait">
         <motion.div
           key={active}
