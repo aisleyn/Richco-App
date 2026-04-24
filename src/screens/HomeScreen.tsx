@@ -58,8 +58,8 @@ export function HomeScreen({ onNavigate }: Props) {
       {/* Header */}
       <div className="pt-14 pb-2 flex items-start justify-between">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          <p className="text-slate-400 dark:text-slate-500 text-sm">{format(today, 'EEEE, MMMM d')}</p>
-          <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold mt-0.5">{greeting}</h1>
+          <p className="text-slate-400 dark:text-slate-500 text-xs md:text-sm">{format(today, 'EEEE, MMMM d')}</p>
+          <h1 className="text-slate-900 dark:text-slate-100 text-xl md:text-2xl font-bold mt-0.5">{greeting}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
         </motion.div>
         <div className="flex items-center gap-2 pt-1">
@@ -89,7 +89,7 @@ export function HomeScreen({ onNavigate }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="mt-4 grid grid-cols-3 gap-2"
+          className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2"
         >
           {[
             { label: 'On Site', value: '6', color: 'text-emerald-400' },

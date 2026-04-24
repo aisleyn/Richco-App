@@ -40,7 +40,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-800 text-2xl font-mono font-light tracking-widest">
+              <p className="text-slate-800 text-lg md:text-2xl font-mono font-light tracking-widest">
                 {formatElapsed(elapsed)}
               </p>
               {breakActive && (

@@ -126,7 +126,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
     <AppLayout noPad>
       <div className="pt-14 px-4 flex items-center justify-between">
         <div>
-          <h1 className="text-slate-800 text-2xl font-bold">AI Help</h1>
+          <h1 className="text-slate-800 text-xl md:text-2xl font-bold">AI Help</h1>
           <div className="flex items-center gap-1.5 mt-0.5">
             <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span className="text-emerald-400 text-xs">Online · Richco Knowledge Base</span>

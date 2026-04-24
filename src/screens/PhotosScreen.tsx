@@ -160,43 +160,45 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
 
       {!activeSite ? (
         /* Project gallery cards */
-        <div className="px-4 mt-5 space-y-3">
-          {sites.map((site, i) => {
-            const sitePhotos = allPhotos.filter(p => p.siteId === site.id)
-            const flagged = sitePhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
-            return (
-              <motion.button
-                key={site.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                onClick={() => setActiveSite(site.id)}
-                className="w-full text-left bg-bg-surface rounded-2xl border border-slate-200 overflow-hidden active:bg-bg-elevated transition-colors"
-              >
-                {/* Photo strip preview */}
-                <div className="flex h-24 gap-0.5 overflow-hidden">
-                  {sitePhotos.slice(0, 3).map((p, j) => (
-                    <div key={j} className="flex-1 overflow-hidden">
-                      <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                  {sitePhotos.length === 0 && <div className="flex-1 bg-bg-elevated flex items-center justify-center"><Camera size={24} className="text-slate-600" /></div>}
-                </div>
-                <div className="p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-800 font-semibold text-sm">{site.name}</p>
-                    <p className="text-slate-500 text-xs mt-0.5">{sitePhotos.length} photos</p>
+        <div className="px-4 mt-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sites.map((site, i) => {
+              const sitePhotos = allPhotos.filter(p => p.siteId === site.id)
+              const flagged = sitePhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
+              return (
+                <motion.button
+                  key={site.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  onClick={() => setActiveSite(site.id)}
+                  className="text-left bg-bg-surface rounded-2xl border border-slate-200 overflow-hidden active:bg-bg-elevated transition-colors"
+                >
+                  {/* Photo strip preview */}
+                  <div className="flex h-24 lg:h-32 gap-0.5 overflow-hidden">
+                    {sitePhotos.slice(0, 3).map((p, j) => (
+                      <div key={j} className="flex-1 overflow-hidden">
+                        <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                    {sitePhotos.length === 0 && <div className="flex-1 bg-bg-elevated flex items-center justify-center"><Camera size={24} className="text-slate-600" /></div>}
                   </div>
-                  {flagged > 0 && (
-                    <div className="flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-2.5 py-1.5">
-                      <AlertTriangle size={12} className="text-amber-400" />
-                      <span className="text-amber-400 text-xs font-medium">{flagged} flagged</span>
+                  <div className="p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-800 font-semibold text-sm">{site.name}</p>
+                      <p className="text-slate-500 text-xs mt-0.5">{sitePhotos.length} photos</p>
                     </div>
-                  )}
-                </div>
-              </motion.button>
-            )
-          })}
+                    {flagged > 0 && (
+                      <div className="flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-2.5 py-1.5">
+                        <AlertTriangle size={12} className="text-amber-400" />
+                        <span className="text-amber-400 text-xs font-medium">{flagged} flagged</span>
+                      </div>
+                    )}
+                  </div>
+                </motion.button>
+              )
+            })}
+          </div>
         </div>
       ) : (
         /* Photo gallery */
