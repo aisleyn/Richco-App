@@ -22,7 +22,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
   })
 
   const [employment, setEmployment] = useState({
-    role: member.role as const,
+    role: member.role,
     paymentType: (member.paymentType || 'hourly') as 'hourly' | 'salary',
     hourlyRate: member.hourlyRate || 0,
     salary: member.salary || 0,
