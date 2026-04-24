@@ -31,7 +31,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
     setAllPhotos([...stored, ...mockPhotos])
   }, [refresh])
 
-  const sites = jobSites.filter(s => allPhotos.some(p => p.siteId === s.id))
+  const sites = jobSites.filter(s => s.status === 'active')
   const currentSite = sites.find(s => s.id === activeSite)
 
   const filtered = allPhotos
@@ -83,7 +83,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
         /* Project gallery cards */
         <div className="px-4 mt-5 space-y-3">
           {sites.map((site, i) => {
-            const sitePhotos = mockPhotos.filter(p => p.siteId === site.id)
+            const sitePhotos = allPhotos.filter(p => p.siteId === site.id)
             const flagged = sitePhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
             return (
               <motion.button

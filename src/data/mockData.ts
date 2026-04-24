@@ -21,6 +21,15 @@ export const jobSites: JobSite[] = [
     status: 'active',
   },
   {
+    id: 'office-warehouse',
+    name: 'Richco Office Warehouse',
+    address: 'Richco Office Warehouse',
+    lat: 49.1234,
+    lng: -122.7654,
+    geofenceRadius: 100,
+    status: 'active',
+  },
+  {
     id: 'mels-phase2',
     name: 'Mel\'s Service Yard - Phase 2 (Universal)',
     address: 'Universal',
