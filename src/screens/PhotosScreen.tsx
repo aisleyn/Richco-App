@@ -8,6 +8,7 @@ import type { Photo, PhotoCategory } from '../types'
 import { getStoredPhotos, deletePhoto } from '../services/photoStorage'
 import { BulkUploadModal } from '../components/photos/BulkUploadModal'
 import { EditPhotoModal } from '../components/photos/EditPhotoModal'
+import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
 
@@ -20,6 +21,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
   const [deleteMode, setDeleteMode] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null)
   const [uploadCategory, setUploadCategory] = useState<PhotoCategory>('Site Conditions')
@@ -101,13 +103,22 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
           </div>
           <div className="flex gap-2">
             {activeSite && !deleteMode && (
-              <button
-                onClick={() => setShowBulkUpload(true)}
-                className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
-                title="Bulk upload photos"
-              >
-                <Upload size={15} />
-              </button>
+              <>
+                <button
+                  onClick={() => setShowImport(true)}
+                  className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
+                  title="Import from folder"
+                >
+                  <Upload size={15} /> Import
+                </button>
+                <button
+                  onClick={() => setShowBulkUpload(true)}
+                  className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
+                  title="Bulk upload photos"
+                >
+                  <Upload size={15} />
+                </button>
+              </>
             )}
             {activeSite && !deleteMode && (
               <button
@@ -403,6 +414,18 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             onClose={() => setEditingPhoto(null)}
             onUpdated={() => setRefresh(prev => prev + 1)}
             onDeleted={() => setRefresh(prev => prev + 1)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Import modal */}
+      <AnimatePresence>
+        {showImport && activeSite && (
+          <ImportPhotosModal
+            siteId={activeSite}
+            siteName={currentSite?.name || 'Project'}
+            onClose={() => setShowImport(false)}
+            onPhotosAdded={() => setRefresh(prev => prev + 1)}
           />
         )}
       </AnimatePresence>
