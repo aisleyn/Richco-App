@@ -13,6 +13,7 @@ const typeConfig = {
   vendor: { color: 'border-l-teal-500', dot: 'bg-teal-500', icon: Info, iconColor: 'text-teal-400' },
   timesheet: { color: 'border-l-orange-500', dot: 'bg-orange-500', icon: AlertTriangle, iconColor: 'text-orange-400' },
   certification: { color: 'border-l-pink-500', dot: 'bg-pink-500', icon: AlertTriangle, iconColor: 'text-pink-400' },
+  leave_request: { color: 'border-l-emerald-500', dot: 'bg-emerald-500', icon: CalendarDays, iconColor: 'text-emerald-400' },
 }
 
 interface Props {

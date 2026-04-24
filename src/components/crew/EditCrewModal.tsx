@@ -18,7 +18,7 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
     firstName: member.firstName,
     lastName: member.lastName,
     phone: member.phone,
-    role: member.role as const,
+    role: member.role,
     isAdmin: member.isAdmin,
   })
 
