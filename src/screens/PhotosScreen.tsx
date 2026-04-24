@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Camera, X, ChevronLeft, AlertTriangle, CheckCircle, Upload, Edit2 } from 'lucide-react'
+import { Camera, X, ChevronLeft, AlertTriangle, CheckCircle, Upload, Edit2, Trash2 } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { mockPhotos, jobSites } from '../data/mockData'
 import { format } from 'date-fns'
 import type { Photo, PhotoCategory } from '../types'
-import { getStoredPhotos } from '../services/photoStorage'
+import { getStoredPhotos, deletePhoto } from '../services/photoStorage'
 import { BulkUploadModal } from '../components/photos/BulkUploadModal'
 import { EditPhotoModal } from '../components/photos/EditPhotoModal'
 
@@ -16,6 +16,8 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
+  const [selectedForDelete, setSelectedForDelete] = useState<Set<string>>(new Set())
+  const [deleteMode, setDeleteMode] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -44,6 +46,33 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
     if (f) setPendingPhoto(URL.createObjectURL(f))
   }
 
+  function togglePhotoSelect(photoId: string) {
+    const updated = new Set(selectedForDelete)
+    if (updated.has(photoId)) {
+      updated.delete(photoId)
+    } else {
+      updated.add(photoId)
+    }
+    setSelectedForDelete(updated)
+  }
+
+  function selectAllPhotos() {
+    setSelectedForDelete(new Set(filtered.map(p => p.id)))
+  }
+
+  function clearSelection() {
+    setSelectedForDelete(new Set())
+  }
+
+  function handleBulkDelete() {
+    selectedForDelete.forEach(id => {
+      deletePhoto(id)
+    })
+    setSelectedForDelete(new Set())
+    setDeleteMode(false)
+    setRefresh(prev => prev + 1)
+  }
+
   return (
     <AppLayout noPad>
       <div className="pt-14 px-4">
@@ -60,7 +89,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             </p>
           </div>
           <div className="flex gap-2">
-            {activeSite && (
+            {activeSite && !deleteMode && (
               <button
                 onClick={() => setShowBulkUpload(true)}
                 className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
@@ -69,12 +98,46 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 <Upload size={15} />
               </button>
             )}
-            <button
-              onClick={() => setShowUpload(true)}
-              className="flex items-center gap-1.5 bg-brand-amber px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold"
-            >
-              <Camera size={15} /> Submit
-            </button>
+            {activeSite && !deleteMode && (
+              <button
+                onClick={() => setDeleteMode(true)}
+                className="flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-xl text-red-500 text-sm font-semibold transition-colors"
+                title="Delete photos"
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
+            {deleteMode && (
+              <>
+                <button
+                  onClick={clearSelection}
+                  className="flex items-center gap-1.5 bg-bg-surface border border-slate-200 px-3 py-2 rounded-xl text-slate-800 text-sm font-semibold hover:bg-bg-elevated transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={selectAllPhotos}
+                  className="flex items-center gap-1.5 bg-brand-amber hover:bg-amber-500 px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold transition-colors"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={selectedForDelete.size === 0}
+                  className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 px-3 py-2 rounded-xl text-white text-sm font-semibold transition-colors"
+                >
+                  Delete {selectedForDelete.size}
+                </button>
+              </>
+            )}
+            {!deleteMode && (
+              <button
+                onClick={() => setShowUpload(true)}
+                className="flex items-center gap-1.5 bg-brand-amber px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold"
+              >
+                <Camera size={15} /> Submit
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -146,8 +209,8 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 className="aspect-square relative overflow-hidden group"
               >
                 <button
-                  onClick={() => setSelectedPhoto(photo)}
-                  className="w-full h-full"
+                  onClick={() => deleteMode ? togglePhotoSelect(photo.id) : setSelectedPhoto(photo)}
+                  className={`w-full h-full ${deleteMode && selectedForDelete.has(photo.id) ? 'ring-2 ring-red-500' : ''}`}
                 >
                   <img src={photo.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                   {/* AI flag */}
@@ -161,17 +224,24 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                     <p className="text-slate-800 text-[9px]">{photo.category}</p>
                   </div>
                 </button>
-                {/* Edit button */}
-                <button
-                  onClick={e => {
-                    e.stopPropagation()
-                    setEditingPhoto(photo)
-                  }}
-                  className="absolute top-1 right-1 bg-brand-amber/90 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Edit photo"
-                >
-                  <Edit2 size={12} className="text-slate-900" />
-                </button>
+                {deleteMode ? (
+                  <div className="absolute top-1 right-1 bg-red-500 rounded-md p-0.5">
+                    <div className={`w-4 h-4 rounded border-2 border-white flex items-center justify-center ${selectedForDelete.has(photo.id) ? 'bg-red-500' : ''}`}>
+                      {selectedForDelete.has(photo.id) && <span className="text-white text-xs">✓</span>}
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      setEditingPhoto(photo)
+                    }}
+                    className="absolute top-1 right-1 bg-brand-amber/90 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Edit photo"
+                  >
+                    <Edit2 size={12} className="text-slate-900" />
+                  </button>
+                )}
               </motion.div>
             ))}
           </div>
