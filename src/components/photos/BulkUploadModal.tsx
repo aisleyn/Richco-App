@@ -34,22 +34,29 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
   function handleFiles(files: FileList | null) {
     if (!files) return
     const newPhotos: PendingPhoto[] = []
+    let processed = 0
 
     Array.from(files).forEach(file => {
       if (file.type.startsWith('image/')) {
-        const preview = URL.createObjectURL(file)
-        const timestamp = extractDateFromFilename(file.name)
-        newPhotos.push({
-          file,
-          preview,
-          category: 'Site Conditions',
-          caption: '',
-          timestamp,
-        })
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const preview = e.target?.result as string
+          const timestamp = extractDateFromFilename(file.name)
+          newPhotos.push({
+            file,
+            preview,
+            category: 'Site Conditions',
+            caption: '',
+            timestamp,
+          })
+          processed++
+          if (processed === Array.from(files).filter(f => f.type.startsWith('image/')).length) {
+            setPendingPhotos([...pendingPhotos, ...newPhotos])
+          }
+        }
+        reader.readAsDataURL(file)
       }
     })
-
-    setPendingPhotos([...pendingPhotos, ...newPhotos])
   }
 
   function handleDrag(e: React.DragEvent) {
