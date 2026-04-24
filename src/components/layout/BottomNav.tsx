@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Home, Clock, Camera, Bell, Users, Bot } from 'lucide-react'
+import { Home, Clock, Calendar, Camera, Bell, Users, Bot } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 
 const tabs = [

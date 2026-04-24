@@ -6,6 +6,8 @@ import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
 import type { Alert } from '../types'
 import { currentUser } from '../data/mockData'
+import { approveRequest, denyRequest, getRequestById } from '../services/timeoff'
+import { isUserAdmin, getAllCrew } from '../services/crew'
 
 const typeConfig: Record<string, { color: string; border: string; icon: typeof Info; iconColor: string; label: string }> = {
   urgent:      { color: 'border-l-red-500',    border: 'border-red-500/20',    icon: AlertTriangle, iconColor: 'text-red-400',    label: 'Urgent' },
@@ -16,6 +18,7 @@ const typeConfig: Record<string, { color: string; border: string; icon: typeof I
   vendor:      { color: 'border-l-teal-500',   border: 'border-teal-500/20',   icon: Truck,         iconColor: 'text-teal-400',   label: 'Vendor' },
   timesheet:   { color: 'border-l-orange-500', border: 'border-orange-500/20', icon: Clock,         iconColor: 'text-orange-400', label: 'Timesheet' },
   certification:{ color: 'border-l-pink-500',  border: 'border-pink-500/20',   icon: Award,         iconColor: 'text-pink-400',   label: 'Certification' },
+  leave_request:{ color: 'border-l-emerald-500', border: 'border-emerald-500/20', icon: CalendarDays, iconColor: 'text-emerald-400', label: 'Leave Request' },
 }
 
 const isSupervisor = currentUser.role === 'supervisor' || currentUser.role === 'ceo' || currentUser.role === 'admin'
@@ -24,11 +27,18 @@ type PostType = 'urgent' | 'general' | 'weather' | 'schedule' | 'vendor' | 'ceo'
 
 export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
   const { alerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert } = useAppStore()
+  const { currentUserEmail } = useAppStore()
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showCompose, setShowCompose] = useState(false)
   const [postType, setPostType] = useState<PostType>('general')
   const [postTitle, setPostTitle] = useState('')
   const [postBody, setPostBody] = useState('')
+  const [denyingAlertId, setDenyingAlertId] = useState<string | null>(null)
+  const [denialReason, setDenialReason] = useState('')
+
+  const isAdmin = isUserAdmin(currentUserEmail)
+  const isCEO = getAllCrew().find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+  const canApprove = isAdmin || isCEO
 
   function handleExpand(alert: Alert) {
     setExpanded(expanded === alert.id ? null : alert.id)
@@ -49,6 +59,24 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
     setPostTitle('')
     setPostBody('')
     setShowCompose(false)
+  }
+
+  function handleApproveLeave(alert: Alert) {
+    if (alert.leaveRequestId) {
+      approveRequest(alert.leaveRequestId, currentUser.firstName + ' ' + currentUser.lastName)
+      markAlertRead(alert.id)
+      setExpanded(null)
+    }
+  }
+
+  function handleDenyLeave(alert: Alert) {
+    if (alert.leaveRequestId && denialReason.trim()) {
+      denyRequest(alert.leaveRequestId, denialReason)
+      markAlertRead(alert.id)
+      setDenyingAlertId(null)
+      setDenialReason('')
+      setExpanded(null)
+    }
   }
 
   return (
@@ -126,6 +154,57 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                         <p className="text-slate-300 text-sm leading-relaxed mt-3">{alert.body}</p>
                         {alert.author && (
                           <p className="text-slate-500 text-xs mt-3">— {alert.author}</p>
+                        )}
+
+                        {alert.type === 'leave_request' && canApprove && (
+                          <div className="mt-4 space-y-2">
+                            {denyingAlertId === alert.id ? (
+                              <>
+                                <textarea
+                                  value={denialReason}
+                                  onChange={e => setDenialReason(e.target.value)}
+                                  placeholder="Reason for denial..."
+                                  className="w-full bg-bg-elevated border border-red-500/20 rounded-lg px-3 py-2 text-slate-800 text-sm resize-none"
+                                  rows={2}
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      handleDenyLeave(alert)
+                                    }}
+                                    disabled={!denialReason.trim()}
+                                    className="flex-1 px-3 py-2 bg-red-500 disabled:opacity-40 text-white text-xs font-semibold rounded-lg transition-colors"
+                                  >
+                                    Confirm Denial
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setDenyingAlertId(null)
+                                      setDenialReason('')
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleApproveLeave(alert)}
+                                  className="flex-1 px-3 py-2 bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors hover:bg-emerald-600"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => setDenyingAlertId(alert.id)}
+                                  className="flex-1 px-3 py-2 bg-red-500/20 text-red-400 text-xs font-semibold rounded-lg transition-colors hover:bg-red-500/30"
+                                >
+                                  Deny
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </motion.div>

@@ -1,12 +1,18 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Clock, TrendingUp, Calendar } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Clock, TrendingUp, Calendar, Plus } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { ClockInCard } from '../components/home/ClockInCard'
 import { ClockOutModal } from '../components/timesheet/ClockOutModal'
 import { TimecardList } from '../components/timesheet/Timecard'
+import { TimeOffCard } from '../components/timesheet/TimeOffCard'
+import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
+import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
+import { isUserAdmin } from '../services/crew'
+import { jobSites } from '../data/mockData'
+import type { TimesheetEntry } from '../types'
 
 const weekStats = { today: 0, week: 34.93, remaining: 5.07, overtimeWeek: 2.73, month: 134.18 }
 
@@ -15,13 +21,38 @@ interface Props {
 }
 
 export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
-  const { clockedIn, clockIn, clockInTime } = useAppStore()
+  const { clockedIn, clockIn, clockInTime, currentUserEmail } = useAppStore()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null)
   const [showClockOut, setShowClockOut] = useState(false)
+  const [showManualTimecard, setShowManualTimecard] = useState(false)
+  const [editingTimecard, setEditingTimecard] = useState<TimesheetEntry | null>(null)
+  const [timecardRefresh, setTimecardRefresh] = useState(0)
+  const isAdmin = isUserAdmin(currentUserEmail)
   const hours = elapsed / 3600000
 
+  function handleSaveEditedTimecard(timecard: TimesheetEntry) {
+    try {
+      const stored = localStorage.getItem('richco-completed-timecards')
+      const timecards = stored ? JSON.parse(stored) : []
+      const idx = timecards.findIndex((t: TimesheetEntry) => t.id === timecard.id)
+      if (idx >= 0) {
+        timecards[idx] = timecard
+        localStorage.setItem('richco-completed-timecards', JSON.stringify(timecards))
+        setTimecardRefresh(prev => prev + 1)
+      }
+    } catch (err) {
+      console.error('[Timecard] Failed to update timecard:', err)
+    }
+    setEditingTimecard(null)
+  }
+
   function handleClockIn(isOvernight: boolean) {
-    clockIn('site1', 'Grandview Heights Phase 3', isOvernight, { lat: 49.1234, lng: -122.7654, address: '18955 Fraser Hwy, Surrey, BC' })
+    // Admins default to Office, others default to first active site
+    const defaultSite = isAdmin ? jobSites.find(s => s.id === 'office') : jobSites.find(s => s.status === 'active' && s.id !== 'office')
+    const siteId = defaultSite?.id ?? 'office'
+    const siteName = defaultSite?.name ?? 'Office'
+    const gps = defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: 'Richco Office' }
+    clockIn(siteId, siteName, isOvernight, gps)
   }
 
   const todayHours = clockedIn ? hours : 0
@@ -116,14 +147,44 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
         </motion.div>
 
         {/* Timecards */}
-        <div className="mt-6">
-          <TimecardList />
+        <div className="mt-6 flex items-center justify-between mb-3">
+          <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Recent Timecards</h3>
+          {isAdmin && (
+            <button
+              onClick={() => setShowManualTimecard(true)}
+              className="text-brand-amber hover:text-amber-500 flex items-center gap-1 text-xs font-semibold transition-colors"
+            >
+              <Plus size={12} /> Manual
+            </button>
+          )}
         </div>
+        <div className="mt-0">
+          <TimecardList key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} />
+        </div>
+
+        {/* Time Off Card */}
+        <TimeOffCard />
       </div>
 
       {showClockOut && (
         <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => setShowClockOut(false)} />
       )}
+
+      <AnimatePresence>
+        {showManualTimecard && (
+          <ManualTimecardModal
+            onClose={() => setShowManualTimecard(false)}
+            onTimecardCreated={() => setTimecardRefresh(prev => prev + 1)}
+          />
+        )}
+        {editingTimecard && (
+          <EditTimecardModal
+            timecard={editingTimecard}
+            onClose={() => setEditingTimecard(null)}
+            onSave={handleSaveEditedTimecard}
+          />
+        )}
+      </AnimatePresence>
     </AppLayout>
   )
 }

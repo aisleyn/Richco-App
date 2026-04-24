@@ -133,26 +133,6 @@ export function HomeScreen({ onNavigate }: Props) {
           />
         </motion.div>
 
-        {/* Messages bar */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-          <button
-            onClick={() => onNavigate('crew')}
-            className="w-full bg-bg-surface rounded-2xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
-          >
-            <div className="w-9 h-9 rounded-full bg-brand-amber/15 flex items-center justify-center shrink-0">
-              <MessageSquare size={16} className="text-brand-amber" />
-            </div>
-            <div className="flex-1 text-left min-w-0">
-              <p className="text-slate-400 text-xs">Tyler Nash</p>
-              <p className="text-slate-800 text-sm truncate">Roger that, on my way to Zone A now</p>
-            </div>
-            {unreadMessageCount > 0 && (
-              <span className="bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
-                {unreadMessageCount}
-              </span>
-            )}
-          </button>
-        </motion.div>
       </div>
 
       {/* Clock out modal */}

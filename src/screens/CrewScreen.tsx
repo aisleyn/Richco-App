@@ -1,23 +1,66 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronLeft, Send, X, Users } from 'lucide-react'
+import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
-import { mockCrew, mockThreads, mockMessages, currentUser } from '../data/mockData'
+import { currentUser } from '../data/mockData'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
-import type { CrewMember, MessageThread, Message } from '../types'
+import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
+import { AddCrewModal } from '../components/crew/AddCrewModal'
+import { EditCrewModal } from '../components/crew/EditCrewModal'
+import { EmployeeProfileSheet } from '../components/crew/EmployeeProfileSheet'
+import type { Message } from '../types'
+import type { StoredCrewMember } from '../services/crew'
+
+const CREW_MESSAGES_KEY = 'richco-crew-messages'
+
+function getThreadId(userId1: string, userId2: string): string {
+  return [userId1, userId2].sort().join('-')
+}
+
+function getThreadMessages(threadId: string): Message[] {
+  try {
+    const stored = localStorage.getItem(CREW_MESSAGES_KEY)
+    const allMessages = stored ? JSON.parse(stored) : {}
+    return allMessages[threadId] ?? []
+  } catch {
+    return []
+  }
+}
+
+function saveThreadMessage(threadId: string, message: Message) {
+  try {
+    const stored = localStorage.getItem(CREW_MESSAGES_KEY)
+    const allMessages = stored ? JSON.parse(stored) : {}
+    if (!allMessages[threadId]) {
+      allMessages[threadId] = []
+    }
+    allMessages[threadId].push(message)
+    localStorage.setItem(CREW_MESSAGES_KEY, JSON.stringify(allMessages))
+  } catch (err) {
+    console.error('[Messages] Failed to save message:', err)
+  }
+}
 
 const statusConfig = {
+  online:    { label: 'Online',    color: 'bg-emerald-400', text: 'text-emerald-400' },
   onsite:    { label: 'On Site',   color: 'bg-emerald-400', text: 'text-emerald-400' },
   enroute:   { label: 'En Route',  color: 'bg-amber-400',   text: 'text-amber-400' },
   available: { label: 'Available', color: 'bg-blue-400',    text: 'text-blue-400' },
   off:       { label: 'Off Today', color: 'bg-slate-500',   text: 'text-slate-500' },
 }
 
+function getOnlineStatus(member: StoredCrewMember): { label: string; color: string; text: string } {
+  if (member.clockedInAt) {
+    return statusConfig.online
+  }
+  return statusConfig[member.status]
+}
+
 const roleFilters = ['All', 'Field Crew', 'Supervisor', 'Office', 'Leadership'] as const
 type RoleFilter = typeof roleFilters[number]
 
-function roleMatch(member: CrewMember, filter: RoleFilter) {
+function roleMatch(member: StoredCrewMember, filter: RoleFilter) {
   if (filter === 'All') return true
   if (filter === 'Field Crew') return member.role === 'field'
   if (filter === 'Supervisor') return member.role === 'supervisor'
@@ -42,61 +85,99 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('All')
   const [messageInput, setMessageInput] = useState('')
-  const { setUnreadMessageCount, crewMessages, crewActiveThread, setCrewActiveThread, addCrewMessage } = useAppStore()
+  const [crew, setCrew] = useState<StoredCrewMember[]>([])
+  const [showAddCrew, setShowAddCrew] = useState(false)
+  const [editingMember, setEditingMember] = useState<StoredCrewMember | null>(null)
+  const [viewingProfile, setViewingProfile] = useState<StoredCrewMember | null>(null)
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
+  const [refresh, setRefresh] = useState(0)
+  const { currentUserEmail } = useAppStore()
 
-  const filtered = mockCrew
-    .filter(m => m.id !== currentUser.id)
+  useEffect(() => {
+    // Initialize crew system and load crew members
+    initializeCrew()
+    setCrew(getAllCrew())
+  }, [])
+
+  const isAdmin = isUserAdmin(currentUserEmail)
+  const currentUserMember = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())
+
+  const filtered = crew
+    .filter(m => isAdmin ? true : m.email.toLowerCase() === currentUserEmail.toLowerCase())
     .filter(m => roleMatch(m, roleFilter))
     .filter(m => search ? `${m.firstName} ${m.lastName}`.toLowerCase().includes(search.toLowerCase()) : true)
 
-  const threads = mockThreads
+  function startConversation(member: StoredCrewMember) {
+    const threadId = getThreadId(currentUserMember?.id ?? 'user', member.id)
+    setActiveThreadId(threadId)
+  }
 
   function sendMessage() {
-    if (!messageInput.trim() || !crewActiveThread) return
+    if (!messageInput.trim() || !activeThreadId || !currentUserMember) return
     const msg: Message = {
       id: `msg-${Date.now()}`,
-      threadId: crewActiveThread,
-      senderId: currentUser.id,
-      senderName: `${currentUser.firstName} ${currentUser.lastName}`,
+      threadId: activeThreadId,
+      senderId: currentUserMember.id,
+      senderName: `${currentUserMember.firstName} ${currentUserMember.lastName}`,
       body: messageInput.trim(),
       timestamp: Date.now(),
       read: true,
     }
-    addCrewMessage(msg)
+    saveThreadMessage(activeThreadId, msg)
     setMessageInput('')
+    setRefresh(prev => prev + 1)
   }
 
-  const currentThreadMsgs = crewActiveThread ? (crewMessages[crewActiveThread] ?? []) : []
-  const currentThread = threads.find(t => t.id === crewActiveThread)
+  const currentThreadMsgs = activeThreadId ? getThreadMessages(activeThreadId) : []
+  const otherUserId = activeThreadId?.split('-').find(id => id !== currentUserMember?.id) ?? ''
+  const otherUser = crew.find(m => m.id === otherUserId)
+
+  // Get all unique conversations
+  const conversations = new Map<string, { member: StoredCrewMember; lastMessage?: Message }>()
+  const allMessages = localStorage.getItem(CREW_MESSAGES_KEY)
+  if (allMessages) {
+    try {
+      const messagesByThread = JSON.parse(allMessages)
+      Object.entries(messagesByThread).forEach(([threadId, messages]: [string, any]) => {
+        const ids = threadId.split('-')
+        const otherUserId = ids.find(id => id !== currentUserMember?.id)
+        if (otherUserId) {
+          const member = crew.find(m => m.id === otherUserId)
+          if (member) {
+            const lastMsg = messages[messages.length - 1]
+            conversations.set(threadId, { member, lastMessage: lastMsg })
+          }
+        }
+      })
+    } catch (err) {
+      console.error('[Messages] Failed to parse messages:', err)
+    }
+  }
 
   return (
     <AppLayout>
       <div className="pt-14">
-        {crewActiveThread ? (
+        {activeThreadId ? (
           /* Message thread view */
           <div className="flex flex-col h-[calc(100vh-5rem)] -mx-4">
             {/* Thread header */}
             <div className="flex items-center gap-3 px-4 pb-4 border-b border-slate-200 shrink-0">
-              <button onClick={() => setCrewActiveThread(null)} className="text-brand-amber">
+              <button onClick={() => setActiveThreadId(null)} className="text-brand-amber">
                 <ChevronLeft size={22} />
               </button>
-              <Avatar name={currentThread?.groupName ?? currentThread?.participantNames[0] ?? ''} size={36} />
+              <Avatar name={otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'User'} size={36} />
               <div className="flex-1 min-w-0">
                 <p className="text-slate-800 font-semibold text-sm truncate">
-                  {currentThread?.groupName ?? currentThread?.participantNames[0]}
+                  {otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'User'}
                 </p>
-                {currentThread?.isGroup && (
-                  <p className="text-slate-500 text-xs flex items-center gap-1">
-                    <Users size={10} /> {currentThread.participants.length} members
-                  </p>
-                )}
+                <p className="text-slate-500 text-xs">{otherUser?.roleLabel ?? ''}</p>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" key={`messages-${activeThreadId}-${refresh}`}>
               {currentThreadMsgs.map(msg => {
-                const isMe = msg.senderId === currentUser.id
+                const isMe = msg.senderId === currentUserMember?.id
                 return (
                   <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? 'justify-end' : 'justify-start'} gap-2`}>
                     {!isMe && <Avatar name={msg.senderName} size={28} />}
@@ -136,16 +217,26 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
           <>
             <div className="flex items-center justify-between mb-5">
               <h1 className="text-slate-900 text-2xl font-bold">Crew</h1>
-              <div className="flex bg-bg-surface rounded-xl border border-slate-200 p-0.5">
-                {(['directory', 'messages'] as const).map(t => (
+              <div className="flex gap-3 items-center">
+                {isAdmin && (
                   <button
-                    key={t}
-                    onClick={() => setTab(t)}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-brand-amber text-slate-900' : 'text-slate-400'}`}
+                    onClick={() => setShowAddCrew(true)}
+                    className="bg-brand-amber hover:bg-amber-500 text-slate-900 rounded-lg px-3 py-2 flex items-center gap-2 text-xs font-semibold transition-colors"
                   >
-                    {t}
+                    <Plus size={14} /> Add
                   </button>
-                ))}
+                )}
+                <div className="flex bg-bg-surface rounded-xl border border-slate-200 p-0.5">
+                  {(['directory', 'messages'] as const).map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setTab(t)}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-brand-amber text-slate-900' : 'text-slate-400'}`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -179,14 +270,15 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                 {/* Crew list */}
                 <div className="space-y-2">
                   {filtered.map((member, i) => {
-                    const sc = statusConfig[member.status]
+                    const sc = getOnlineStatus(member)
                     return (
                       <motion.div
                         key={member.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
-                        className="bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3"
+                        onClick={() => isAdmin && setViewingProfile(member)}
+                        className={`bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3 group ${isAdmin ? 'cursor-pointer hover:border-brand-amber/50 transition-colors' : ''}`}
                       >
                         <div className="relative">
                           <Avatar name={`${member.firstName} ${member.lastName}`} size={42} />
@@ -199,6 +291,28 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className={`text-[10px] font-semibold ${sc.text}`}>{sc.label}</span>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              startConversation(member)
+                            }}
+                            className="p-1.5 rounded-lg bg-brand-amber/10 text-brand-amber hover:bg-brand-amber/20 transition-colors"
+                            title="Message"
+                          >
+                            <MessageCircle size={14} />
+                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={e => {
+                                e.stopPropagation()
+                                setEditingMember(member)
+                              }}
+                              className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 opacity-0 group-hover:opacity-100 transition-all"
+                              title="Edit crew member"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          )}
                         </div>
                       </motion.div>
                     )
@@ -208,37 +322,78 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             ) : (
               /* Messages tab */
               <div className="space-y-2">
-                {threads.map((thread, i) => (
-                  <motion.button
-                    key={thread.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    onClick={() => { setCrewActiveThread(thread.id); setUnreadMessageCount(Math.max(0, mockThreads.reduce((a, t) => a + t.unreadCount, 0) - thread.unreadCount)) }}
-                    className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
-                  >
-                    <Avatar name={thread.groupName ?? thread.participantNames[0]} size={44} />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${thread.unreadCount > 0 ? 'text-slate-800' : 'text-slate-300'}`}>
-                        {thread.groupName ?? thread.participantNames[0]}
-                      </p>
-                      <p className="text-slate-500 text-xs truncate mt-0.5">{thread.lastMessage}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <p className="text-slate-600 text-[10px]">{formatDistanceToNow(thread.lastTimestamp, { addSuffix: false })}</p>
-                      {thread.unreadCount > 0 && (
-                        <span className="bg-brand-amber text-slate-900 text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                          {thread.unreadCount}
-                        </span>
+                {conversations.size === 0 ? (
+                  <p className="text-slate-500 text-sm text-center py-8">No conversations yet. Click the message button on a crew member to start a conversation.</p>
+                ) : (
+                  Array.from(conversations.values()).map((conv, i) => (
+                    <motion.button
+                      key={conv.member.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                      onClick={() => {
+                        const threadId = getThreadId(currentUserMember?.id ?? 'user', conv.member.id)
+                        setActiveThreadId(threadId)
+                      }}
+                      className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
+                    >
+                      <Avatar name={`${conv.member.firstName} ${conv.member.lastName}`} size={44} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate text-slate-800">
+                          {conv.member.firstName} {conv.member.lastName}
+                        </p>
+                        <p className="text-slate-500 text-xs truncate mt-0.5">{conv.lastMessage?.body ?? 'No messages'}</p>
+                      </div>
+                      {conv.lastMessage && (
+                        <div className="flex-col items-end gap-1.5 shrink-0 hidden sm:flex">
+                          <p className="text-slate-600 text-[10px]">{formatDistanceToNow(conv.lastMessage.timestamp, { addSuffix: false })}</p>
+                        </div>
                       )}
-                    </div>
-                  </motion.button>
-                ))}
+                    </motion.button>
+                  ))
+                )}
               </div>
             )}
           </>
         )}
       </div>
+
+      <AnimatePresence>
+        {showAddCrew && (
+          <AddCrewModal
+            onClose={() => setShowAddCrew(false)}
+            onCrewAdded={() => {
+              setCrew(getAllCrew())
+              setShowAddCrew(false)
+            }}
+          />
+        )}
+        {editingMember && (
+          <EditCrewModal
+            member={editingMember}
+            onClose={() => setEditingMember(null)}
+            onUpdated={() => {
+              setCrew(getAllCrew())
+              setEditingMember(null)
+            }}
+          />
+        )}
+        {viewingProfile && (
+          <EmployeeProfileSheet
+            member={viewingProfile}
+            onClose={() => setViewingProfile(null)}
+            isAdmin={isAdmin}
+            onUpdated={() => {
+              setCrew(getAllCrew())
+              // Find and update the viewing profile with new data
+              const updated = getAllCrew().find(m => m.email === viewingProfile.email)
+              if (updated) {
+                setViewingProfile(updated)
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
     </AppLayout>
   )
 }
