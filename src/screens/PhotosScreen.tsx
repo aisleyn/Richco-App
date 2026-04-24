@@ -31,8 +31,11 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
   const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
-    const stored = getStoredPhotos()
-    setAllPhotos([...stored, ...mockPhotos])
+    const loadPhotos = async () => {
+      const stored = await getStoredPhotos()
+      setAllPhotos([...stored, ...mockPhotos])
+    }
+    loadPhotos()
   }, [refresh])
 
   const sites = jobSites.filter(s => s.status === 'active')
