@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Clock, TrendingUp, Calendar, Plus } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
@@ -27,8 +27,23 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const [showManualTimecard, setShowManualTimecard] = useState(false)
   const [editingTimecard, setEditingTimecard] = useState<TimesheetEntry | null>(null)
   const [timecardRefresh, setTimecardRefresh] = useState(0)
+  const [completedTodayHours, setCompletedTodayHours] = useState(0)
   const isAdmin = isUserAdmin(currentUserEmail)
   const hours = elapsed / 3600000
+
+  // Sync completed timecards from today
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0]
+    try {
+      const stored = localStorage.getItem('richco-completed-timecards')
+      const timecards: TimesheetEntry[] = stored ? JSON.parse(stored) : []
+      const todayTimecards = timecards.filter(tc => tc.date === today)
+      const total = todayTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
+      setCompletedTodayHours(total)
+    } catch (err) {
+      console.error('[Timecard] Failed to read timecards:', err)
+    }
+  }, [timecardRefresh])
 
   function handleSaveEditedTimecard(timecard: TimesheetEntry) {
     try {
@@ -55,7 +70,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     clockIn(siteId, siteName, isOvernight, gps)
   }
 
-  const todayHours = clockedIn ? hours : 0
+  const todayHours = (clockedIn ? hours : 0) + completedTodayHours
 
   return (
     <AppLayout>
@@ -167,7 +182,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
       </div>
 
       {showClockOut && (
-        <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => setShowClockOut(false)} />
+        <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => { setShowClockOut(false); setTimecardRefresh(prev => prev + 1) }} />
       )}
 
       <AnimatePresence>
