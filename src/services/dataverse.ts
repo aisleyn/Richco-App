@@ -179,7 +179,7 @@ export interface DataverseTimeEntry {
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
   try {
     console.log('[Dataverse] Creating time entry with data:', entry)
-    const res = (await apiCall('POST', '/craa5_timesheets', entry)) as any
+    const res = (await apiCall('POST', '/craa5_timeentries', entry)) as any
     console.log('[Dataverse] Created time entry response:', res)
     if (res?.id) {
       console.log('[Dataverse] ✅ Time entry created with ID:', res.id)
@@ -196,7 +196,7 @@ export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_tim
 
 export async function updateTimeEntry(entryId: string, data: Partial<DataverseTimeEntry>): Promise<boolean> {
   try {
-    await apiCall('PATCH', `/craa5_timesheets(${entryId})`, data)
+    await apiCall('PATCH', `/craa5_timeentries(${entryId})`, data)
     console.log('[Dataverse] Updated time entry:', entryId)
     return true
   } catch (err) {
@@ -211,7 +211,7 @@ export async function fetchRecentTimeEntries(employeeEmail: string, limit: numbe
   try {
     const res = (await apiCall(
       'GET',
-      `/craa5_timesheets?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'complete'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockin,craa5_clockout,craa5_totalhours,craa5_breakduration,craa5_status,richco_shiftsummary,richco_concerns,richco_geofenceflag,richco_gpslat,richco_gpslng,richco_gpsaddress&$orderby=craa5_clockout desc&$top=${limit}`
+      `/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'complete'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockin,craa5_clockout,craa5_totalhours,craa5_breakduration,craa5_status,richco_shiftsummary,richco_concerns,richco_geofenceflag,richco_gpslat,richco_gpslng,richco_gpsaddress&$orderby=craa5_clockout desc&$top=${limit}`
     )) as any
     console.log('[Dataverse] Fetched recent time entries:', res?.value)
     return res?.value || []
