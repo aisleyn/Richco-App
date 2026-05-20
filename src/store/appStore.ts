@@ -241,13 +241,7 @@ export const useAppStore = create<AppState>()(
         const now = Date.now()
         set({ breakActive: true, breakStartTime: now })
 
-        // Update Dataverse entry
-        if (activeTimesheetId) {
-          await updateTimeEntry(activeTimesheetId, {
-            craa5_breakstart: new Date(now).toISOString(),
-          })
-        }
-
+        // Break data is tracked and saved at clock-out time
         sendBreakEvent({
           employeeId: currentUserAadId,
           timesheetId: activeTimesheetId ?? '',
@@ -268,14 +262,7 @@ export const useAppStore = create<AppState>()(
           totalBreakMs: newTotal,
         })
 
-        // Update Dataverse entry
-        if (activeTimesheetId) {
-          await updateTimeEntry(activeTimesheetId, {
-            craa5_breakend: new Date().toISOString(),
-            craa5_breakduration: breakDurationMinutes,
-          })
-        }
-
+        // Break duration is tracked and saved to Dataverse at clock-out time
         sendBreakEvent({
           employeeId: currentUserAadId,
           timesheetId: activeTimesheetId ?? '',

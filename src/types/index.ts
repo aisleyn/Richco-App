@@ -49,6 +49,7 @@ export interface TimesheetEntry {
   overtimeHours?: number
   status: 'active' | 'complete' | 'flagged' | 'approved'
   gpsIn?: { lat: number; lng: number; address: string }
+  gpsOut?: { lat: number; lng: number; address: string }
   vehicleUsed?: string
   breakTaken?: boolean
   shiftSummary?: string
