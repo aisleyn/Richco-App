@@ -123,7 +123,7 @@ export function ImportPhotosModal({ siteId, siteName, onClose, onPhotosAdded }: 
               </div>
               <div className="w-full bg-bg-elevated rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-brand-amber to-amber-400 transition-all"
+                  className="h-full bg-gradient-to-r from-blue-600 to-amber-400 transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -137,7 +137,7 @@ export function ImportPhotosModal({ siteId, siteName, onClose, onPhotosAdded }: 
             onDragOver={handleDrag}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-              dragActive ? 'border-brand-amber bg-brand-amber/5' : 'border-slate-200'
+              dragActive ? 'border-blue-600 bg-blue-600/5' : 'border-slate-200'
             }`}
           >
             <Upload size={32} className="mx-auto text-slate-400 mb-3" />
@@ -145,7 +145,7 @@ export function ImportPhotosModal({ siteId, siteName, onClose, onPhotosAdded }: 
             <p className="text-slate-500 text-sm mb-4">Or click to select photos</p>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="bg-brand-amber hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="bg-blue-600 hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               Select Photos
             </button>

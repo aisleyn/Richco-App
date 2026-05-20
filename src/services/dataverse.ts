@@ -64,7 +64,7 @@ async function apiCall(method: string, endpoint: string, data?: unknown): Promis
 // ─── Sites (Projects) ──────────────────────────────────────────────────────
 
 export interface DataverseSite {
-  craa5_projectid: string
+  craa5_projectid: string // GUID
   craa5_projectname: string
   craa5_client?: string
 }
@@ -73,7 +73,7 @@ export async function fetchSites(): Promise<DataverseSite[]> {
   try {
     const res = (await apiCall(
       'GET',
-      "/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'active'"
+      "/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'Active'"
     )) as any
     console.log('[Dataverse] Fetched sites:', res?.value)
     return res?.value || []
@@ -83,28 +83,54 @@ export async function fetchSites(): Promise<DataverseSite[]> {
   }
 }
 
+export async function getProjectByName(projectName: string): Promise<string | null> {
+  try {
+    const res = (await apiCall('GET', `/craa5_projects?$filter=craa5_projectname eq '${projectName}'&$select=craa5_projectid`)) as any
+    const project = res?.value?.[0]
+    if (project?.craa5_projectid) {
+      console.log('[Dataverse] Found project GUID for', projectName, ':', project.craa5_projectid)
+      return project.craa5_projectid
+    }
+    console.warn('[Dataverse] No project found for name:', projectName)
+    return null
+  } catch (err) {
+    console.error('Failed to fetch project by name:', err)
+    return null
+  }
+}
+
 // ─── Employees ─────────────────────────────────────────────────────────────
 
 export interface DataverseEmployee {
-  richco_employeeid: string // Primary key
-  richco_name: string
-  richco_department: string
-  richco_birthday: string
-  richco_dateofhire: string
-  richco_email: string
-  richco_phone: string
-  richco_homeaddress: string
-  richco_status: string // active, inactive, etc.
-  richco_aadid?: string // Azure AD ID — populated on first login
+  craa5_employeeid: string // Primary key (GUID)
+  craa5_name: string
+  craa5_email: string
+  craa5_status?: string // active, inactive, etc.
 }
 
 export async function fetchEmployees(): Promise<DataverseEmployee[]> {
   try {
-    const res = (await apiCall('GET', "/craa5_employees?$select=richco_employeeid,richco_name,richco_department,richco_email,richco_phone,richco_status,richco_aadid")) as any
+    const res = (await apiCall('GET', "/craa5_employees?$select=craa5_employeeid,craa5_name,craa5_email,craa5_status")) as any
     return res?.value || []
   } catch (err) {
     console.error('Failed to fetch employees:', err)
     return []
+  }
+}
+
+export async function getEmployeeByEmail(email: string): Promise<string | null> {
+  try {
+    const res = (await apiCall('GET', `/craa5_employees?$filter=craa5_email eq '${email}'&$select=craa5_employeeid`)) as any
+    const employee = res?.value?.[0]
+    if (employee?.craa5_employeeid) {
+      console.log('[Dataverse] Found employee GUID for', email, ':', employee.craa5_employeeid)
+      return employee.craa5_employeeid
+    }
+    console.warn('[Dataverse] No employee found for email:', email)
+    return null
+  } catch (err) {
+    console.error('Failed to fetch employee by email:', err)
+    return null
   }
 }
 
@@ -181,8 +207,29 @@ export interface DataverseTimeEntry {
 
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
   try {
-    console.log('[Dataverse] Creating time entry with data:', entry)
-    const res = (await apiCall('POST', '/craa5_timeentries', entry)) as any
+    // Convert email/project name to GUIDs if needed
+    const payloadData: any = { ...entry }
+
+    // Resolve employee GUID if email is provided
+    if (entry.craa5_employee && !entry.craa5_employee.includes('-')) {
+      const employeeGuid = await getEmployeeByEmail(entry.craa5_employee)
+      if (employeeGuid) {
+        payloadData['craa5_employee@odata.bind'] = `/craa5_employees(${employeeGuid})`
+        delete payloadData.craa5_employee
+      }
+    }
+
+    // Resolve project GUID if name is provided
+    if (entry.craa5_project && !entry.craa5_project.includes('-')) {
+      const projectGuid = await getProjectByName(entry.craa5_project)
+      if (projectGuid) {
+        payloadData['craa5_project@odata.bind'] = `/craa5_projects(${projectGuid})`
+        delete payloadData.craa5_project
+      }
+    }
+
+    console.log('[Dataverse] Creating time entry with resolved data:', payloadData)
+    const res = (await apiCall('POST', '/craa5_timeentries', payloadData)) as any
     console.log('[Dataverse] Created time entry response:', res)
     if (res?.id) {
       console.log('[Dataverse] ✅ Time entry created with ID:', res.id)
@@ -212,9 +259,16 @@ export async function updateTimeEntry(entryId: string, data: Partial<DataverseTi
 
 export async function fetchRecentTimeEntries(employeeEmail: string, limit: number = 10): Promise<DataverseTimeEntry[]> {
   try {
+    // First get the employee GUID
+    const employeeGuid = await getEmployeeByEmail(employeeEmail)
+    if (!employeeGuid) {
+      console.warn('[Dataverse] Cannot fetch time entries - employee not found:', employeeEmail)
+      return []
+    }
+
     const res = (await apiCall(
       'GET',
-      `/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'completed'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_clockinaddress,craa5_clockoutaddress,craa5_breaktaken&$orderby=craa5_clockouttime desc&$top=${limit}`
+      `/craa5_timeentries?$filter=_craa5_employee_value eq ${employeeGuid} and craa5_status eq 'Completed'&$select=craa5_timeentriesid,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_clockinaddress,craa5_clockoutaddress,craa5_breaktaken&$orderby=craa5_clockouttime desc&$top=${limit}`
     )) as any
     console.log('[Dataverse] Fetched recent time entries:', res?.value)
     return res?.value || []

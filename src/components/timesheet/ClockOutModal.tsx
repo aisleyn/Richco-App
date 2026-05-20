@@ -161,7 +161,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                   <button
                     key={v}
                     onClick={() => setVehicleUsed(v)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-brand-amber text-slate-900' : 'bg-bg-surface text-slate-400'}`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
@@ -251,7 +251,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
               <button
                 onClick={() => fileRef.current?.click()}
-                className={`w-full flex items-center justify-center gap-2 py-3.5 border-2 border-dashed rounded-xl text-sm font-medium transition-colors ${errors.photos ? 'border-red-500/50 text-red-400' : 'border-white/10 text-slate-400 active:border-brand-amber/50 active:text-brand-amber'}`}
+                className={`w-full flex items-center justify-center gap-2 py-3.5 border-2 border-dashed rounded-xl text-sm font-medium transition-colors ${errors.photos ? 'border-red-500/50 text-red-400' : 'border-white/10 text-slate-400 active:border-blue-600/50 active:text-blue-600'}`}
               >
                 <Camera size={16} />
                 {photos.length === 0 ? 'Add Photo' : 'Add Another Photo'}

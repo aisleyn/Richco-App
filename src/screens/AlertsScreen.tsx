@@ -91,14 +91,14 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
           </div>
           <div className="flex items-center gap-2">
             {unreadAlertCount > 0 && (
-              <button onClick={markAllAlertsRead} className="text-brand-amber text-xs font-medium">
+              <button onClick={markAllAlertsRead} className="text-blue-600 text-xs font-medium">
                 Mark All Read
               </button>
             )}
             {isSupervisor && (
               <button
                 onClick={() => setShowCompose(true)}
-                className="w-9 h-9 rounded-full bg-brand-amber flex items-center justify-center"
+                className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center"
               >
                 <Plus size={18} className="text-slate-900" />
               </button>
@@ -243,7 +243,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                       <button
                         key={t}
                         onClick={() => setPostType(t)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-brand-amber text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
                       >
                         {t === 'ceo' ? 'CEO Message' : t}
                       </button>
@@ -264,7 +264,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                 <button
                   onClick={handlePost}
                   disabled={!postTitle.trim() || !postBody.trim()}
-                  className="w-full py-4 bg-brand-amber disabled:opacity-40 rounded-xl text-slate-900 font-bold"
+                  className="w-full py-4 bg-blue-600 disabled:opacity-40 rounded-xl text-slate-900 font-bold"
                 >
                   Post to All Crew
                 </button>

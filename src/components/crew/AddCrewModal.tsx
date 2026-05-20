@@ -89,7 +89,7 @@ export function AddCrewModal({ onClose, onCrewAdded }: Props) {
                 value={formData.firstName}
                 onChange={e => setFormData({ ...formData, firstName: e.target.value })}
                 placeholder="John"
-                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-brand-amber"
+                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
               />
             </div>
             <div>
@@ -101,7 +101,7 @@ export function AddCrewModal({ onClose, onCrewAdded }: Props) {
                 value={formData.lastName}
                 onChange={e => setFormData({ ...formData, lastName: e.target.value })}
                 placeholder="Doe"
-                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-brand-amber"
+                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
               />
             </div>
           </div>
@@ -115,7 +115,7 @@ export function AddCrewModal({ onClose, onCrewAdded }: Props) {
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               placeholder="john@richcogroup.com"
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-brand-amber"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
             />
           </div>
 
@@ -128,7 +128,7 @@ export function AddCrewModal({ onClose, onCrewAdded }: Props) {
               value={formData.phone}
               onChange={e => setFormData({ ...formData, phone: e.target.value })}
               placeholder="(604) 555-0000"
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-brand-amber"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
             />
           </div>
 
@@ -139,7 +139,7 @@ export function AddCrewModal({ onClose, onCrewAdded }: Props) {
             <select
               value={formData.role}
               onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-brand-amber"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
             >
               <option value="field">Field Worker</option>
               <option value="supervisor">Supervisor</option>
@@ -172,7 +172,7 @@ export function AddCrewModal({ onClose, onCrewAdded }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-brand-amber hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-blue-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
             >
               {loading && <Loader size={16} className="animate-spin" />}
               Add Member

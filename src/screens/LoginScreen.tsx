@@ -33,8 +33,8 @@ export function LoginScreen({ onLoginSuccess }: Props) {
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-brand-amber/15 border border-brand-amber/30 flex items-center justify-center mx-auto mb-4">
-            <div className="text-3xl font-bold text-brand-amber">RC</div>
+          <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
+            <div className="text-3xl font-bold text-blue-600">RC</div>
           </div>
           <h1 className="text-slate-800 text-3xl font-bold">Richco Construction</h1>
           <p className="text-slate-400 text-sm mt-2">Field Operations App</p>
@@ -56,7 +56,7 @@ export function LoginScreen({ onLoginSuccess }: Props) {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-brand-amber active:bg-brand-amberDark disabled:opacity-50 transition-all rounded-xl text-slate-900 font-bold text-base"
+          className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 active:bg-blue-600Dark disabled:opacity-50 transition-all rounded-xl text-slate-900 font-bold text-base"
         >
           <LogIn size={18} />
           {loading ? 'Signing in...' : 'Sign in with Microsoft'}

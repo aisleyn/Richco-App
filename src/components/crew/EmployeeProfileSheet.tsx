@@ -60,7 +60,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated }: Pr
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-brand-amber/10 to-amber-500/5 rounded-2xl border border-brand-amber/20 p-5"
+            className="bg-gradient-to-br from-blue-600/10 to-amber-500/5 rounded-2xl border border-blue-600/20 p-5"
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -114,7 +114,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated }: Pr
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone size={14} className="text-slate-500" />
-                  <a href={`tel:${member.emergencyContact.phone}`} className="text-slate-800 hover:text-brand-amber transition-colors">
+                  <a href={`tel:${member.emergencyContact.phone}`} className="text-slate-800 hover:text-blue-600 transition-colors">
                     {member.emergencyContact.phone}
                   </a>
                 </div>
@@ -149,7 +149,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated }: Pr
                     href={member.identification.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-brand-amber/10 hover:bg-brand-amber/20 border border-brand-amber/30 rounded-lg text-brand-amber text-sm font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-600/30 rounded-lg text-blue-600 text-sm font-medium transition-colors"
                   >
                     <ImageIcon size={14} /> View Document
                   </a>

@@ -35,7 +35,7 @@ export function BottomNav({ active, onChange }: Props) {
                 <Icon
                   size={22}
                   strokeWidth={isActive ? 2.5 : 1.8}
-                  className={isActive ? 'text-brand-amber' : 'text-slate-500 dark:text-slate-400 group-active:text-slate-300 dark:group-active:text-slate-500 transition-colors'}
+                  className={isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400 group-active:text-slate-300 dark:group-active:text-slate-500 transition-colors'}
                 />
                 {badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
@@ -43,13 +43,13 @@ export function BottomNav({ active, onChange }: Props) {
                   </span>
                 )}
               </div>
-              <span className={`text-[9px] font-medium ${isActive ? 'text-brand-amber' : 'text-slate-500 dark:text-slate-400'}`}>
+              <span className={`text-[9px] font-medium ${isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}>
                 {label}
               </span>
               {isActive && (
                 <motion.div
                   layoutId="nav-dot"
-                  className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-brand-amber"
+                  className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600"
                 />
               )}
             </button>

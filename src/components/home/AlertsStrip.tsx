@@ -29,7 +29,7 @@ export function AlertsStrip({ onSeeAll, onTapAlert }: Props) {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Recent Alerts</h3>
-        <button onClick={onSeeAll} className="text-brand-amber text-xs font-medium">See All</button>
+        <button onClick={onSeeAll} className="text-blue-600 text-xs font-medium">See All</button>
       </div>
       <div className="space-y-2">
         {recent.map((alert, i) => {

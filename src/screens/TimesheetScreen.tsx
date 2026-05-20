@@ -89,7 +89,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
         >
           <div className="bg-bg-surface rounded-2xl p-4 border border-slate-200">
             <div className="flex items-center gap-2 mb-2">
-              <Clock size={14} className="text-brand-amber" />
+              <Clock size={14} className="text-blue-600" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Today</span>
             </div>
             <p className="text-slate-800 text-xl md:text-2xl font-bold">{todayHours.toFixed(2)}<span className="text-slate-500 text-xs md:text-sm font-normal">h</span></p>
@@ -141,7 +141,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, ((weekStats.week + todayHours) / 40) * 100)}%` }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="h-full rounded-full bg-gradient-to-r from-brand-amber to-amber-400"
+              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-amber-400"
             />
           </div>
           {weekStats.overtimeWeek > 0 && (
@@ -167,7 +167,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           {isAdmin && (
             <button
               onClick={() => setShowManualTimecard(true)}
-              className="text-brand-amber hover:text-amber-500 flex items-center gap-1 text-xs font-semibold transition-colors"
+              className="text-blue-600 hover:text-amber-500 flex items-center gap-1 text-xs font-semibold transition-colors"
             >
               <Plus size={12} /> Manual
             </button>

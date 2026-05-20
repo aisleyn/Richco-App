@@ -121,7 +121,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
           <>
             {/* Edit mode */}
             <div className="flex items-center justify-between mb-6">
-              <button onClick={() => setEditingIndex(null)} className="text-brand-amber flex items-center gap-1">
+              <button onClick={() => setEditingIndex(null)} className="text-blue-600 flex items-center gap-1">
                 <ChevronLeft size={20} /> Back
               </button>
               <h2 className="text-slate-900 text-xl font-bold">Edit Photo</h2>
@@ -144,7 +144,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
                     updated[editingIndex!].category = e.target.value as PhotoCategory
                     setPendingPhotos(updated)
                   }}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-brand-amber"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -165,7 +165,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
                     setPendingPhotos(updated)
                   }}
                   placeholder="Add a caption..."
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-brand-amber"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -181,7 +181,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
                     updated[editingIndex!].timestamp = new Date(e.target.value).getTime()
                     setPendingPhotos(updated)
                   }}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-brand-amber"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -214,7 +214,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                  dragActive ? 'border-brand-amber bg-brand-amber/5' : 'border-slate-200'
+                  dragActive ? 'border-blue-600 bg-blue-600/5' : 'border-slate-200'
                 }`}
               >
                 <Upload size={32} className="mx-auto text-slate-400 mb-3" />
@@ -222,7 +222,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
                 <p className="text-slate-500 text-sm mb-4">You can select multiple files at once</p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-brand-amber hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
+                  className="bg-blue-600 hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
                 >
                   Select Files
                 </button>
@@ -273,7 +273,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
                   <button
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="flex-1 bg-brand-amber hover:bg-amber-500 disabled:opacity-50 text-slate-900 font-medium rounded-lg px-4 py-2.5 transition-colors"
+                    className="flex-1 bg-blue-600 hover:bg-amber-500 disabled:opacity-50 text-slate-900 font-medium rounded-lg px-4 py-2.5 transition-colors"
                   >
                     Upload {pendingPhotos.length} Photos
                   </button>

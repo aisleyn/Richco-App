@@ -94,7 +94,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
       <div className="pt-14 px-4">
         <div className="flex items-center justify-between mb-1">
           {activeSite && (
-            <button onClick={() => setActiveSite(null)} className="flex items-center gap-1 text-brand-amber text-sm -ml-1">
+            <button onClick={() => setActiveSite(null)} className="flex items-center gap-1 text-blue-600 text-sm -ml-1">
               <ChevronLeft size={16} /> Sites
             </button>
           )}
@@ -133,7 +133,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 </button>
                 <button
                   onClick={selectAllPhotos}
-                  className="flex items-center gap-1.5 bg-brand-amber hover:bg-amber-500 px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold transition-colors"
+                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-amber-500 px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold transition-colors"
                 >
                   Select All
                 </button>
@@ -149,7 +149,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             {!deleteMode && (
               <button
                 onClick={() => setShowUpload(true)}
-                className="flex items-center gap-1.5 bg-brand-amber px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold"
+                className="flex items-center gap-1.5 bg-blue-600 px-3 py-2 rounded-xl text-slate-900 text-sm font-semibold"
               >
                 <Camera size={15} /> Submit
               </button>
@@ -209,7 +209,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-brand-amber text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
               >
                 {cat}
               </button>
@@ -258,7 +258,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                       e.stopPropagation()
                       setEditingPhoto(photo)
                     }}
-                    className="absolute top-1 right-1 bg-brand-amber/90 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 bg-blue-600/90 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Edit photo"
                   >
                     <Edit2 size={12} className="text-slate-900" />
@@ -352,7 +352,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 ) : (
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="w-full h-40 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400 active:border-brand-amber/50"
+                    className="w-full h-40 border-2 border-dashed border-white/15 rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400 active:border-blue-600/50"
                   >
                     <Camera size={28} />
                     <span className="text-sm">Tap to take or select photo</span>
@@ -375,7 +375,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                       <button
                         key={c}
                         onClick={() => setUploadCategory(c)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${uploadCategory === c ? 'bg-brand-amber text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${uploadCategory === c ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
                       >
                         {c}
                       </button>
@@ -392,7 +392,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                 <button
                   onClick={() => { setShowUpload(false); setPendingPhoto(null) }}
                   disabled={!pendingPhoto}
-                  className="w-full py-4 bg-brand-amber disabled:opacity-40 rounded-xl text-slate-900 font-bold flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-blue-600 disabled:opacity-40 rounded-xl text-slate-900 font-bold flex items-center justify-center gap-2"
                 >
                   <Upload size={16} /> Submit Photo
                 </button>

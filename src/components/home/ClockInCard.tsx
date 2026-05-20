@@ -95,8 +95,8 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               {shift ? `${shift.startTime} – ${shift.endTime}` : '07:00 – 15:30'}
             </p>
           </div>
-          <div className="bg-brand-amber/10 border border-brand-amber/20 rounded-xl px-3 py-1.5">
-            <p className="text-brand-amber text-xs font-semibold">Scheduled</p>
+          <div className="bg-blue-600/10 border border-blue-600/20 rounded-xl px-3 py-1.5">
+            <p className="text-blue-600 text-xs font-semibold">Scheduled</p>
           </div>
         </div>
       </div>

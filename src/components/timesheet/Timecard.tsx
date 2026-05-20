@@ -102,7 +102,7 @@ export function TimecardList({ isAdmin = false, onEditTimecard }: TimecardListPr
               <div className="flex gap-2">
                 <button
                   onClick={() => onEditTimecard?.(tc)}
-                  className="flex-1 px-2 py-1.5 bg-brand-amber/10 hover:bg-brand-amber/20 text-brand-amber text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 px-2 py-1.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
                 >
                   <Edit2 size={12} /> Edit
                 </button>

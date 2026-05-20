@@ -49,7 +49,7 @@ export default function App() {
         <motion.div
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-12 h-12 rounded-full border-2 border-brand-amber border-t-transparent"
+          className="w-12 h-12 rounded-full border-2 border-blue-600 border-t-transparent"
         />
       </div>
     )

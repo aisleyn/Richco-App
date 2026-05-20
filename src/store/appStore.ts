@@ -104,8 +104,8 @@ export const useAppStore = create<AppState>()(
           craa5_clockinlongitude: gps?.lng,
           craa5_clockinaddress: gps?.address,
           craa5_employee: currentUserEmail,
-          craa5_project: siteId,
-          craa5_status: 'active',
+          craa5_project: siteName, // Use site name to look up project GUID
+          craa5_status: 'Active', // Use proper choice value
         } as any)
 
         set({
@@ -200,7 +200,7 @@ export const useAppStore = create<AppState>()(
             craa5_totalhours: parseFloat(rawHours.toFixed(4)),
             craa5_breakduration: parseFloat((breakDurationMs / 3600000).toFixed(4)), // Convert to hours (decimal)
             craa5_breaktaken: completedTimecard.breakTaken,
-            craa5_status: 'completed',
+            craa5_status: 'Completed', // Use proper choice value
           })
         }
 
