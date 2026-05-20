@@ -73,7 +73,7 @@ export async function fetchSites(): Promise<DataverseSite[]> {
   try {
     const res = (await apiCall(
       'GET',
-      "/tables/craa5_project?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'active'"
+      "/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'active'"
     )) as any
     console.log('[Dataverse] Fetched sites:', res?.value)
     return res?.value || []
@@ -100,7 +100,7 @@ export interface DataverseEmployee {
 
 export async function fetchEmployees(): Promise<DataverseEmployee[]> {
   try {
-    const res = (await apiCall('GET', "/tables/richco_employees?$select=richco_employeeid,richco_name,richco_department,richco_email,richco_phone,richco_status,richco_aadid")) as any
+    const res = (await apiCall('GET', "/craa5_employees?$select=richco_employeeid,richco_name,richco_department,richco_email,richco_phone,richco_status,richco_aadid")) as any
     return res?.value || []
   } catch (err) {
     console.error('Failed to fetch employees:', err)
@@ -110,7 +110,7 @@ export async function fetchEmployees(): Promise<DataverseEmployee[]> {
 
 export async function createEmployee(emp: Omit<DataverseEmployee, 'richco_employeeid'>): Promise<string | null> {
   try {
-    const res = (await apiCall('POST', '/tables/richco_employees', emp)) as any
+    const res = (await apiCall('POST', '/craa5_employees', emp)) as any
     return res?.id || null
   } catch (err) {
     console.error('Failed to create employee:', err)
@@ -120,7 +120,7 @@ export async function createEmployee(emp: Omit<DataverseEmployee, 'richco_employ
 
 export async function updateEmployeeAadId(employeeId: string, aadId: string): Promise<boolean> {
   try {
-    await apiCall('PATCH', `/tables/richco_employees(${employeeId})`, { richco_aadid: aadId })
+    await apiCall('PATCH', `/craa5_employees(${employeeId})`, { richco_aadid: aadId })
     return true
   } catch (err) {
     console.error('Failed to update employee AAD ID:', err)
@@ -144,7 +144,7 @@ export async function fetchEmployeeShifts(employeeId: string, date: string): Pro
   try {
     const res = (await apiCall(
       'GET',
-      `/tables/richco_shifts?$filter=richco_employeeid eq '${employeeId}' and richco_date eq '${date}'&$select=richco_shiftid,richco_starttime,richco_endtime,richco_status,richco_projectid`
+      `/craa5_shifts?$filter=richco_employeeid eq '${employeeId}' and richco_date eq '${date}'&$select=richco_shiftid,richco_starttime,richco_endtime,richco_status,richco_projectid`
     )) as any
     return res?.value || []
   } catch (err) {
@@ -179,7 +179,7 @@ export interface DataverseTimeEntry {
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
   try {
     console.log('[Dataverse] Creating time entry with data:', entry)
-    const res = (await apiCall('POST', '/tables/craa5_timeentries', entry)) as any
+    const res = (await apiCall('POST', '/craa5_timesheets', entry)) as any
     console.log('[Dataverse] Created time entry response:', res)
     if (res?.id) {
       console.log('[Dataverse] ✅ Time entry created with ID:', res.id)
@@ -196,7 +196,7 @@ export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_tim
 
 export async function updateTimeEntry(entryId: string, data: Partial<DataverseTimeEntry>): Promise<boolean> {
   try {
-    await apiCall('PATCH', `/tables/craa5_timeentries(${entryId})`, data)
+    await apiCall('PATCH', `/craa5_timesheets(${entryId})`, data)
     console.log('[Dataverse] Updated time entry:', entryId)
     return true
   } catch (err) {
@@ -211,7 +211,7 @@ export async function fetchRecentTimeEntries(employeeEmail: string, limit: numbe
   try {
     const res = (await apiCall(
       'GET',
-      `/tables/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'complete'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockin,craa5_clockout,craa5_totalhours,craa5_breakduration,craa5_status,richco_shiftsummary,richco_concerns,richco_geofenceflag,richco_gpslat,richco_gpslng,richco_gpsaddress&$orderby=craa5_clockout desc&$top=${limit}`
+      `/craa5_timesheets?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'complete'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockin,craa5_clockout,craa5_totalhours,craa5_breakduration,craa5_status,richco_shiftsummary,richco_concerns,richco_geofenceflag,richco_gpslat,richco_gpslng,richco_gpsaddress&$orderby=craa5_clockout desc&$top=${limit}`
     )) as any
     console.log('[Dataverse] Fetched recent time entries:', res?.value)
     return res?.value || []
