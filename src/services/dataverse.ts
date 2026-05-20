@@ -71,9 +71,10 @@ export interface DataverseSite {
 
 export async function fetchSites(): Promise<DataverseSite[]> {
   try {
+    // Remove filter to test basic connectivity
     const res = (await apiCall(
       'GET',
-      "/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client&$filter=craa5_status eq 'Active'"
+      "/craa5_projects?$select=craa5_projectid,craa5_projectname,craa5_client"
     )) as any
     console.log('[Dataverse] Fetched sites:', res?.value)
     return res?.value || []
