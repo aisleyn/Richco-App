@@ -99,13 +99,13 @@ export const useAppStore = create<AppState>()(
 
         // Create Dataverse entry
         const entryId = await createTimeEntry({
+          Employee: currentUserEmail, // Email string, not GUID
+          craa5_project: siteName,
           craa5_clockintime: new Date(now).toISOString(),
           craa5_clockinlatitude: gps?.lat,
           craa5_clockinlongitude: gps?.lng,
           craa5_clockinaddress: gps?.address,
-          craa5_employee: currentUserEmail,
-          craa5_project: siteName, // Use site name to look up project GUID
-          craa5_status: 'Active', // Use proper choice value
+          craa5_status: 'Clock In', // Based on screenshot showing "Cloc..."
         } as any)
 
         set({
@@ -198,9 +198,10 @@ export const useAppStore = create<AppState>()(
             craa5_clockoutlongitude: data.gpsOut?.lng,
             craa5_clockoutaddress: data.gpsOut?.address,
             craa5_totalhours: parseFloat(rawHours.toFixed(4)),
-            craa5_breakduration: parseFloat((breakDurationMs / 3600000).toFixed(4)), // Convert to hours (decimal)
-            craa5_breaktaken: completedTimecard.breakTaken,
-            craa5_status: 'Completed', // Use proper choice value
+            craa5_breakduration: parseFloat((breakDurationMs / 3600000).toFixed(4)), // Decimal hours
+            craa5_status: 'Clock Out',
+            craa5_shiftnotes: data.shiftSummary,
+            craa5_concerns: data.concerns,
           })
         }
 

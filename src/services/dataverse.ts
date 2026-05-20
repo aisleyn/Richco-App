@@ -183,53 +183,30 @@ export async function fetchEmployeeShifts(employeeId: string, date: string): Pro
 
 export interface DataverseTimeEntry {
   craa5_timeentriesid?: string
-  craa5_employee?: string // Employee lookup (email or GUID)
-  craa5_project?: string // Project lookup (GUID)
+  Employee?: string // Email address (string, not lookup)
+  craa5_project?: string // Project name or ID
   craa5_clockintime?: string // ISO 8601
   craa5_clockouttime?: string // ISO 8601
-  craa5_clockinlatitude?: number // Decimal
-  craa5_clockinlongitude?: number // Decimal
-  craa5_clockoutlatitude?: number // Decimal
-  craa5_clockoutlongitude?: number // Decimal
-  craa5_clockinaddress?: string // String
-  craa5_clockoutaddress?: string // String
-  craa5_totalhours?: number // Decimal
-  craa5_overtimehours?: number // Decimal
-  craa5_breaktaken?: boolean // Boolean
+  craa5_breakstart?: string // ISO 8601 (Break Start time)
+  craa5_breakend?: string // ISO 8601 (Break End time)
   craa5_breakduration?: number // Decimal (hours)
-  craa5_companyvehicle?: string // Lookup to Company Vehicle
-  craa5_standardsconfirmed?: boolean // Boolean
-  craa5_supervisorapproval?: string // Choice
-  craa5_ceoapproval?: string // Choice
-  craa5_status?: string // Choice: active, completed, flagged
-  craa5_flagreason?: string // Choice
+  craa5_totalhours?: number // Decimal
+  craa5_status?: string // Choice field value
+  craa5_shiftnotes?: string // Notes/summary
+  craa5_concerns?: string // Issues or concerns
+  // Additional optional fields
+  craa5_clockinlatitude?: number
+  craa5_clockinlongitude?: number
+  craa5_clockoutlatitude?: number
+  craa5_clockoutlongitude?: number
+  craa5_clockinaddress?: string
+  craa5_clockoutaddress?: string
 }
 
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
   try {
-    // Convert email/project name to GUIDs if needed
-    const payloadData: any = { ...entry }
-
-    // Resolve employee GUID if email is provided
-    if (entry.craa5_employee && !entry.craa5_employee.includes('-')) {
-      const employeeGuid = await getEmployeeByEmail(entry.craa5_employee)
-      if (employeeGuid) {
-        payloadData['craa5_employee@odata.bind'] = `/craa5_employees(${employeeGuid})`
-        delete payloadData.craa5_employee
-      }
-    }
-
-    // Resolve project GUID if name is provided
-    if (entry.craa5_project && !entry.craa5_project.includes('-')) {
-      const projectGuid = await getProjectByName(entry.craa5_project)
-      if (projectGuid) {
-        payloadData['craa5_project@odata.bind'] = `/craa5_projects(${projectGuid})`
-        delete payloadData.craa5_project
-      }
-    }
-
-    console.log('[Dataverse] Creating time entry with resolved data:', payloadData)
-    const res = (await apiCall('POST', '/craa5_timeentries', payloadData)) as any
+    console.log('[Dataverse] Creating time entry with data:', entry)
+    const res = (await apiCall('POST', '/craa5_timeentries', entry)) as any
     console.log('[Dataverse] Created time entry response:', res)
     if (res?.id) {
       console.log('[Dataverse] ✅ Time entry created with ID:', res.id)
@@ -259,16 +236,9 @@ export async function updateTimeEntry(entryId: string, data: Partial<DataverseTi
 
 export async function fetchRecentTimeEntries(employeeEmail: string, limit: number = 10): Promise<DataverseTimeEntry[]> {
   try {
-    // First get the employee GUID
-    const employeeGuid = await getEmployeeByEmail(employeeEmail)
-    if (!employeeGuid) {
-      console.warn('[Dataverse] Cannot fetch time entries - employee not found:', employeeEmail)
-      return []
-    }
-
     const res = (await apiCall(
       'GET',
-      `/craa5_timeentries?$filter=_craa5_employee_value eq ${employeeGuid} and craa5_status eq 'Completed'&$select=craa5_timeentriesid,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_clockinaddress,craa5_clockoutaddress,craa5_breaktaken&$orderby=craa5_clockouttime desc&$top=${limit}`
+      `/craa5_timeentries?$filter=Employee eq '${employeeEmail}'&$select=craa5_timeentriesid,Employee,craa5_project,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_breakstart,craa5_breakend&$orderby=craa5_clockouttime desc&$top=${limit}`
     )) as any
     console.log('[Dataverse] Fetched recent time entries:', res?.value)
     return res?.value || []
