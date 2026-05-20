@@ -99,9 +99,12 @@ export const useAppStore = create<AppState>()(
 
         // Create Dataverse entry
         const entryId = await createTimeEntry({
+          craa5_clockintime: new Date(now).toISOString(),
+          craa5_clockinlatitude: gps?.lat,
+          craa5_clockinlongitude: gps?.lng,
+          craa5_clockinaddress: gps?.address,
           craa5_employee: currentUserEmail,
           craa5_project: siteId,
-          craa5_clockin: new Date(now).toISOString(),
           craa5_status: 'active',
         } as any)
 
@@ -190,10 +193,14 @@ export const useAppStore = create<AppState>()(
         // Update Dataverse entry with final data
         if (activeTimesheetId) {
           await updateTimeEntry(activeTimesheetId, {
-            craa5_clockout: new Date(now).toISOString(),
+            craa5_clockouttime: new Date(now).toISOString(),
+            craa5_clockoutlatitude: data.gpsOut?.lat,
+            craa5_clockoutlongitude: data.gpsOut?.lng,
+            craa5_clockoutaddress: data.gpsOut?.address,
             craa5_totalhours: parseFloat(rawHours.toFixed(4)),
-            craa5_breakduration: Math.round(breakDurationMs / 60000), // Convert to minutes
-            craa5_status: 'complete',
+            craa5_breakduration: parseFloat((breakDurationMs / 3600000).toFixed(4)), // Convert to hours (decimal)
+            craa5_breaktaken: completedTimecard.breakTaken,
+            craa5_status: 'completed',
           })
         }
 

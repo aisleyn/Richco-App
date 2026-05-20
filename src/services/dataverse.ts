@@ -156,24 +156,27 @@ export async function fetchEmployeeShifts(employeeId: string, date: string): Pro
 // ─── Time Entries ──────────────────────────────────────────────────────────
 
 export interface DataverseTimeEntry {
-  craa5_timeentriesid: string
-  craa5_employee: string // Employee email
-  craa5_project?: string // Project lookup
-  craa5_clockin: string // ISO 8601
-  craa5_clockout?: string
+  craa5_timeentriesid?: string
+  craa5_employee?: string // Employee lookup (email or GUID)
+  craa5_project?: string // Project lookup (GUID)
+  craa5_clockintime?: string // ISO 8601
+  craa5_clockouttime?: string // ISO 8601
+  craa5_clockinlatitude?: number // Decimal
+  craa5_clockinlongitude?: number // Decimal
+  craa5_clockoutlatitude?: number // Decimal
+  craa5_clockoutlongitude?: number // Decimal
+  craa5_clockinaddress?: string // String
+  craa5_clockoutaddress?: string // String
   craa5_totalhours?: number // Decimal
-  craa5_status?: string // active, completed, etc.
-  craa5_breakstart?: string // ISO 8601
-  craa5_breakend?: string // ISO 8601
-  craa5_breakduration?: number // Minutes
-  richco_shiftsummary?: string
-  richco_concerns?: string
-  richco_photossubmitted?: number
-  richco_status: string // active, complete, flagged, approved
-  richco_geofenceflag?: boolean
-  richco_gpslat?: number
-  richco_gpslng?: number
-  richco_gpsaddress?: string
+  craa5_overtimehours?: number // Decimal
+  craa5_breaktaken?: boolean // Boolean
+  craa5_breakduration?: number // Decimal (hours)
+  craa5_companyvehicle?: string // Lookup to Company Vehicle
+  craa5_standardsconfirmed?: boolean // Boolean
+  craa5_supervisorapproval?: string // Choice
+  craa5_ceoapproval?: string // Choice
+  craa5_status?: string // Choice: active, completed, flagged
+  craa5_flagreason?: string // Choice
 }
 
 export async function createTimeEntry(entry: Omit<DataverseTimeEntry, 'craa5_timeentriesid'>): Promise<string | null> {
@@ -211,7 +214,7 @@ export async function fetchRecentTimeEntries(employeeEmail: string, limit: numbe
   try {
     const res = (await apiCall(
       'GET',
-      `/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'complete'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockin,craa5_clockout,craa5_totalhours,craa5_breakduration,craa5_status,richco_shiftsummary,richco_concerns,richco_geofenceflag,richco_gpslat,richco_gpslng,richco_gpsaddress&$orderby=craa5_clockout desc&$top=${limit}`
+      `/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}' and craa5_status eq 'completed'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_clockinaddress,craa5_clockoutaddress,craa5_breaktaken&$orderby=craa5_clockouttime desc&$top=${limit}`
     )) as any
     console.log('[Dataverse] Fetched recent time entries:', res?.value)
     return res?.value || []
