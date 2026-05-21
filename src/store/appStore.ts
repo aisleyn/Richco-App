@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
 import { mockAlerts, mockMessages, currentUser } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
-import { createTimeEntry, updateTimeEntry, getMandatoryBreakHours } from '../services/dataverse'
+import { createTimeEntry, updateTimeEntry, getMandatoryBreakHours, getEmployeeByEmail, getProjectByName } from '../services/dataverse'
 import { generateLeaveRequestAlerts } from '../services/timeoff'
 
 interface AppState {
@@ -97,15 +97,19 @@ export const useAppStore = create<AppState>()(
         const id = `ts-${now}`
         const { currentUserAadId, currentUserEmail, currentUserName } = get()
 
+        // Look up employee and project GUIDs
+        const employeeId = await getEmployeeByEmail(currentUserEmail)
+        const projectId = await getProjectByName(siteName)
+
         // Create Dataverse entry
         const entryId = await createTimeEntry({
-          Employee: currentUserEmail, // Email string, not GUID
-          craa5_project: siteName,
+          Employee: employeeId || currentUserEmail, // Use GUID if found, fallback to email
+          craa5_project: projectId || siteName, // Use GUID if found, fallback to name
           craa5_clockintime: new Date(now).toISOString(),
           craa5_clockinlatitude: gps?.lat,
           craa5_clockinlongitude: gps?.lng,
           craa5_clockinaddress: gps?.address,
-          craa5_status: 'Clock In', // Based on screenshot showing "Cloc..."
+          craa5_status: 'Clock In',
         } as any)
 
         set({

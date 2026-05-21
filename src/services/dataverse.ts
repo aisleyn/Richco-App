@@ -34,10 +34,16 @@ async function apiCall(method: string, endpoint: string, data?: unknown): Promis
 
     if (!res.ok) {
       const wwwAuth = res.headers.get('www-authenticate')
-      console.error('[Dataverse] 401 Details - www-authenticate:', wwwAuth)
-      console.error('[Dataverse] Token scope requested from auth.ts')
+      let errorDetail = 'no details'
+      try {
+        const errorBody = await res.json()
+        errorDetail = errorBody?.error?.message || JSON.stringify(errorBody)
+      } catch {
+        errorDetail = res.statusText || 'no details'
+      }
+      console.error('[Dataverse] Error response:', errorDetail)
       console.error('[Dataverse] API endpoint:', url)
-      throw new Error(`Dataverse API error: ${res.status} ${res.statusText} - ${wwwAuth || 'no details'}`)
+      throw new Error(`Dataverse API error: ${res.status} - ${errorDetail}`)
     }
 
     if (method === 'POST') {
