@@ -103,7 +103,7 @@ export const useAppStore = create<AppState>()(
 
         // Create Dataverse entry
         const entryId = await createTimeEntry({
-          Employee: employeeId || currentUserEmail, // Use GUID if found, fallback to email
+          craa5_employee: employeeId || currentUserEmail, // Use GUID if found, fallback to email
           craa5_project: projectId || siteName, // Use GUID if found, fallback to name
           craa5_clockintime: new Date(now).toISOString(),
           craa5_clockinlatitude: gps?.lat,

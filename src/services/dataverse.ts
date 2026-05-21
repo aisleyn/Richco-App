@@ -190,8 +190,8 @@ export async function fetchEmployeeShifts(employeeId: string, date: string): Pro
 
 export interface DataverseTimeEntry {
   craa5_timeentriesid?: string
-  Employee?: string // Email address (string, not lookup)
-  craa5_project?: string // Project name or ID
+  craa5_employee?: string // Employee lookup field
+  craa5_project?: string // Project lookup field
   craa5_clockintime?: string // ISO 8601
   craa5_clockouttime?: string // ISO 8601
   craa5_breakstart?: string // ISO 8601 (Break Start time)
@@ -245,7 +245,7 @@ export async function fetchRecentTimeEntries(employeeEmail: string, limit: numbe
   try {
     const res = (await apiCall(
       'GET',
-      `/craa5_timeentries?$filter=Employee eq '${employeeEmail}'&$select=craa5_timeentriesid,Employee,craa5_project,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_breakstart,craa5_breakend&$orderby=craa5_clockouttime desc&$top=${limit}`
+      `/craa5_timeentries?$filter=craa5_employee eq '${employeeEmail}'&$select=craa5_timeentriesid,craa5_employee,craa5_project,craa5_clockintime,craa5_clockouttime,craa5_totalhours,craa5_breakduration,craa5_status,craa5_breakstart,craa5_breakend&$orderby=craa5_clockouttime desc&$top=${limit}`
     )) as any
     console.log('[Dataverse] Fetched recent time entries:', res?.value)
     return res?.value || []
