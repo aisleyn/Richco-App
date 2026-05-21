@@ -20,8 +20,8 @@ export function BottomNav({ active, onChange }: Props) {
   const { unreadAlertCount, unreadMessageCount } = useAppStore()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-bg-surface/95 dark:bg-bg-surface-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 safe-bottom">
-      <div className="flex items-stretch max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 md:bottom-auto md:right-0 md:left-auto md:top-0 md:w-20 md:h-screen z-50 bg-bg-surface/95 dark:bg-bg-surface-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 md:border-t-0 md:border-l safe-bottom md:safe-left">
+      <div className="flex items-stretch max-w-lg mx-auto md:flex-col md:h-full md:max-w-none">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = active === id
           const badge = id === 'alerts' ? unreadAlertCount : id === 'crew' ? unreadMessageCount : 0
@@ -29,7 +29,7 @@ export function BottomNav({ active, onChange }: Props) {
             <button
               key={id}
               onClick={() => onChange(id)}
-              className="flex-1 flex flex-col items-center justify-center py-2 pt-3 gap-0.5 relative group"
+              className="flex-1 flex flex-col items-center justify-center py-2 pt-3 gap-0.5 relative group md:flex-col md:py-4 md:pt-4 md:flex-auto"
             >
               <div className="relative">
                 <Icon
@@ -49,7 +49,7 @@ export function BottomNav({ active, onChange }: Props) {
               {isActive && (
                 <motion.div
                   layoutId="nav-dot"
-                  className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600"
+                  className="absolute bottom-0.5 left-1/2 -translate-x-1/2 md:bottom-auto md:right-0.5 md:top-1/2 md:-translate-y-1/2 md:translate-x-0 w-1 h-1 rounded-full bg-blue-600"
                 />
               )}
             </button>
