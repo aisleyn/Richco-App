@@ -103,12 +103,12 @@ export const useAppStore = create<AppState>()(
 
         // Create Dataverse entry
         const entryId = await createTimeEntry({
-          craa5_Employee: employeeId || currentUserEmail,
-          craa5_ClockIn: new Date(now).toISOString(),
-          craa5_ClockInLatitude: gps?.lat,
-          craa5_ClockInLongitude: gps?.lng,
-          craa5_ClockInAddress: gps?.address,
-          craa5_Status: 'Clock In',
+          'craa5_employee@odata.bind': employeeId ? `/craa5_employees(${employeeId})` : undefined,
+          craa5_clockin: new Date(now).toISOString(),
+          craa5_clockinlatitude: gps?.lat,
+          craa5_clockinlongitude: gps?.lng,
+          craa5_clockinaddress: gps?.address,
+          craa5_status: 'Clock In',
         } as any)
 
         set({
@@ -196,15 +196,15 @@ export const useAppStore = create<AppState>()(
         // Update Dataverse entry with final data
         if (activeTimesheetId) {
           await updateTimeEntry(activeTimesheetId, {
-            craa5_ClockOut: new Date(now).toISOString(),
-            craa5_ClockOutLatitude: data.gpsOut?.lat,
-            craa5_ClockOutLongitude: data.gpsOut?.lng,
-            craa5_ClockOutAddress: data.gpsOut?.address,
-            craa5_TotalHours: parseFloat(rawHours.toFixed(4)),
-            craa5_BreakDuration: parseFloat((breakDurationMs / 3600000).toFixed(4)),
-            craa5_Status: 'Clock Out',
-            craa5_ShiftNotes: data.shiftSummary,
-            craa5_Concerns: data.concerns,
+            craa5_clockout: new Date(now).toISOString(),
+            craa5_clockoutlatitude: data.gpsOut?.lat,
+            craa5_clockoutlongitude: data.gpsOut?.lng,
+            craa5_clockoutaddress: data.gpsOut?.address,
+            craa5_totalhours: parseFloat(rawHours.toFixed(4)),
+            craa5_breakduration: parseFloat((breakDurationMs / 3600000).toFixed(4)),
+            craa5_status: 'Clock Out',
+            craa5_shiftnotes: data.shiftSummary,
+            craa5_concerns: data.concerns,
           })
         }
 
