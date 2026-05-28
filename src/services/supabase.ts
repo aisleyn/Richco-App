@@ -37,7 +37,8 @@ interface TimeEntry {
 async function timeEntriesRequest(
   method: string,
   endpoint: string,
-  data?: unknown
+  data?: unknown,
+  returnRepresentation = false
 ): Promise<any> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     console.warn('[Supabase] Missing credentials')
@@ -49,6 +50,11 @@ async function timeEntriesRequest(
     'Content-Type': 'application/json',
     apikey: SUPABASE_ANON_KEY,
     Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+  }
+
+  // For POST/PATCH, request the created/updated record back
+  if (returnRepresentation && (method === 'POST' || method === 'PATCH')) {
+    headers['Prefer'] = 'return=representation'
   }
 
   try {
@@ -64,7 +70,8 @@ async function timeEntriesRequest(
       throw new Error(`Supabase error: ${res.status}`)
     }
 
-    return res.json()
+    const text = await res.text()
+    return text ? JSON.parse(text) : null
   } catch (err) {
     console.error('[Supabase] Request failed:', err)
     throw err
@@ -73,7 +80,7 @@ async function timeEntriesRequest(
 
 export async function createTimeEntry(entry: TimeEntry): Promise<string | null> {
   try {
-    const result = await timeEntriesRequest('POST', '/time_entries', entry)
+    const result = await timeEntriesRequest('POST', '/time_entries', entry, true)
     if (result && result.length > 0) {
       console.log('[Supabase] Created time entry:', result[0].id)
       return result[0].id
@@ -90,7 +97,7 @@ export async function updateTimeEntry(
   updates: Partial<TimeEntry>
 ): Promise<boolean> {
   try {
-    await timeEntriesRequest('PATCH', `/time_entries?id=eq.${entryId}`, updates)
+    await timeEntriesRequest('PATCH', `/time_entries?id=eq.${entryId}`, updates, true)
     console.log('[Supabase] Updated time entry:', entryId)
     return true
   } catch (err) {
@@ -138,7 +145,7 @@ interface BreakPeriod {
 
 export async function createBreakPeriod(period: BreakPeriod): Promise<string | null> {
   try {
-    const result = await timeEntriesRequest('POST', '/break_periods', period)
+    const result = await timeEntriesRequest('POST', '/break_periods', period, true)
     if (result && result.length > 0) {
       console.log('[Supabase] Created break period:', result[0].id)
       return result[0].id
@@ -159,7 +166,7 @@ export async function endBreakPeriod(
     await timeEntriesRequest('PATCH', `/break_periods?id=eq.${breakPeriodId}`, {
       break_end: endTime,
       duration_minutes: durationMinutes,
-    })
+    }, true)
     console.log('[Supabase] Ended break period:', breakPeriodId)
     return true
   } catch (err) {

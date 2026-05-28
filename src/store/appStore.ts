@@ -196,7 +196,8 @@ export const useAppStore = create<AppState>()(
         }
 
         // Update Supabase entry with final data (source of truth)
-        if (activeTimesheetId) {
+        // Only update if we have a real UUID (not a fallback local ID)
+        if (activeTimesheetId && activeTimesheetId.length === 36 && !activeTimesheetId.startsWith('ts-')) {
           await updateTimeEntry(activeTimesheetId, {
             clock_out_time: new Date(now).toISOString(),
             clock_out_latitude: data.gpsOut?.lat,
