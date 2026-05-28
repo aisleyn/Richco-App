@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware'
 import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
 import { mockAlerts, mockMessages, currentUser } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
-import { createTimeEntry, updateTimeEntry, getMandatoryBreakHours, getEmployeeByEmail, getProjectByName } from '../services/dataverse'
+import { createTimeEntry, updateTimeEntry } from '../services/supabase'
+import { getMandatoryBreakHours } from '../services/dataverse'
 import { generateLeaveRequestAlerts } from '../services/timeoff'
 
 interface AppState {
@@ -97,19 +98,17 @@ export const useAppStore = create<AppState>()(
         const id = `ts-${now}`
         const { currentUserAadId, currentUserEmail, currentUserName } = get()
 
-        // Look up employee and project GUIDs
-        const employeeId = await getEmployeeByEmail(currentUserEmail)
-        const projectId = await getProjectByName(siteName)
-
-        // Create Dataverse entry
+        // Create Supabase entry (source of truth)
         const entryId = await createTimeEntry({
-          'craa5_employee@odata.bind': employeeId ? `/craa5_employees(${employeeId})` : undefined,
-          craa5_clockin: new Date(now).toISOString(),
-          craa5_clockinlatitude: gps?.lat,
-          craa5_clockinlongitude: gps?.lng,
-          craa5_clockinaddress: gps?.address,
-          craa5_status: 'Clock In',
-        } as any)
+          employee_id: currentUserAadId,
+          employee_name: currentUserName,
+          site_id: siteId,
+          site_name: siteName,
+          clock_in_time: new Date(now).toISOString(),
+          clock_in_latitude: gps?.lat,
+          clock_in_longitude: gps?.lng,
+          clock_in_address: gps?.address,
+        })
 
         set({
           clockedIn: true,
@@ -129,7 +128,8 @@ export const useAppStore = create<AppState>()(
             gpsIn: gps,
           },
         })
-        // Also send to Power Automate for compatibility
+
+        // Also send to Power Automate for reporting/notifications
         sendClockIn({
           employeeId: currentUserAadId,
           employeeName: currentUserName,
@@ -193,18 +193,22 @@ export const useAppStore = create<AppState>()(
           console.error('[Store] Failed to save timecard to localStorage:', err)
         }
 
-        // Update Dataverse entry with final data
+        // Update Supabase entry with final data (source of truth)
         if (activeTimesheetId) {
           await updateTimeEntry(activeTimesheetId, {
-            craa5_clockout: new Date(now).toISOString(),
-            craa5_clockoutlatitude: data.gpsOut?.lat,
-            craa5_clockoutlongitude: data.gpsOut?.lng,
-            craa5_clockoutaddress: data.gpsOut?.address,
-            craa5_totalhours: parseFloat(rawHours.toFixed(4)),
-            craa5_breakduration: parseFloat((breakDurationMs / 3600000).toFixed(4)),
-            craa5_status: 'Clock Out',
-            craa5_shiftnotes: data.shiftSummary,
-            craa5_concerns: data.concerns,
+            clock_out_time: new Date(now).toISOString(),
+            clock_out_latitude: data.gpsOut?.lat,
+            clock_out_longitude: data.gpsOut?.lng,
+            clock_out_address: data.gpsOut?.address,
+            total_hours: parseFloat(rawHours.toFixed(4)),
+            break_hours: parseFloat((breakDurationMs / 3600000).toFixed(4)),
+            regular_hours: parseFloat(regularHours.toFixed(4)),
+            overtime_hours: parseFloat(overtimeHours.toFixed(4)),
+            shift_notes: data.shiftSummary,
+            concerns: data.concerns,
+            vehicle_used: data.vehicleUsed,
+            break_taken: data.breakTaken ?? false,
+            photos_count: data.photos?.length ?? 0,
           })
         }
 
