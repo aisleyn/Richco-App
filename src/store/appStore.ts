@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
 import { mockAlerts, mockMessages, currentUser } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
-import { createTimeEntry, updateTimeEntry } from '../services/supabase'
+import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod } from '../services/supabase'
 import { getMandatoryBreakHours } from '../services/dataverse'
 import { generateLeaveRequestAlerts } from '../services/timeoff'
 
@@ -21,6 +21,7 @@ interface AppState {
   breakStartTime: number | null
   totalBreakMs: number
   activeTimesheetId: string | null
+  activeBreakPeriodId: string | null
   activeSheetEntry: Partial<TimesheetEntry> | null
   currentShiftIsOvernight: boolean // Track for break deduction
 
@@ -83,6 +84,7 @@ export const useAppStore = create<AppState>()(
       breakStartTime: null,
       totalBreakMs: 0,
       activeTimesheetId: null,
+      activeBreakPeriodId: null,
       activeSheetEntry: null,
       currentShiftIsOvernight: false,
       alerts: [...mockAlerts, ...generateLeaveRequestAlerts()] as Alert[],
@@ -219,6 +221,7 @@ export const useAppStore = create<AppState>()(
           breakStartTime: null,
           totalBreakMs: 0,
           activeTimesheetId: null,
+          activeBreakPeriodId: null,
           activeSheetEntry: null,
           currentShiftIsOvernight: false,
         })
@@ -247,35 +250,51 @@ export const useAppStore = create<AppState>()(
       startBreak: async () => {
         const { activeTimesheetId, currentUserAadId } = get()
         const now = Date.now()
-        set({ breakActive: true, breakStartTime: now })
+        const nowIso = new Date(now).toISOString()
 
-        // Break data is tracked and saved at clock-out time
+        // Create break period in Supabase
+        const breakPeriodId = await createBreakPeriod({
+          time_entry_id: activeTimesheetId ?? '',
+          break_start: nowIso,
+        })
+
+        set({ breakActive: true, breakStartTime: now, activeBreakPeriodId: breakPeriodId })
+
+        // Also notify Power Automate
         sendBreakEvent({
           employeeId: currentUserAadId,
           timesheetId: activeTimesheetId ?? '',
           event: 'start',
-          timestamp: new Date(now).toISOString(),
+          timestamp: nowIso,
         })
       },
 
       endBreak: async () => {
-        const { breakStartTime, totalBreakMs, activeTimesheetId, currentUserAadId } = get()
-        const additionalBreak = breakStartTime ? Date.now() - breakStartTime : 0
+        const { breakStartTime, totalBreakMs, activeTimesheetId, activeBreakPeriodId, currentUserAadId } = get()
+        const now = Date.now()
+        const nowIso = new Date(now).toISOString()
+        const additionalBreak = breakStartTime ? now - breakStartTime : 0
         const newTotal = totalBreakMs + additionalBreak
         const breakDurationMinutes = Math.round(additionalBreak / 60000)
+
+        // Update break period in Supabase with end time
+        if (activeBreakPeriodId) {
+          await endBreakPeriod(activeBreakPeriodId, nowIso, breakDurationMinutes)
+        }
 
         set({
           breakActive: false,
           breakStartTime: null,
+          activeBreakPeriodId: null,
           totalBreakMs: newTotal,
         })
 
-        // Break duration is tracked and saved to Dataverse at clock-out time
+        // Also notify Power Automate
         sendBreakEvent({
           employeeId: currentUserAadId,
           timesheetId: activeTimesheetId ?? '',
           event: 'end',
-          timestamp: new Date().toISOString(),
+          timestamp: nowIso,
           breakDurationMinutes,
         })
       },
@@ -342,6 +361,7 @@ export const useAppStore = create<AppState>()(
         breakStartTime: state.breakStartTime,
         totalBreakMs: state.totalBreakMs,
         activeTimesheetId: state.activeTimesheetId,
+        activeBreakPeriodId: state.activeBreakPeriodId,
         activeSheetEntry: state.activeSheetEntry,
         currentShiftIsOvernight: state.currentShiftIsOvernight,
         currentUserAadId: state.currentUserAadId,

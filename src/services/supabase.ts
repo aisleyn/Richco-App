@@ -124,3 +124,59 @@ export async function getEmployeeTimeEntries(
     return []
   }
 }
+
+// ─── Break Periods ────────────────────────────────────────────────────────
+
+interface BreakPeriod {
+  id?: string
+  time_entry_id: string
+  break_start: string
+  break_end?: string
+  duration_minutes?: number
+  created_at?: string
+}
+
+export async function createBreakPeriod(period: BreakPeriod): Promise<string | null> {
+  try {
+    const result = await timeEntriesRequest('POST', '/break_periods', period)
+    if (result && result.length > 0) {
+      console.log('[Supabase] Created break period:', result[0].id)
+      return result[0].id
+    }
+    return null
+  } catch (err) {
+    console.error('[Supabase] Failed to create break period:', err)
+    return null
+  }
+}
+
+export async function endBreakPeriod(
+  breakPeriodId: string,
+  endTime: string,
+  durationMinutes: number
+): Promise<boolean> {
+  try {
+    await timeEntriesRequest('PATCH', `/break_periods?id=eq.${breakPeriodId}`, {
+      break_end: endTime,
+      duration_minutes: durationMinutes,
+    })
+    console.log('[Supabase] Ended break period:', breakPeriodId)
+    return true
+  } catch (err) {
+    console.error('[Supabase] Failed to end break period:', err)
+    return false
+  }
+}
+
+export async function getTimeEntryBreakPeriods(timeEntryId: string): Promise<BreakPeriod[]> {
+  try {
+    const result = await timeEntriesRequest(
+      'GET',
+      `/break_periods?time_entry_id=eq.${timeEntryId}&order=break_start.asc`
+    )
+    return result || []
+  } catch (err) {
+    console.error('[Supabase] Failed to fetch break periods:', err)
+    return []
+  }
+}
