@@ -64,7 +64,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
       concerns,
       shiftSummary: summary,
       photos,
-      gpsOut,
+      gpsOut: gpsOut || undefined,
     })
     setSubmitted(true)
     setTimeout(onConfirm, 1800)

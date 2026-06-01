@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 interface GeolocationData {
   lat: number
   lng: number
-  address?: string
+  address: string
 }
 
 interface UseGeolocationReturn {
@@ -18,19 +18,19 @@ export function useGeolocation(): UseGeolocationReturn {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const getAddress = async (lat: number, lng: number): Promise<string | undefined> => {
+  const getAddress = async (lat: number, lng: number): Promise<string> => {
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
       )
       if (response.ok) {
         const data = await response.json()
-        return data.address?.address || data.display_name
+        return data.address?.address || data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`
       }
     } catch (err) {
       console.warn('[Geolocation] Failed to fetch address:', err)
     }
-    return undefined
+    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
   }
 
   const requestLocation = async (): Promise<GeolocationData | null> => {
