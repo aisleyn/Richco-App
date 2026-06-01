@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { format } from 'date-fns'
-import { Bell, MessageSquare, X } from 'lucide-react'
+import { Bell, MessageSquare, X, AlertCircle } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { WeatherCard } from '../components/home/WeatherCard'
 import { ClockInCard } from '../components/home/ClockInCard'
@@ -10,6 +10,7 @@ import { AlertsStrip } from '../components/home/AlertsStrip'
 import { ClockOutModal } from '../components/timesheet/ClockOutModal'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useGreeting } from '../hooks/useGreeting'
+import { useGeolocation } from '../hooks/useGeolocation'
 import { currentUser } from '../data/mockData'
 import { useAppStore } from '../store/appStore'
 import { fetchSites, type DataverseSite } from '../services/dataverse'
@@ -22,11 +23,13 @@ interface Props {
 export function HomeScreen({ onNavigate }: Props) {
   const greeting = useGreeting(currentUser.firstName)
   const { clockedIn, clockIn, unreadAlertCount, unreadMessageCount } = useAppStore()
+  const { requestLocation, isLoading: isGeoLoading, error: geoError } = useGeolocation()
   const [showClockOut, setShowClockOut] = useState(false)
   const [showSitePicker, setShowSitePicker] = useState(false)
   const [sites, setSites] = useState<DataverseSite[]>([])
   const [selectedSite, setSelectedSite] = useState<DataverseSite | null>(null)
   const [isLoadingSites, setIsLoadingSites] = useState(false)
+  const [isClockingIn, setIsClockingIn] = useState(false)
   const today = new Date()
 
   useEffect(() => {
@@ -43,11 +46,24 @@ export function HomeScreen({ onNavigate }: Props) {
     setShowSitePicker(true)
   }
 
-  function confirmClockIn(isOvernight: boolean) {
+  async function confirmClockIn(isOvernight: boolean) {
     if (!selectedSite) return
-    clockIn(selectedSite.craa5_projectid, selectedSite.craa5_projectname, isOvernight, { lat: 49.1234, lng: -122.7654, address: selectedSite.craa5_client || '18955 Fraser Hwy, Surrey, BC' })
+    setIsClockingIn(true)
+
+    // Request real GPS coordinates
+    const location = await requestLocation()
+
+    // Use real GPS if available, otherwise fall back to site location
+    const gpsData = location || {
+      lat: 49.1234,
+      lng: -122.7654,
+      address: selectedSite.craa5_client || '18955 Fraser Hwy, Surrey, BC'
+    }
+
+    clockIn(selectedSite.craa5_projectid, selectedSite.craa5_projectname, isOvernight, gpsData)
     setShowSitePicker(false)
     setSelectedSite(null)
+    setIsClockingIn(false)
   }
 
   // Supervisor stat bar
@@ -192,12 +208,18 @@ export function HomeScreen({ onNavigate }: Props) {
               </div>
             )}
 
+            {geoError && (
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
+                <AlertCircle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-red-400 text-xs">{geoError}</p>
+              </div>
+            )}
             <button
               onClick={() => confirmClockIn(false)}
-              disabled={!selectedSite || isLoadingSites}
+              disabled={!selectedSite || isLoadingSites || isClockingIn}
               className="w-full mt-6 py-3 bg-brand-green text-slate-800 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Clock In
+              {isClockingIn ? 'Getting GPS...' : 'Clock In'}
             </button>
           </motion.div>
         </motion.div>

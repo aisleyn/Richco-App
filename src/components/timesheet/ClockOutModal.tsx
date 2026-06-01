@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Camera, CheckCircle, ChevronDown, AlertCircle } from 'lucide-react'
+import { X, Camera, CheckCircle, ChevronDown, AlertCircle, MapPin } from 'lucide-react'
 import { jobSites, mockVehicles } from '../../data/mockData'
 import { useAppStore } from '../../store/appStore'
+import { useGeolocation } from '../../hooks/useGeolocation'
 import { useElapsedTime, formatElapsed, msToDecimalHours } from '../../hooks/useTimer'
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 export function ClockOutModal({ onClose, onConfirm }: Props) {
   const { clockInTime, clockedIn, breakActive, breakStartTime, totalBreakMs, currentShiftIsOvernight, clockOut } = useAppStore()
+  const { requestLocation, isLoading: isGeoLoading } = useGeolocation()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
 
   const [siteId, setSiteId] = useState(jobSites[0].id)
@@ -24,6 +26,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [clockOutGps, setClockOutGps] = useState(false)
 
   // Mandatory break depends on shift type
   const mandatoryBreakHours = currentShiftIsOvernight ? 0.5 : 1.0 // -0.5h overnight, -1h day shift
@@ -46,9 +49,14 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
     return Object.keys(e).length === 0
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!validate()) return
-    clockOut({
+    setClockOutGps(true)
+
+    // Request GPS for clock out
+    const gpsOut = await requestLocation()
+
+    await clockOut({
       clockOutTime: Date.now(),
       siteId,
       vehicleUsed: vehicleId,
@@ -56,6 +64,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
       concerns,
       shiftSummary: summary,
       photos,
+      gpsOut,
     })
     setSubmitted(true)
     setTimeout(onConfirm, 1800)
@@ -264,11 +273,18 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
           {/* Footer */}
           <div className="px-5 py-4 border-t border-slate-200 shrink-0">
+            {clockOutGps && isGeoLoading && (
+              <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2">
+                <MapPin size={14} className="text-blue-400 animate-pulse" />
+                <p className="text-blue-400 text-xs">Capturing location...</p>
+              </div>
+            )}
             <button
               onClick={handleSubmit}
-              className="w-full py-4 bg-red-500 active:bg-red-600 rounded-xl text-slate-800 font-bold text-base transition-colors"
+              disabled={isGeoLoading}
+              className="w-full py-4 bg-red-500 active:bg-red-600 rounded-xl text-slate-800 font-bold text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Finalize Clock Out
+              {isGeoLoading && clockOutGps ? 'Getting Location...' : 'Finalize Clock Out'}
             </button>
           </div>
         </motion.div>

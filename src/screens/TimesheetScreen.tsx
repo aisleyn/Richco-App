@@ -10,6 +10,7 @@ import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
 import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
+import { useGeolocation } from '../hooks/useGeolocation'
 import { isUserAdmin } from '../services/crew'
 import { jobSites } from '../data/mockData'
 import type { TimesheetEntry } from '../types'
@@ -22,6 +23,7 @@ interface Props {
 
 export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const { clockedIn, clockIn, clockInTime, currentUserEmail } = useAppStore()
+  const { requestLocation } = useGeolocation()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null)
   const [showClockOut, setShowClockOut] = useState(false)
   const [showManualTimecard, setShowManualTimecard] = useState(false)
@@ -61,12 +63,17 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     setEditingTimecard(null)
   }
 
-  function handleClockIn(isOvernight: boolean) {
+  async function handleClockIn(isOvernight: boolean) {
     // Admins default to Office, others default to first active site
     const defaultSite = isAdmin ? jobSites.find(s => s.id === 'office') : jobSites.find(s => s.status === 'active' && s.id !== 'office')
     const siteId = defaultSite?.id ?? 'office'
     const siteName = defaultSite?.name ?? 'Office'
-    const gps = defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: 'Richco Office' }
+
+    // Request real GPS coordinates
+    const location = await requestLocation()
+
+    // Use real GPS if available, otherwise fall back to site location
+    const gps = location || (defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: 'Richco Office' })
     clockIn(siteId, siteName, isOvernight, gps)
   }
 

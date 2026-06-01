@@ -197,8 +197,8 @@ export const useAppStore = create<AppState>()(
 
         // Update Supabase entry with final data (source of truth)
         // Only update if we have a real UUID (not a fallback local ID)
-        if (activeTimesheetId && activeTimesheetId.length === 36 && !activeTimesheetId.startsWith('ts-')) {
-          await updateTimeEntry(activeTimesheetId, {
+        if (activeTimesheetId && !activeTimesheetId.startsWith('ts-')) {
+          const updated = await updateTimeEntry(activeTimesheetId, {
             clock_out_time: new Date(now).toISOString(),
             clock_out_latitude: data.gpsOut?.lat,
             clock_out_longitude: data.gpsOut?.lng,
@@ -213,6 +213,11 @@ export const useAppStore = create<AppState>()(
             break_taken: data.breakTaken ?? false,
             photos_count: data.photos?.length ?? 0,
           })
+          if (!updated) {
+            console.warn('[Store] Failed to update time entry in Supabase:', activeTimesheetId)
+          }
+        } else if (activeTimesheetId?.startsWith('ts-')) {
+          console.warn('[Store] Fallback ID used, not updating Supabase:', activeTimesheetId)
         }
 
         set({
