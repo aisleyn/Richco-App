@@ -36,12 +36,14 @@ export function useGeolocation(): UseGeolocationReturn {
   const requestLocation = async (): Promise<GeolocationData | null> => {
     setIsLoading(true)
     setError(null)
+    console.log('[Geolocation] Requesting location...')
 
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
         const msg = 'Geolocation not supported by this browser'
         setError(msg)
         setIsLoading(false)
+        console.error('[Geolocation]', msg)
         resolve(null)
         return
       }
@@ -49,12 +51,14 @@ export function useGeolocation(): UseGeolocationReturn {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords
+          console.log('[Geolocation] Got coordinates:', latitude, longitude)
           const address = await getAddress(latitude, longitude)
           const loc: GeolocationData = {
             lat: latitude,
             lng: longitude,
             address,
           }
+          console.log('[Geolocation] Location resolved:', loc)
           setLocation(loc)
           setIsLoading(false)
           resolve(loc)
@@ -69,7 +73,7 @@ export function useGeolocation(): UseGeolocationReturn {
             msg = 'Location request timed out'
           }
           setError(msg)
-          console.error('[Geolocation] Error:', msg, err)
+          console.error('[Geolocation] Error:', msg, err.code, err.message)
           setIsLoading(false)
           resolve(null)
         },
