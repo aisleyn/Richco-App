@@ -51,15 +51,22 @@ export function HomeScreen({ onNavigate }: Props) {
     setIsClockingIn(true)
 
     // Request real GPS coordinates
+    console.log('[HomeScreen] Requesting GPS for clock in...')
     const location = await requestLocation()
+    console.log('[HomeScreen] GPS result:', location)
 
-    // Use real GPS if available, otherwise fall back to site location
+    if (!location) {
+      console.warn('[HomeScreen] GPS failed, using site location only')
+    }
+
+    // Use real GPS if available, otherwise use site location
     const gpsData = location || {
-      lat: 49.1234,
-      lng: -122.7654,
+      lat: parseFloat(selectedSite.craa5_client?.split(',')[0] || '49.1234'),
+      lng: parseFloat(selectedSite.craa5_client?.split(',')[1] || '-122.7654'),
       address: selectedSite.craa5_client || '18955 Fraser Hwy, Surrey, BC'
     }
 
+    console.log('[HomeScreen] Clocking in with GPS data:', gpsData)
     clockIn(selectedSite.craa5_projectid, selectedSite.craa5_projectname, isOvernight, gpsData)
     setShowSitePicker(false)
     setSelectedSite(null)

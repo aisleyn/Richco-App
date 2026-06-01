@@ -70,10 +70,17 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     const siteName = defaultSite?.name ?? 'Office'
 
     // Request real GPS coordinates
+    console.log('[TimesheetScreen] Requesting GPS for quick clock in...')
     const location = await requestLocation()
+    console.log('[TimesheetScreen] GPS result:', location)
 
-    // Use real GPS if available, otherwise fall back to site location
+    if (!location) {
+      console.warn('[TimesheetScreen] GPS failed, using site location only')
+    }
+
+    // Use real GPS if available, otherwise use site location
     const gps = location || (defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: 'Richco Office' })
+    console.log('[TimesheetScreen] Clocking in with GPS data:', gps)
     clockIn(siteId, siteName, isOvernight, gps)
   }
 
