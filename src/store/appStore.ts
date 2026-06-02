@@ -89,7 +89,22 @@ export const useAppStore = create<AppState>()(
       currentShiftIsOvernight: false,
       alerts: [...mockAlerts, ...generateLeaveRequestAlerts()] as Alert[],
       unreadAlertCount: [...mockAlerts, ...generateLeaveRequestAlerts()].filter(a => !a.read).length,
-      unreadMessageCount: 4,
+      unreadMessageCount: (() => {
+        try {
+          const stored = localStorage.getItem('richco-crew-messages')
+          if (!stored) return 0
+          const messages = JSON.parse(stored)
+          let count = 0
+          Object.values(messages).forEach((threadMessages: any) => {
+            if (Array.isArray(threadMessages)) {
+              count += threadMessages.filter((m: any) => !m.read).length
+            }
+          })
+          return count
+        } catch {
+          return 0
+        }
+      })(),
       crewMessages: mockMessages,
       crewActiveThread: null,
       activeScreen: 'home',

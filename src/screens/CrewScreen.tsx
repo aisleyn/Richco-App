@@ -91,13 +91,51 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const [viewingProfile, setViewingProfile] = useState<StoredCrewMember | null>(null)
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
   const [refresh, setRefresh] = useState(0)
-  const { currentUserEmail } = useAppStore()
+  const { currentUserEmail, setUnreadMessageCount } = useAppStore()
+
+  // Calculate unread message count
+  const calculateUnreadCount = () => {
+    try {
+      const stored = localStorage.getItem(CREW_MESSAGES_KEY)
+      if (!stored) return 0
+      const messages = JSON.parse(stored)
+      let count = 0
+      Object.values(messages).forEach((threadMessages: any) => {
+        if (Array.isArray(threadMessages)) {
+          count += threadMessages.filter((m: any) => !m.read && m.senderId !== currentUserMember?.id).length
+        }
+      })
+      return count
+    } catch {
+      return 0
+    }
+  }
+
+  // Mark messages as read when viewing a thread
+  const markThreadAsRead = (threadId: string) => {
+    try {
+      const stored = localStorage.getItem(CREW_MESSAGES_KEY)
+      if (!stored) return
+      const messages = JSON.parse(stored)
+      if (messages[threadId]) {
+        messages[threadId] = messages[threadId].map((m: any) => ({
+          ...m,
+          read: m.senderId !== currentUserMember?.id ? true : m.read
+        }))
+        localStorage.setItem(CREW_MESSAGES_KEY, JSON.stringify(messages))
+        setUnreadMessageCount(calculateUnreadCount())
+      }
+    } catch (err) {
+      console.error('[Messages] Failed to mark thread as read:', err)
+    }
+  }
 
   useEffect(() => {
     // Initialize crew system and load crew members
     initializeCrew()
     setCrew(getAllCrew())
-  }, [])
+    setUnreadMessageCount(calculateUnreadCount())
+  }, [setUnreadMessageCount])
 
   const isAdmin = isUserAdmin(currentUserEmail)
   const currentUserMember = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())
@@ -126,7 +164,16 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
     saveThreadMessage(activeThreadId, msg)
     setMessageInput('')
     setRefresh(prev => prev + 1)
+    // Update unread count after sending
+    setUnreadMessageCount(calculateUnreadCount())
   }
+
+  // Mark thread messages as read when viewing
+  useEffect(() => {
+    if (activeThreadId) {
+      markThreadAsRead(activeThreadId)
+    }
+  }, [activeThreadId])
 
   const currentThreadMsgs = activeThreadId ? getThreadMessages(activeThreadId) : []
   const otherUserId = activeThreadId?.split('-').find(id => id !== currentUserMember?.id) ?? ''

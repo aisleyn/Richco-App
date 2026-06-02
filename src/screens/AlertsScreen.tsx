@@ -163,7 +163,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                                   value={denialReason}
                                   onChange={e => setDenialReason(e.target.value)}
                                   placeholder="Reason for denial..."
-                                  className="w-full bg-bg-elevated border border-red-500/20 rounded-lg px-3 py-2 text-slate-800 text-sm resize-none"
+                                  className="w-full bg-bg-elevated dark:bg-bg-elevated-dark border border-red-500/20 dark:border-red-500/30 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 text-sm resize-none placeholder:text-slate-600 dark:placeholder:text-slate-500"
                                   rows={2}
                                 />
                                 <div className="flex gap-2">
