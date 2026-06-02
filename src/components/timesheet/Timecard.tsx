@@ -27,24 +27,28 @@ function saveTimecards(timecards: TimesheetEntry[]) {
 interface TimecardListProps {
   isAdmin?: boolean
   onEditTimecard?: (timecard: TimesheetEntry) => void
+  daysBack?: number
 }
 
-export function TimecardList({ isAdmin = false, onEditTimecard }: TimecardListProps) {
+export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: TimecardListProps) {
   const [timecards, setTimecards] = useState<TimesheetEntry[]>([])
 
   useEffect(() => {
     const cards = getLocalTimecards()
-    const today = new Date().toISOString().split('T')[0]
-    const todayCards = cards.filter(tc => tc.date === today)
-    setTimecards(todayCards)
+    const now = new Date()
+    const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const recentCards = cards.filter(tc => tc.date >= cutoffDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    setTimecards(recentCards)
 
     const handleStorageChange = () => {
-      setTimecards(getLocalTimecards())
+      const updated = getLocalTimecards()
+      const recentUpdated = updated.filter(tc => tc.date >= cutoffDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      setTimecards(recentUpdated)
     }
 
     window.addEventListener('storage', handleStorageChange)
     return () => window.removeEventListener('storage', handleStorageChange)
-  }, [])
+  }, [daysBack])
 
   function deleteTimecard(id: string) {
     if (!window.confirm('Are you sure you want to delete this timecard?')) return

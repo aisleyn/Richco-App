@@ -15,10 +15,16 @@ import { isUserAdmin } from '../services/crew'
 import { jobSites } from '../data/mockData'
 import type { TimesheetEntry } from '../types'
 
-const weekStats = { today: 0, week: 34.93, remaining: 5.07, overtimeWeek: 2.73, month: 134.18 }
-
 interface Props {
   onNavigate: (s: string) => void
+}
+
+interface WeekStats {
+  today: number
+  week: number
+  remaining: number
+  overtimeWeek: number
+  month: number
 }
 
 export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
@@ -30,18 +36,42 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const [editingTimecard, setEditingTimecard] = useState<TimesheetEntry | null>(null)
   const [timecardRefresh, setTimecardRefresh] = useState(0)
   const [completedTodayHours, setCompletedTodayHours] = useState(0)
+  const [weekStats, setWeekStats] = useState<WeekStats>({ today: 0, week: 0, remaining: 0, overtimeWeek: 0, month: 0 })
   const isAdmin = isUserAdmin(currentUserEmail)
   const hours = elapsed / 3600000
 
-  // Sync completed timecards from today
+  // Calculate stats from stored timecards
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
+    const now = new Date()
+    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+
     try {
       const stored = localStorage.getItem('richco-completed-timecards')
       const timecards: TimesheetEntry[] = stored ? JSON.parse(stored) : []
+
+      // Today's completed timecards
       const todayTimecards = timecards.filter(tc => tc.date === today)
-      const total = todayTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
-      setCompletedTodayHours(total)
+      const completedToday = todayTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
+
+      // This week (past 7 days)
+      const weekTimecards = timecards.filter(tc => tc.date >= weekStart && tc.date <= today)
+      const weekHours = weekTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
+      const weekOvertime = weekTimecards.reduce((sum, tc) => sum + (tc.overtimeHours || 0), 0)
+
+      // This month
+      const monthTimecards = timecards.filter(tc => tc.date >= monthStart && tc.date <= today)
+      const monthHours = monthTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
+
+      setCompletedTodayHours(completedToday)
+      setWeekStats({
+        today: completedToday,
+        week: weekHours,
+        remaining: Math.max(0, 40 - weekHours),
+        overtimeWeek: weekOvertime,
+        month: monthHours,
+      })
     } catch (err) {
       console.error('[Timecard] Failed to read timecards:', err)
     }
@@ -115,8 +145,8 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               <Calendar size={14} className="text-blue-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Week</span>
             </div>
-            <p className="text-slate-800 text-xl md:text-2xl font-bold">{(weekStats.week + todayHours).toFixed(2)}<span className="text-slate-500 text-xs md:text-sm font-normal">h</span></p>
-            <p className="text-slate-500 text-xs mt-1">{Math.max(0, weekStats.remaining - todayHours).toFixed(2)}h remaining</p>
+            <p className="text-slate-800 text-xl md:text-2xl font-bold">{(weekStats.week + hours).toFixed(2)}<span className="text-slate-500 text-xs md:text-sm font-normal">h</span></p>
+            <p className="text-slate-500 text-xs mt-1">{Math.max(0, 40 - (weekStats.week + hours)).toFixed(2)}h remaining</p>
           </div>
 
           <div className={`bg-bg-surface rounded-2xl p-4 border ${weekStats.overtimeWeek > 0 ? 'border-amber-500/20' : 'border-slate-200'}`}>
@@ -135,7 +165,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               <Calendar size={14} className="text-purple-400" />
               <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">This Month</span>
             </div>
-            <p className="text-slate-800 text-xl md:text-2xl font-bold">{(weekStats.month + todayHours).toFixed(2)}<span className="text-slate-500 text-xs md:text-sm font-normal">h</span></p>
+            <p className="text-slate-800 text-xl md:text-2xl font-bold">{(weekStats.month + hours).toFixed(2)}<span className="text-slate-500 text-xs md:text-sm font-normal">h</span></p>
           </div>
         </motion.div>
 
@@ -148,12 +178,12 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
         >
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-slate-400 text-xs font-medium">Weekly Progress</span>
-            <span className="text-slate-400 text-xs">{(weekStats.week + todayHours).toFixed(1)} / 40h</span>
+            <span className="text-slate-400 text-xs">{(weekStats.week + hours).toFixed(1)} / 40h</span>
           </div>
           <div className="h-2 bg-bg-elevated rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${Math.min(100, ((weekStats.week + todayHours) / 40) * 100)}%` }}
+              animate={{ width: `${Math.min(100, ((weekStats.week + hours) / 40) * 100)}%` }}
               transition={{ duration: 0.8, delay: 0.3 }}
               className="h-full rounded-full bg-gradient-to-r from-blue-600 to-amber-400"
             />
