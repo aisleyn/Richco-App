@@ -32,7 +32,7 @@ export function useWeather() {
             uvIndex: Math.round(data.current.uvi),
             precipChance: Math.round((data.hourly?.[0]?.pop ?? 0) * 100),
             icon: data.current.weather[0].icon,
-            hourly: data.hourly?.slice(0, 7).map((h: any) => ({
+            hourly: data.hourly?.slice(0, 24).map((h: any) => ({
               time: new Date(h.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
               temp: Math.round(h.temp),
               condition: h.weather[0].main,

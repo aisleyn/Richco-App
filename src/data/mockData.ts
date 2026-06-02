@@ -160,6 +160,10 @@ export const mockWeather: WeatherData = {
     { time: '3 PM', temp: 73, condition: 'Partly Cloudy', precipChance: 20, icon: 'partly-cloudy' },
     { time: '5 PM', temp: 70, condition: 'Cloudy', precipChance: 30, icon: 'cloudy' },
     { time: '7 PM', temp: 66, condition: 'Cloudy', precipChance: 40, icon: 'cloudy' },
+    { time: '9 PM', temp: 62, condition: 'Cloudy', precipChance: 35, icon: 'cloudy' },
+    { time: '11 PM', temp: 59, condition: 'Partly Cloudy', precipChance: 25, icon: 'partly-cloudy' },
+    { time: '1 AM', temp: 56, condition: 'Clear', precipChance: 5, icon: 'clear' },
+    { time: '3 AM', temp: 54, condition: 'Clear', precipChance: 5, icon: 'clear' },
   ],
   daily: [
     { day: 'Today', high: 74, low: 58, condition: 'Partly Cloudy', precipChance: 20, icon: 'partly-cloudy' },
