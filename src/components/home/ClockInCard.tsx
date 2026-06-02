@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Clock, Play, Pause, Square, ChevronDown } from 'lucide-react'
+import { MapPin, Clock, Play, Pause, Square, ChevronDown, Plus } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { useElapsedTime, formatElapsed } from '../../hooks/useTimer'
 import { todayShifts } from '../../data/mockData'
