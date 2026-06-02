@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion'
-import { MapPin, Clock, Play, Pause, Square } from 'lucide-react'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { MapPin, Clock, Play, Pause, Square, ChevronDown } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { useElapsedTime, formatElapsed } from '../../hooks/useTimer'
 import { todayShifts } from '../../data/mockData'
@@ -14,6 +15,7 @@ interface Props {
 export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernightShift = false }: Props) {
   const { clockedIn, clockInTime, breakActive, breakStartTime, totalBreakMs, startBreak, endBreak } = useAppStore()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
+  const [shiftsExpanded, setShiftsExpanded] = useState(false)
   const shift = todayShifts[0]
 
   if (clockedIn) {
@@ -85,21 +87,55 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
       animate={{ opacity: 1, y: 0 }}
       className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
     >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Today's Shift</p>
-            <p className="text-slate-800 dark:text-slate-100 font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
-            <p className="text-slate-400 dark:text-slate-500 text-sm flex items-center gap-1 mt-0.5">
-              <Clock size={12} />
-              {shift ? `${shift.startTime} – ${shift.endTime}` : '07:00 – 15:30'}
-            </p>
-          </div>
+      <button
+        onClick={() => setShiftsExpanded(!shiftsExpanded)}
+        className="w-full p-4 flex items-start justify-between text-left hover:bg-bg-elevated/50 dark:hover:bg-bg-elevated-dark/50 transition-colors"
+      >
+        <div className="flex-1">
+          <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Today's Shift</p>
+          <p className="text-slate-800 dark:text-slate-100 font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm flex items-center gap-1 mt-0.5">
+            <Clock size={12} />
+            {shift ? `${shift.startTime} – ${shift.endTime}` : '07:00 – 15:30'}
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
           <div className="bg-blue-600/10 dark:bg-blue-600/20 border border-blue-600/20 dark:border-blue-600/30 rounded-xl px-3 py-1.5">
             <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Scheduled</p>
           </div>
+          {todayShifts.length > 1 && (
+            <motion.div animate={{ rotate: shiftsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={14} className="text-slate-400 dark:text-slate-500" />
+            </motion.div>
+          )}
         </div>
-      </div>
+      </button>
+
+      <AnimatePresence>
+        {shiftsExpanded && todayShifts.length > 1 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-t border-slate-200 dark:border-slate-700"
+          >
+            <div className="p-3 space-y-2 bg-bg-elevated/30 dark:bg-bg-elevated-dark/30">
+              {todayShifts.map((s, i) => (
+                <div key={i} className="flex items-center justify-between text-sm p-2 rounded-lg bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <p className="text-slate-800 dark:text-slate-100 font-medium text-xs">{s.siteName}</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 mt-0.5">
+                      <Clock size={10} />
+                      {s.startTime} – {s.endTime}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <button
         onClick={() => onClockIn(isOvernightShift)}

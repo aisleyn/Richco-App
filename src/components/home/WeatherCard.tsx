@@ -85,7 +85,7 @@ export function WeatherCard() {
         {/* Expand toggle */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-center gap-1 py-2.5 border-t border-slate-200 text-slate-400 text-xs hover:text-slate-200 active:bg-white/5 transition-colors bg-bg-surface"
+          className="w-full flex items-center justify-center gap-1 py-2.5 border-t border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs hover:text-slate-200 dark:hover:text-slate-300 active:bg-white/5 dark:active:bg-white/5 transition-colors bg-bg-surface dark:bg-bg-surface-dark"
         >
           {expanded ? 'Hide' : 'Show'} Forecast
           <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -101,18 +101,18 @@ export function WeatherCard() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="overflow-hidden bg-bg-surface"
+              className="overflow-hidden bg-bg-surface dark:bg-bg-surface-dark"
             >
               {/* Hourly */}
               <div className="px-4 pb-2 pt-4">
-                <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mb-3">Hourly</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-3">Hourly</p>
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   {weather.hourly?.map((h, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1.5 shrink-0 bg-white/5 rounded-xl px-3 py-2.5">
-                      <span className="text-slate-400 text-[11px]">{h.time}</span>
+                    <div key={i} className="flex flex-col items-center gap-1.5 shrink-0 bg-white/5 dark:bg-white/10 rounded-xl px-3 py-2.5">
+                      <span className="text-slate-400 dark:text-slate-500 text-[11px]">{h.time}</span>
                       <span className="text-base">{h.condition.toLowerCase().includes('rain') ? '🌧️' : h.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️'}</span>
-                      <span className="text-slate-800 text-sm font-medium">{h.temp}°</span>
-                      {h.precipChance > 20 && <span className="text-blue-400 text-[10px]">{h.precipChance}%</span>}
+                      <span className="text-slate-800 dark:text-slate-200 text-sm font-medium">{h.temp}°</span>
+                      <span className="text-blue-400 text-[10px] h-4 flex items-center">{h.precipChance > 20 ? `${h.precipChance}%` : '–'}</span>
                     </div>
                   ))}
                 </div>
@@ -120,22 +120,22 @@ export function WeatherCard() {
 
               {/* Daily */}
               <div className="px-4 pb-4">
-                <p className="text-slate-500 text-xs font-medium uppercase tracking-wider mb-3">5-Day</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-3">5-Day</p>
                 <div className="space-y-2">
                   {weather.daily?.map((d, i) => (
-                    <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-2.5">
-                      <span className="text-slate-300 text-sm w-14">{d.day}</span>
+                    <div key={i} className="flex items-center justify-between bg-white/5 dark:bg-white/10 rounded-xl px-4 py-2.5">
+                      <span className="text-slate-300 dark:text-slate-400 text-sm w-14">{d.day}</span>
                       <span className="text-lg">{d.condition.toLowerCase().includes('rain') ? '🌧️' : d.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️'}</span>
                       <div className="flex items-center gap-2">
-                        {d.precipChance > 20 && <span className="text-blue-400 text-xs">{d.precipChance}%</span>}
-                        <span className="text-slate-500 text-sm">{d.low}°</span>
-                        <div className="w-12 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                        <span className="text-blue-400 text-xs w-5 text-center">{d.precipChance > 20 ? `${d.precipChance}%` : '–'}</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-sm">{d.low}°</span>
+                        <div className="w-12 h-1.5 rounded-full bg-slate-700 dark:bg-slate-600 overflow-hidden">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-blue-500 to-orange-400"
                             style={{ width: `${Math.round(((d.high - d.low) / 40) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-slate-800 text-sm font-medium w-6 text-right">{d.high}°</span>
+                        <span className="text-slate-800 dark:text-slate-200 text-sm font-medium w-6 text-right">{d.high}°</span>
                       </div>
                     </div>
                   ))}
