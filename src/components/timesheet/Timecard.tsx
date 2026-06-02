@@ -74,17 +74,17 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className={`bg-bg-surface rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-amber-500/20' : 'border-slate-200'} group`}
+            className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-amber-500/20' : 'border-slate-200 dark:border-slate-700'} group`}
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
-                <p className="text-slate-800 text-sm font-medium">
+                <p className="text-slate-800 dark:text-slate-100 text-sm font-medium">
                   {new Date(tc.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
-                <p className="text-slate-400 text-xs mt-0.5">{tc.siteName}</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">{tc.siteName}</p>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-amber-400' : 'text-slate-800'}`}>
+                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>
                   {tc.totalHours?.toFixed(2)}h
                 </p>
                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">
@@ -92,7 +92,7 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-xs text-slate-500 mb-3">
+            <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mb-3">
               <span>{fmt(tc.clockInTime)} – {tc.clockOutTime ? fmt(tc.clockOutTime) : '--'}</span>
               {tc.breakTaken
                 ? <span className="text-emerald-500/60">Break ✓ {tc.breakMinutes}m</span>

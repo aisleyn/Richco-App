@@ -83,8 +83,8 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
       <div className="pt-14">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-slate-800 text-xl md:text-2xl font-bold">Alerts</h1>
-            <p className="text-slate-500 text-xs md:text-sm mt-0.5">
+            <h1 className="text-slate-800 dark:text-slate-100 text-xl md:text-2xl font-bold">Alerts</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5">
               {unreadAlertCount > 0 ? `${unreadAlertCount} unread` : 'All caught up'}
             </p>
           </div>
@@ -116,7 +116,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                className={`bg-bg-surface rounded-xl border-l-2 border ${cfg.color} ${cfg.border} overflow-hidden`}
+                className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-2 border ${cfg.color} ${cfg.border} overflow-hidden`}
               >
                 <button
                   onClick={() => handleExpand(alert)}
@@ -125,15 +125,15 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                   <Icon size={15} className={`${cfg.iconColor} mt-0.5 shrink-0`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-semibold truncate ${!alert.read ? 'text-slate-800' : 'text-slate-300'}`}>{alert.title}</p>
+                      <p className={`text-sm font-semibold truncate ${!alert.read ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{alert.title}</p>
                       {!alert.read && <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />}
                     </div>
-                    <p className="text-slate-400 text-xs truncate mt-0.5">{alert.body}</p>
+                    <p className="text-slate-400 dark:text-slate-500 text-xs truncate mt-0.5">{alert.body}</p>
                     <div className="flex items-center gap-2 mt-1.5">
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-bg-elevated ${cfg.iconColor}`}>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-bg-elevated dark:bg-bg-elevated-dark ${cfg.iconColor}`}>
                         {cfg.label}
                       </span>
-                      <span className="text-slate-600 text-[10px]">
+                      <span className="text-slate-600 dark:text-slate-500 text-[10px]">
                         {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}
                       </span>
                     </div>
@@ -224,10 +224,10 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="bg-bg-base w-full rounded-t-3xl overflow-hidden"
+              className="bg-bg-base dark:bg-bg-base-dark w-full rounded-t-3xl overflow-hidden"
             >
-              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200">
-                <h2 className="text-slate-800 font-bold text-lg">Post Notification</h2>
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200 dark:border-slate-700">
+                <h2 className="text-slate-800 dark:text-slate-100 font-bold text-lg">Post Notification</h2>
                 <button onClick={() => setShowCompose(false)} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
                   <X size={18} className="text-slate-400" />
                 </button>
@@ -236,13 +236,13 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
               <div className="px-5 py-5 space-y-4">
                 {/* Type selector */}
                 <div>
-                  <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Type</label>
+                  <label className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Type</label>
                   <div className="flex flex-wrap gap-2">
                     {(['urgent', 'general', 'weather', 'schedule', 'vendor'] as PostType[]).map(t => (
                       <button
                         key={t}
                         onClick={() => setPostType(t)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-blue-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
                       >
                         {t}
                       </button>
@@ -251,13 +251,13 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Title</label>
-                  <input value={postTitle} onChange={e => setPostTitle(e.target.value)} placeholder="Notification title..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm placeholder:text-slate-600" />
+                  <label className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Title</label>
+                  <input value={postTitle} onChange={e => setPostTitle(e.target.value)} placeholder="Notification title..." className="w-full bg-bg-elevated dark:bg-bg-elevated-dark border border-white/10 dark:border-white/5 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500" />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Message</label>
-                  <textarea value={postBody} onChange={e => setPostBody(e.target.value)} rows={4} placeholder="Full notification message..." className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600" />
+                  <label className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Message</label>
+                  <textarea value={postBody} onChange={e => setPostBody(e.target.value)} rows={4} placeholder="Full notification message..." className="w-full bg-bg-elevated dark:bg-bg-elevated-dark border border-white/10 dark:border-white/5 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 text-sm resize-none placeholder:text-slate-600 dark:placeholder:text-slate-500" />
                 </div>
 
                 <button

@@ -99,8 +99,8 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
             </button>
           )}
           <div className={activeSite ? '' : 'flex-1'}>
-            <h1 className="text-slate-800 text-2xl font-bold">{currentSite?.name ?? 'Photos'}</h1>
-            <p className="text-slate-500 text-sm mt-0.5">
+            <h1 className="text-slate-800 dark:text-slate-100 text-2xl font-bold">{currentSite?.name ?? 'Photos'}</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
               {activeSite ? `${filtered.length} photos` : `${sites.length} active projects`}
             </p>
           </div>
@@ -127,7 +127,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               <>
                 <button
                   onClick={clearSelection}
-                  className="flex items-center gap-1.5 bg-bg-surface border border-slate-200 px-3 py-2 rounded-xl text-slate-800 text-sm font-semibold hover:bg-bg-elevated transition-colors"
+                  className="flex items-center gap-1.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl text-slate-800 dark:text-slate-100 text-sm font-semibold hover:bg-bg-elevated dark:hover:bg-bg-elevated-dark transition-colors"
                 >
                   Cancel
                 </button>
@@ -172,7 +172,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                   onClick={() => setActiveSite(site.id)}
-                  className="text-left bg-bg-surface rounded-2xl border border-slate-200 overflow-hidden active:bg-bg-elevated transition-colors"
+                  className="text-left bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors"
                 >
                   {/* Photo strip preview */}
                   <div className="flex h-24 lg:h-32 gap-0.5 overflow-hidden">
@@ -181,12 +181,12 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                         <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                       </div>
                     ))}
-                    {sitePhotos.length === 0 && <div className="flex-1 bg-bg-elevated flex items-center justify-center"><Camera size={24} className="text-slate-600" /></div>}
+                    {sitePhotos.length === 0 && <div className="flex-1 bg-bg-elevated dark:bg-bg-elevated-dark flex items-center justify-center"><Camera size={24} className="text-slate-600 dark:text-slate-500" /></div>}
                   </div>
                   <div className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="text-slate-800 font-semibold text-sm">{site.name}</p>
-                      <p className="text-slate-500 text-xs mt-0.5">{sitePhotos.length} photos</p>
+                      <p className="text-slate-800 dark:text-slate-100 font-semibold text-sm">{site.name}</p>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{sitePhotos.length} photos</p>
                     </div>
                     {flagged > 0 && (
                       <div className="flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-2.5 py-1.5">
@@ -209,7 +209,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-blue-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
               >
                 {cat}
               </button>
@@ -220,7 +220,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
           <div className="mt-3 space-y-6">
             {Object.entries(photosByMonth).map(([month, photos]) => (
               <div key={month}>
-                <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">{month}</h3>
+                <h3 className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">{month}</h3>
                 <div className="grid grid-cols-3 gap-0.5">
                   {photos.map((photo, i) => (
               <motion.div

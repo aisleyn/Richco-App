@@ -161,16 +161,16 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
           /* Message thread view */
           <div className="flex flex-col h-[calc(100vh-5rem)] -mx-4">
             {/* Thread header */}
-            <div className="flex items-center gap-3 px-4 pb-4 border-b border-slate-200 shrink-0">
+            <div className="flex items-center gap-3 px-4 pb-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
               <button onClick={() => setActiveThreadId(null)} className="text-blue-600">
                 <ChevronLeft size={22} />
               </button>
               <Avatar name={otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'User'} size={36} />
               <div className="flex-1 min-w-0">
-                <p className="text-slate-800 font-semibold text-sm truncate">
+                <p className="text-slate-800 dark:text-slate-100 font-semibold text-sm truncate">
                   {otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'User'}
                 </p>
-                <p className="text-slate-500 text-xs">{otherUser?.roleLabel ?? ''}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">{otherUser?.roleLabel ?? ''}</p>
               </div>
             </div>
 
@@ -182,11 +182,11 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                   <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? 'justify-end' : 'justify-start'} gap-2`}>
                     {!isMe && <Avatar name={msg.senderName} size={28} />}
                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                      {!isMe && <p className="text-slate-500 text-[10px] px-1">{msg.senderName}</p>}
-                      <div className={`px-4 py-2.5 rounded-2xl ${isMe ? 'bg-blue-600 text-slate-900 rounded-br-md' : 'bg-bg-elevated text-slate-800 rounded-bl-md'}`}>
+                      {!isMe && <p className="text-slate-500 dark:text-slate-400 text-[10px] px-1">{msg.senderName}</p>}
+                      <div className={`px-4 py-2.5 rounded-2xl ${isMe ? 'bg-blue-600 text-slate-900 rounded-br-md' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-800 dark:text-slate-100 rounded-bl-md'}`}>
                         <p className="text-sm">{msg.body}</p>
                       </div>
-                      <p className="text-slate-600 text-[10px] px-1">{formatDistanceToNow(msg.timestamp, { addSuffix: true })}</p>
+                      <p className="text-slate-600 dark:text-slate-500 text-[10px] px-1">{formatDistanceToNow(msg.timestamp, { addSuffix: true })}</p>
                     </div>
                   </motion.div>
                 )
@@ -194,14 +194,14 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             </div>
 
             {/* Input */}
-            <div className="px-4 pb-4 pt-2 border-t border-slate-200 shrink-0">
-              <div className="flex items-center gap-2 bg-bg-surface rounded-2xl border border-white/10 px-4 py-2.5">
+            <div className="px-4 pb-4 pt-2 border-t border-slate-200 dark:border-slate-700 shrink-0">
+              <div className="flex items-center gap-2 bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-white/10 dark:border-white/5 px-4 py-2.5">
                 <input
                   value={messageInput}
                   onChange={e => setMessageInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && sendMessage()}
                   placeholder="Message..."
-                  className="flex-1 bg-transparent text-slate-800 text-sm placeholder:text-slate-600 outline-none"
+                  className="flex-1 bg-transparent text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500 outline-none"
                 />
                 <button
                   onClick={sendMessage}
@@ -216,7 +216,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
-              <h1 className="text-slate-900 text-2xl font-bold">Crew</h1>
+              <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold">Crew</h1>
               <div className="flex gap-3 items-center">
                 {isAdmin && (
                   <button
@@ -226,12 +226,12 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     <Plus size={14} /> Add
                   </button>
                 )}
-                <div className="flex bg-bg-surface rounded-xl border border-slate-200 p-0.5">
+                <div className="flex bg-bg-surface dark:bg-bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-700 p-0.5">
                   {(['directory', 'messages'] as const).map(t => (
                     <button
                       key={t}
                       onClick={() => setTab(t)}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-blue-600 text-slate-900' : 'text-slate-400'}`}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-blue-600 text-slate-900' : 'text-slate-400 dark:text-slate-500'}`}
                     >
                       {t}
                     </button>
@@ -244,14 +244,14 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
               <>
                 {/* Search */}
                 <div className="relative mb-4">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500" />
                   <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search crew..."
-                    className="w-full bg-bg-surface border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-slate-800 text-sm placeholder:text-slate-600"
+                    className="w-full bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500"
                   />
-                  {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={14} className="text-slate-500" /></button>}
+                  {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={14} className="text-slate-500 dark:text-slate-500" /></button>}
                 </div>
 
                 {/* Role filters */}
