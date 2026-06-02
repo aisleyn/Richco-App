@@ -11,7 +11,6 @@ import { isUserAdmin, getAllCrew } from '../services/crew'
 
 const typeConfig: Record<string, { color: string; border: string; icon: typeof Info; iconColor: string; label: string }> = {
   urgent:      { color: 'border-l-red-500',    border: 'border-red-500/20',    icon: AlertTriangle, iconColor: 'text-red-400',    label: 'Urgent' },
-  ceo:         { color: 'border-l-amber-500',  border: 'border-amber-500/20',  icon: MessageSquare, iconColor: 'text-amber-400',  label: 'CEO' },
   weather:     { color: 'border-l-blue-500',   border: 'border-blue-500/20',   icon: Cloud,         iconColor: 'text-blue-400',   label: 'Weather' },
   general:     { color: 'border-l-slate-500',  border: 'border-slate-200',       icon: Info,          iconColor: 'text-slate-400',  label: 'General' },
   schedule:    { color: 'border-l-purple-500', border: 'border-purple-500/20', icon: CalendarDays,  iconColor: 'text-purple-400', label: 'Schedule' },
@@ -23,7 +22,7 @@ const typeConfig: Record<string, { color: string; border: string; icon: typeof I
 
 const isSupervisor = currentUser.role === 'supervisor' || currentUser.role === 'ceo' || currentUser.role === 'admin'
 
-type PostType = 'urgent' | 'general' | 'weather' | 'schedule' | 'vendor' | 'ceo'
+type PostType = 'urgent' | 'general' | 'weather' | 'schedule' | 'vendor'
 
 export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
   const { alerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert } = useAppStore()
@@ -239,13 +238,13 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
                 <div>
                   <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Type</label>
                   <div className="flex flex-wrap gap-2">
-                    {(['urgent', 'general', 'weather', 'schedule', 'vendor', 'ceo'] as PostType[]).map(t => (
+                    {(['urgent', 'general', 'weather', 'schedule', 'vendor'] as PostType[]).map(t => (
                       <button
                         key={t}
                         onClick={() => setPostType(t)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
                       >
-                        {t === 'ceo' ? 'CEO Message' : t}
+                        {t}
                       </button>
                     ))}
                   </div>
