@@ -83,20 +83,20 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-bg-surface rounded-2xl border border-slate-200 overflow-hidden"
+      className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
     >
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-slate-400 text-xs uppercase tracking-wider font-medium mb-1">Today's Shift</p>
-            <p className="text-slate-800 font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
-            <p className="text-slate-400 text-sm flex items-center gap-1 mt-0.5">
+            <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Today's Shift</p>
+            <p className="text-slate-800 dark:text-slate-100 font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
+            <p className="text-slate-400 dark:text-slate-500 text-sm flex items-center gap-1 mt-0.5">
               <Clock size={12} />
               {shift ? `${shift.startTime} – ${shift.endTime}` : '07:00 – 15:30'}
             </p>
           </div>
-          <div className="bg-blue-600/10 border border-blue-600/20 rounded-xl px-3 py-1.5">
-            <p className="text-blue-600 text-xs font-semibold">Scheduled</p>
+          <div className="bg-blue-600/10 dark:bg-blue-600/20 border border-blue-600/20 dark:border-blue-600/30 rounded-xl px-3 py-1.5">
+            <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Scheduled</p>
           </div>
         </div>
       </div>

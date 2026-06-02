@@ -79,13 +79,13 @@ export function HomeScreen({ onNavigate }: Props) {
   return (
     <AppLayout>
       {/* Header */}
-      <div className="pt-14 pb-2 flex items-start justify-between">
+      <div className="pt-6 pb-2 flex items-start justify-between">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-slate-400 dark:text-slate-500 text-xs md:text-sm">{format(today, 'EEEE, MMMM d')}</p>
           <h1 className="text-slate-900 dark:text-slate-100 text-xl md:text-2xl font-bold mt-0.5">{greeting}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
         </motion.div>
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex items-center gap-2 pt-0">
           <ThemeToggle />
           <button onClick={() => onNavigate('crew')} className="relative">
             <MessageSquare size={22} className="text-slate-400 dark:text-slate-500" />
@@ -119,9 +119,9 @@ export function HomeScreen({ onNavigate }: Props) {
             { label: 'Flagged', value: '2', color: 'text-red-400' },
             { label: 'Pending', value: '4', color: 'text-amber-400' },
           ].map(({ label, value, color }) => (
-            <div key={label} className="bg-bg-surface rounded-xl py-3 text-center border border-slate-200">
+            <div key={label} className="bg-bg-surface dark:bg-bg-surface-dark rounded-xl py-3 text-center border border-slate-200 dark:border-slate-700">
               <p className={`text-2xl font-bold ${color}`}>{value}</p>
-              <p className="text-slate-500 text-[10px] mt-0.5">{label}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">{label}</p>
             </div>
           ))}
         </motion.div>
