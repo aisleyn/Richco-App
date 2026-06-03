@@ -12,6 +12,7 @@ import { getCurrentUser } from './services/auth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
 import { initializeCrew, ensureCrewMemberExists, setAdminStatus } from './services/crew'
+import { syncEmployeeTimesheets } from './services/supabase'
 
 type ScreenProps = { onNavigate: (s: string) => void }
 
@@ -28,6 +29,8 @@ export default function App() {
       const user = await getCurrentUser()
       if (user) {
         initializeUser(user.displayName, user.mail, user.id)
+        // Sync user's timesheets from Supabase to device
+        await syncEmployeeTimesheets(user.id, user.mail)
         // Initialize crew system and ensure user is in crew list
         initializeCrew()
         const nameParts = user.displayName.split(' ')

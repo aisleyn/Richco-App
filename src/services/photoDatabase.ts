@@ -17,13 +17,26 @@ function openDB(): Promise<IDBDatabase> {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
         store.createIndex('siteId', 'siteId', { unique: false })
         store.createIndex('timestamp', 'timestamp', { unique: false })
+        store.createIndex('uploadedBy', 'uploadedBy', { unique: false })
       }
     }
   })
 }
 
-export async function getStoredPhotos(): Promise<Photo[]> {
+function getPhotosStorageKey(userEmail: string): string {
+  return `richco-photos-${userEmail.toLowerCase()}`
+}
+
+export async function getStoredPhotos(userEmail?: string): Promise<Photo[]> {
   try {
+    if (userEmail) {
+      // Use localStorage for per-user photo storage (cross-device sync)
+      const key = getPhotosStorageKey(userEmail)
+      const stored = localStorage.getItem(key)
+      return stored ? JSON.parse(stored) : []
+    }
+
+    // Fallback to IndexedDB for legacy data
     const db = await openDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readonly')
@@ -39,13 +52,21 @@ export async function getStoredPhotos(): Promise<Photo[]> {
   }
 }
 
-export async function savePhotos(photos: Photo[]): Promise<void> {
+export async function savePhotos(photos: Photo[], userEmail?: string): Promise<void> {
   try {
+    if (userEmail) {
+      // Store in localStorage for per-user, cross-device sync
+      const key = getPhotosStorageKey(userEmail)
+      localStorage.setItem(key, JSON.stringify(photos))
+      console.log('[PhotoDB] Saved', photos.length, 'photos for', userEmail)
+      return
+    }
+
+    // Fallback to IndexedDB
     const db = await openDB()
     const transaction = db.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
 
-    // Clear existing and add all
     store.clear()
     photos.forEach(photo => store.add(photo))
 
@@ -58,8 +79,20 @@ export async function savePhotos(photos: Photo[]): Promise<void> {
   }
 }
 
-export async function addPhoto(photo: Photo): Promise<Photo> {
+export async function addPhoto(photo: Photo, userEmail?: string): Promise<Photo> {
   try {
+    if (userEmail) {
+      // Add to localStorage
+      const key = getPhotosStorageKey(userEmail)
+      const stored = localStorage.getItem(key)
+      const photos = stored ? JSON.parse(stored) : []
+      photos.unshift(photo) // Add to front (most recent first)
+      localStorage.setItem(key, JSON.stringify(photos))
+      console.log('[PhotoDB] Added photo for', userEmail)
+      return photo
+    }
+
+    // Fallback to IndexedDB
     const db = await openDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite')
@@ -75,8 +108,20 @@ export async function addPhoto(photo: Photo): Promise<Photo> {
   }
 }
 
-export async function addPhotos(photos: Photo[]): Promise<void> {
+export async function addPhotos(photos: Photo[], userEmail?: string): Promise<void> {
   try {
+    if (userEmail) {
+      // Add to localStorage
+      const key = getPhotosStorageKey(userEmail)
+      const stored = localStorage.getItem(key)
+      const existing = stored ? JSON.parse(stored) : []
+      const combined = [...photos, ...existing]
+      localStorage.setItem(key, JSON.stringify(combined))
+      console.log('[PhotoDB] Added', photos.length, 'photos for', userEmail)
+      return
+    }
+
+    // Fallback to IndexedDB
     const db = await openDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite')

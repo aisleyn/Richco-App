@@ -17,11 +17,12 @@ interface PendingPhoto {
 
 interface Props {
   siteId: string
+  userEmail: string
   onClose: () => void
   onPhotosAdded: () => void
 }
 
-export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
+export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
@@ -92,7 +93,7 @@ export function BulkUploadModal({ siteId, onClose, onPhotosAdded }: Props) {
         caption: pp.caption,
       }))
 
-      await addPhotos(photosToAdd)
+      await addPhotos(photosToAdd, userEmail)
       setPendingPhotos([])
       setEditingIndex(null)
       onPhotosAdded()

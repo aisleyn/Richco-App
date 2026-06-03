@@ -132,6 +132,21 @@ export async function getEmployeeTimeEntries(
   }
 }
 
+export async function syncEmployeeTimesheets(employeeId: string, employeeEmail: string): Promise<void> {
+  try {
+    console.log('[Supabase] Syncing timesheets for', employeeEmail)
+    const entries = await getEmployeeTimeEntries(employeeId, 50)
+
+    if (entries.length > 0) {
+      const storageKey = `richco-timesheets-${employeeEmail.toLowerCase()}`
+      localStorage.setItem(storageKey, JSON.stringify(entries))
+      console.log('[Supabase] Synced', entries.length, 'timesheets to localStorage')
+    }
+  } catch (err) {
+    console.error('[Supabase] Failed to sync timesheets:', err)
+  }
+}
+
 // ─── Break Periods ────────────────────────────────────────────────────────
 
 interface BreakPeriod {

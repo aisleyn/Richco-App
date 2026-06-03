@@ -6,12 +6,13 @@ import type { Photo } from '../../types'
 
 interface Props {
   siteId: string
+  userEmail: string
   siteName: string
   onClose: () => void
   onPhotosAdded: () => void
 }
 
-export function ImportPhotosModal({ siteId, siteName, onClose, onPhotosAdded }: Props) {
+export function ImportPhotosModal({ siteId, userEmail, siteName, onClose, onPhotosAdded }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importing, setImporting] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -61,7 +62,7 @@ export function ImportPhotosModal({ siteId, siteName, onClose, onPhotosAdded }: 
         })
       }
 
-      await addPhotos(photos)
+      await addPhotos(photos, userEmail)
       onPhotosAdded()
       onClose()
     } catch (err) {

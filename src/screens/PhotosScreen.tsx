@@ -6,6 +6,7 @@ import { mockPhotos, jobSites } from '../data/mockData'
 import { format } from 'date-fns'
 import type { Photo, PhotoCategory } from '../types'
 import { getStoredPhotos, deletePhoto } from '../services/photoDatabase'
+import { useAppStore } from '../store/appStore'
 import { BulkUploadModal } from '../components/photos/BulkUploadModal'
 import { EditPhotoModal } from '../components/photos/EditPhotoModal'
 import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
@@ -13,6 +14,7 @@ import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
 
 export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
+  const { currentUserEmail } = useAppStore()
   const [activeSite, setActiveSite] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
@@ -32,11 +34,11 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
 
   useEffect(() => {
     const loadPhotos = async () => {
-      const stored = await getStoredPhotos()
+      const stored = await getStoredPhotos(currentUserEmail)
       setAllPhotos([...stored, ...mockPhotos])
     }
     loadPhotos()
-  }, [refresh])
+  }, [refresh, currentUserEmail])
 
   const sites = jobSites.filter(s => s.status === 'active')
   const currentSite = sites.find(s => s.id === activeSite)
@@ -419,6 +421,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
         {showImport && activeSite && (
           <ImportPhotosModal
             siteId={activeSite}
+            userEmail={currentUserEmail}
             siteName={currentSite?.name || 'Project'}
             onClose={() => setShowImport(false)}
             onPhotosAdded={() => setRefresh(prev => prev + 1)}
@@ -431,6 +434,7 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
         {showBulkUpload && activeSite && (
           <BulkUploadModal
             siteId={activeSite}
+            userEmail={currentUserEmail}
             onClose={() => setShowBulkUpload(false)}
             onPhotosAdded={() => setRefresh(prev => prev + 1)}
           />
