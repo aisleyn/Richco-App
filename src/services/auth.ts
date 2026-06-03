@@ -49,6 +49,25 @@ export async function getMsalInstance() {
   if (!msalInitialized) {
     try {
       await msalInstance.initialize()
+
+      // Handle redirect from Azure AD (when using loginRedirect flow)
+      try {
+        console.log('[AUTH] Handling redirect from Azure AD...')
+        const result = await msalInstance.handleRedirectPromise()
+        if (result) {
+          console.log('[AUTH] ✅ Redirect handled, user:', result.account?.name)
+          if (result.account) {
+            msalInstance.setActiveAccount(result.account)
+          }
+        }
+      } catch (redirectErr: unknown) {
+        const err = redirectErr as { errorCode?: string }
+        // Some errors are expected, only log if not the standard "no redirect" case
+        if (err?.errorCode !== 'no_token_request_cache_error') {
+          console.error('[AUTH] Redirect error:', err)
+        }
+      }
+
       msalInitialized = true
       console.log('✅ MSAL initialized successfully')
     } catch (err) {
@@ -83,25 +102,16 @@ export async function login(): Promise<User | null> {
   if (!instance) return null
 
   try {
-    // Login with empty scopes first (avoids nested popup for token acquisition)
-    const result = await instance.loginPopup({
+    console.log('[AUTH] Starting loginRedirect...')
+    // Use redirect flow (more reliable than popup which gets nested popup blocked)
+    await instance.loginRedirect({
       scopes: [],
       prompt: 'select_account',
     })
-    if (result && result.account) {
-      instance.setActiveAccount(result.account)
-      const user = {
-        displayName: result.account.name || '',
-        mail: result.account.username || '',
-        id: result.account.homeAccountId?.split('.')[0] || '',
-      }
-      console.log('[AUTH] Login successful:', user.displayName)
-      return user
-    }
-    console.error('Login popup closed or no account returned')
+    // loginRedirect doesn't return - it redirects to Azure AD
     return null
   } catch (err) {
-    console.error('Login failed:', err)
+    console.error('Login redirect failed:', err)
     return null
   }
 }
