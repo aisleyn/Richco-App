@@ -94,12 +94,20 @@ export async function login(): Promise<User | null> {
   if (!instance) return null
 
   try {
-    // Use redirect instead of popup to avoid nested popup blocking
-    await instance.loginRedirect({
+    const result = await instance.loginPopup({
       scopes,
       prompt: 'select_account',
     })
-    // loginRedirect doesn't return — it redirects to Azure AD and back
+    if (result) {
+      instance.setActiveAccount(result.account)
+      const user = {
+        displayName: result.account?.name || '',
+        mail: result.account?.username || '',
+        id: result.account?.homeAccountId?.split('.')[0] || '',
+      }
+      console.log('[AUTH] Login successful:', user.displayName)
+      return user
+    }
     return null
   } catch (err) {
     console.error('Login failed:', err)
