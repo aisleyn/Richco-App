@@ -49,29 +49,6 @@ export async function getMsalInstance() {
   if (!msalInitialized) {
     try {
       await msalInstance.initialize()
-
-      // Handle redirect from Azure AD (clears any pending errors/redirects)
-      // This may throw if there's no pending redirect, which is fine
-      try {
-        console.log('[AUTH] Handling redirect promise...')
-        const result = await msalInstance.handleRedirectPromise()
-        if (result) {
-          console.log('[AUTH] ✅ Redirect handled successfully, user:', result.account?.name)
-          // Set the account as active so getCurrentUser() can find it
-          if (result.account) {
-            msalInstance.setActiveAccount(result.account)
-            console.log('[AUTH] ✅ Set active account:', result.account.name)
-          }
-        } else {
-          console.log('[AUTH] No redirect result (user may not be logging in)')
-        }
-      } catch (redirectErr: unknown) {
-        // Log redirect errors but don't fail initialization
-        const err = redirectErr as { errorCode?: string; message?: string }
-        console.error('[AUTH] Redirect error (continuing anyway):', err?.errorCode || err?.message || err)
-        // Don't throw - let the app continue even if redirect handling fails
-      }
-
       msalInitialized = true
       console.log('✅ MSAL initialized successfully')
     } catch (err) {
