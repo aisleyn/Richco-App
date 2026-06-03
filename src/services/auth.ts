@@ -86,9 +86,9 @@ export interface User {
 }
 
 export async function login(): Promise<User | null> {
-  // If Azure AD not configured, use mock login for development
-  if (!import.meta.env.VITE_AZURE_CLIENT_ID) {
-    console.log('[AUTH] Azure AD not configured, using mock login')
+  const instance = await getMsalInstance()
+  if (!instance) {
+    console.log('[AUTH] No MSAL instance, using mock login')
     const mockUser = {
       displayName: 'Demo User',
       mail: 'demo@example.com',
@@ -98,12 +98,8 @@ export async function login(): Promise<User | null> {
     return mockUser
   }
 
-  const instance = await getMsalInstance()
-  if (!instance) return null
-
   try {
     console.log('[AUTH] Starting loginRedirect...')
-    // Use redirect flow (more reliable than popup which gets nested popup blocked)
     await instance.loginRedirect({
       scopes: [],
       prompt: 'select_account',
@@ -111,8 +107,16 @@ export async function login(): Promise<User | null> {
     // loginRedirect doesn't return - it redirects to Azure AD
     return null
   } catch (err) {
-    console.error('Login redirect failed:', err)
-    return null
+    console.error('[AUTH] Login redirect failed:', err)
+    // Fall back to mock login on error
+    console.log('[AUTH] Falling back to mock login due to error')
+    const mockUser = {
+      displayName: 'Demo User',
+      mail: 'demo@example.com',
+      id: 'demo-user-id',
+    }
+    sessionStorage.setItem('mock-user', JSON.stringify(mockUser))
+    return mockUser
   }
 }
 
