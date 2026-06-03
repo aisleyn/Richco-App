@@ -110,27 +110,6 @@ export function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* Supervisor stat bar */}
-      {isSupervisor && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2"
-        >
-          {[
-            { label: 'On Site', value: '6', color: 'text-emerald-400' },
-            { label: 'Flagged', value: '2', color: 'text-red-400' },
-            { label: 'Pending', value: '4', color: 'text-amber-400' },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="bg-bg-surface dark:bg-bg-surface-dark rounded-xl py-3 text-center border border-slate-200 dark:border-slate-700">
-              <p className={`text-2xl font-bold ${color}`}>{value}</p>
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">{label}</p>
-            </div>
-          ))}
-        </motion.div>
-      )}
-
       <div className="mt-5 space-y-5">
         {/* Weather */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>

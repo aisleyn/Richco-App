@@ -99,17 +99,28 @@ export async function login(): Promise<User | null> {
   }
 
   try {
-    console.log('[AUTH] Starting loginRedirect...')
-    // Use MSAL's loginRedirect which handles the OAuth flow properly
-    await instance.loginRedirect({
+    console.log('[AUTH] Starting loginPopup...')
+    // Use loginPopup - opens in a popup window, keeps original tab on login screen
+    const result = await instance.loginPopup({
       scopes: [],
       prompt: 'select_account',
     })
-    // This won't return - it navigates to Azure AD
+
+    if (result?.account) {
+      instance.setActiveAccount(result.account)
+      const user = {
+        displayName: result.account.name || '',
+        mail: result.account.username || '',
+        id: result.account.homeAccountId?.split('.')[0] || '',
+      }
+      console.log('[AUTH] Login successful:', user.displayName)
+      return user
+    }
+    console.warn('[AUTH] Login popup completed but no account returned')
     return null
   } catch (err) {
-    console.error('[AUTH] Login failed:', err)
-    // Fall back to mock login
+    console.error('[AUTH] Login popup failed:', err)
+    // Fall back to mock login on error
     const mockUser = {
       displayName: 'Demo User',
       mail: 'demo@example.com',
