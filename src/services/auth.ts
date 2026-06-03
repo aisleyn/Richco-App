@@ -99,19 +99,17 @@ export async function login(): Promise<User | null> {
   }
 
   try {
-    console.log('[AUTH] Starting loginRedirect to Azure AD...')
-    // Use redirect flow only - simpler and more reliable
-    // After authentication, handleRedirectPromise in initialization will catch the redirect
+    console.log('[AUTH] Starting loginRedirect...')
+    // Use MSAL's loginRedirect which handles the OAuth flow properly
     await instance.loginRedirect({
       scopes: [],
       prompt: 'select_account',
     })
-    // This line won't execute - loginRedirect navigates away
+    // This won't return - it navigates to Azure AD
     return null
   } catch (err) {
-    console.error('[AUTH] Login redirect failed:', err)
-    // Fall back to mock login on error
-    console.log('[AUTH] Falling back to mock login')
+    console.error('[AUTH] Login failed:', err)
+    // Fall back to mock login
     const mockUser = {
       displayName: 'Demo User',
       mail: 'demo@example.com',

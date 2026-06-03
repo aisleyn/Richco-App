@@ -12,15 +12,24 @@ export function LoginScreen({ onLoginSuccess }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   async function handleLogin() {
+    // Prevent multiple clicks
+    if (loading) return
+
     setLoading(true)
     setError(null)
-    const user = await login()
-    setLoading(false)
 
-    if (user) {
-      onLoginSuccess()
-    } else {
+    try {
+      const user = await login()
+      // If login succeeds and returns a user (mock login), proceed
+      if (user) {
+        onLoginSuccess()
+      }
+      // If login doesn't return (redirect flow), the page will navigate away
+      // so this code won't execute
+    } catch (err) {
+      setLoading(false)
       setError('Login failed. Please check your Azure AD configuration and try again.')
+      console.error('[LoginScreen] Login error:', err)
     }
   }
 
