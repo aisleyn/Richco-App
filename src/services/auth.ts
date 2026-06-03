@@ -99,47 +99,27 @@ export async function login(): Promise<User | null> {
   }
 
   try {
-    console.log('[AUTH] Starting loginPopup (no scopes to avoid token acquisition)...')
-    // Try popup first - with no scopes to avoid nested popup issues
-    const result = await instance.loginPopup({
+    console.log('[AUTH] Starting loginRedirect to Azure AD...')
+    // Use redirect flow only - simpler and more reliable
+    // After authentication, handleRedirectPromise in initialization will catch the redirect
+    await instance.loginRedirect({
       scopes: [],
       prompt: 'select_account',
     })
-
-    if (result?.account) {
-      instance.setActiveAccount(result.account)
-      const user = {
-        displayName: result.account.name || '',
-        mail: result.account.username || '',
-        id: result.account.homeAccountId?.split('.')[0] || '',
-      }
-      console.log('[AUTH] Login successful:', user.displayName)
-      return user
+    // This line won't execute - loginRedirect navigates away
+    return null
+  } catch (err) {
+    console.error('[AUTH] Login redirect failed:', err)
+    // Fall back to mock login on error
+    console.log('[AUTH] Falling back to mock login')
+    const mockUser = {
+      displayName: 'Demo User',
+      mail: 'demo@example.com',
+      id: 'demo-user-id',
     }
-  } catch (popupErr) {
-    console.warn('[AUTH] Popup login failed, trying redirect...', popupErr)
-    try {
-      // Fall back to redirect if popup fails
-      console.log('[AUTH] Starting loginRedirect...')
-      await instance.loginRedirect({
-        scopes: [],
-        prompt: 'select_account',
-      })
-      return null
-    } catch (redirectErr) {
-      console.error('[AUTH] Both popup and redirect failed:', redirectErr)
-    }
+    sessionStorage.setItem('mock-user', JSON.stringify(mockUser))
+    return mockUser
   }
-
-  // If both fail, use mock login
-  console.log('[AUTH] Both login methods failed, using mock login')
-  const mockUser = {
-    displayName: 'Demo User',
-    mail: 'demo@example.com',
-    id: 'demo-user-id',
-  }
-  sessionStorage.setItem('mock-user', JSON.stringify(mockUser))
-  return mockUser
 }
 
 export async function logout(): Promise<void> {
