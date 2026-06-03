@@ -71,20 +71,22 @@ export async function login(): Promise<User | null> {
   if (!instance) return null
 
   try {
+    // Login with empty scopes first (avoids nested popup for token acquisition)
     const result = await instance.loginPopup({
-      scopes,
+      scopes: [],
       prompt: 'select_account',
     })
-    if (result) {
+    if (result && result.account) {
       instance.setActiveAccount(result.account)
       const user = {
-        displayName: result.account?.name || '',
-        mail: result.account?.username || '',
-        id: result.account?.homeAccountId?.split('.')[0] || '',
+        displayName: result.account.name || '',
+        mail: result.account.username || '',
+        id: result.account.homeAccountId?.split('.')[0] || '',
       }
       console.log('[AUTH] Login successful:', user.displayName)
       return user
     }
+    console.error('Login popup closed or no account returned')
     return null
   } catch (err) {
     console.error('Login failed:', err)
