@@ -138,6 +138,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
 
   const isAdmin = isUserAdmin(currentUserEmail)
   const currentUserMember = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())
+  const canViewTimesheets = isAdmin || currentUserMember?.role === 'supervisor' || currentUserMember?.role === 'ceo'
 
   const filtered = crew
     .filter(m => isAdmin ? true : m.email.toLowerCase() === currentUserEmail.toLowerCase())
@@ -429,6 +430,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             member={viewingProfile}
             onClose={() => setViewingProfile(null)}
             isAdmin={isAdmin}
+            canViewTimesheets={canViewTimesheets}
             onUpdated={() => {
               setCrew(getAllCrew())
               // Find and update the viewing profile with new data

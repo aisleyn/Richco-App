@@ -1,20 +1,34 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Phone, Calendar, DollarSign, FileText, Award, AlertCircle, Image as ImageIcon, Edit2 } from 'lucide-react'
+import { X, Phone, Calendar, DollarSign, FileText, Award, AlertCircle, Image as ImageIcon, Edit2, Clock } from 'lucide-react'
 import { EditEmployeeProfileModal } from './EditEmployeeProfileModal'
+import { format } from 'date-fns'
 import type { StoredCrewMember } from '../../services/crew'
+import type { TimesheetEntry } from '../../types'
 
 interface Props {
   member: StoredCrewMember
   onClose: () => void
   isAdmin: boolean
   onUpdated?: () => void
+  canViewTimesheets?: boolean
 }
 
-export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated }: Props) {
+export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canViewTimesheets = false }: Props) {
   const [editing, setEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState<'profile' | 'timesheets'>('profile')
   const leaveData = member.leaveData || { annualAllowance: 20, used: 0, approved: 0, pending: 0 }
   const remaining = leaveData.annualAllowance - leaveData.used
+
+  const employeeTimesheets = useMemo(() => {
+    try {
+      const storageKey = `richco-timesheets-${member.email.toLowerCase()}`
+      const stored = localStorage.getItem(storageKey)
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  }, [member.email])
 
   return (
     <motion.div
@@ -32,29 +46,59 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated }: Pr
         className="w-full sm:w-full sm:max-w-lg bg-bg-base rounded-t-3xl sm:rounded-2xl border border-slate-200 max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-bg-base border-b border-slate-200 px-6 py-4 flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-slate-900 text-2xl font-bold">
-              {member.firstName} {member.lastName}
-            </h1>
-            <p className="text-slate-500 text-sm mt-1">{member.email}</p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isAdmin && (
-              <button
-                onClick={() => setEditing(true)}
-                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                title="Edit employee"
-              >
-                <Edit2 size={20} />
+        <div className="sticky top-0 bg-bg-base border-b border-slate-200 px-6 py-4">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <h1 className="text-slate-900 text-2xl font-bold">
+                {member.firstName} {member.lastName}
+              </h1>
+              <p className="text-slate-500 text-sm mt-1">{member.email}</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {isAdmin && (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Edit employee"
+                >
+                  <Edit2 size={20} />
+                </button>
+              )}
+              <button onClick={onClose} className="text-slate-500 hover:text-slate-700 p-2">
+                <X size={24} />
               </button>
-            )}
-            <button onClick={onClose} className="text-slate-500 hover:text-slate-700 p-2">
-              <X size={24} />
-            </button>
+            </div>
           </div>
+
+          {/* Tabs */}
+          {canViewTimesheets && (
+            <div className="flex items-center gap-1 border-t border-slate-200 pt-3">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'profile'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('timesheets')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                  activeTab === 'timesheets'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Clock size={16} />
+                Timesheets
+              </button>
+            </div>
+          )}
         </div>
 
+        {activeTab === 'profile' && (
         <div className="px-6 py-6 space-y-4">
           {/* Profile Overview Card */}
           <motion.div
@@ -314,6 +358,66 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated }: Pr
             </div>
           </motion.div>
         </div>
+        )}
+
+        {activeTab === 'timesheets' && (
+        <div className="px-6 py-6 space-y-4">
+          {employeeTimesheets.length > 0 ? (
+            <div className="space-y-3">
+              {employeeTimesheets.map((entry: TimesheetEntry) => {
+                const clockInDate = new Date(entry.clockInTime)
+                const hours = entry.totalHours || 0
+                const isOvertime = (entry.overtimeHours || 0) > 0
+
+                return (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-bg-surface rounded-2xl border border-slate-200 p-4"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="text-slate-900 font-semibold">{entry.siteName}</p>
+                        <p className="text-slate-500 text-sm">{format(clockInDate, 'MMM d, yyyy')}</p>
+                      </div>
+                      <div className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                        entry.status === 'approved' ? 'bg-emerald-500/10 text-emerald-600' :
+                        entry.status === 'flagged' ? 'bg-red-500/10 text-red-600' :
+                        entry.status === 'complete' ? 'bg-blue-500/10 text-blue-600' :
+                        'bg-amber-500/10 text-amber-600'
+                      }`}>
+                        {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-slate-500 text-xs uppercase tracking-wider">Clock In</p>
+                        <p className="text-slate-900 font-semibold text-sm mt-1">{format(clockInDate, 'h:mm a')}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs uppercase tracking-wider">Hours</p>
+                        <p className={`font-semibold text-sm mt-1 ${isOvertime ? 'text-orange-600' : 'text-slate-900'}`}>
+                          {hours.toFixed(2)}h
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs uppercase tracking-wider">Break</p>
+                        <p className="text-slate-900 font-semibold text-sm mt-1">{entry.breakMinutes}m</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Clock size={48} className="text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500 font-medium">No timesheets recorded</p>
+            </div>
+          )}
+        </div>
+        )}
 
         <AnimatePresence>
           {editing && (
