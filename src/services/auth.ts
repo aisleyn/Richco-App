@@ -67,6 +67,18 @@ export interface User {
 }
 
 export async function login(): Promise<User | null> {
+  // If Azure AD not configured, use mock login for development
+  if (!import.meta.env.VITE_AZURE_CLIENT_ID) {
+    console.log('[AUTH] Azure AD not configured, using mock login')
+    const mockUser = {
+      displayName: 'Demo User',
+      mail: 'demo@example.com',
+      id: 'demo-user-id',
+    }
+    sessionStorage.setItem('mock-user', JSON.stringify(mockUser))
+    return mockUser
+  }
+
   const instance = await getMsalInstance()
   if (!instance) return null
 
@@ -123,6 +135,17 @@ export async function getAccessToken(): Promise<string | null> {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
+  // If Azure AD not configured, return mock user if it was logged in via mock login
+  if (!import.meta.env.VITE_AZURE_CLIENT_ID) {
+    const mockUser = sessionStorage.getItem('mock-user')
+    if (mockUser) {
+      const user = JSON.parse(mockUser)
+      console.log('[AUTH] Returning mock user:', user.displayName)
+      return user
+    }
+    return null
+  }
+
   const instance = await getMsalInstance()
   if (!instance) {
     console.log('[AUTH] getCurrentUser - No MSAL instance')
