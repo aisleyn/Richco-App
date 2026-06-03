@@ -74,7 +74,21 @@ export const useAppStore = create<AppState>()(
       currentUserEmail: currentUser.email,
       currentUserAadId: currentUser.id,
       initializeUser: (name: string, email: string, aadId: string) => {
-        set({ currentUserName: name, currentUserEmail: email, currentUserAadId: aadId })
+        console.log('[Store] Initializing user:', name, email)
+        set({
+          currentUserName: name,
+          currentUserEmail: email,
+          currentUserAadId: aadId,
+          // Reset per-user data when a new user logs in
+          clockedIn: false,
+          clockInTime: null,
+          breakActive: false,
+          breakStartTime: null,
+          totalBreakMs: 0,
+          activeTimesheetId: null,
+          activeBreakPeriodId: null,
+          activeSheetEntry: null,
+        })
       },
 
       // Clock state
