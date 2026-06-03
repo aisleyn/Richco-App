@@ -11,9 +11,9 @@ import { ClockOutModal } from '../components/timesheet/ClockOutModal'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useGreeting } from '../hooks/useGreeting'
 import { useGeolocation } from '../hooks/useGeolocation'
-import { currentUser } from '../data/mockData'
 import { useAppStore } from '../store/appStore'
 import { fetchSites, type DataverseSite } from '../services/dataverse'
+import { isUserAdmin, getAllCrew } from '../services/crew'
 import type { Alert } from '../types'
 
 interface Props {
@@ -21,7 +21,9 @@ interface Props {
 }
 
 export function HomeScreen({ onNavigate }: Props) {
-  const greeting = useGreeting(currentUser.firstName)
+  const { currentUserName, currentUserEmail } = useAppStore()
+  const firstName = currentUserName.split(' ')[0]
+  const greeting = useGreeting(firstName)
   const { clockedIn, clockIn, unreadAlertCount, unreadMessageCount } = useAppStore()
   const { requestLocation, isLoading: isGeoLoading, error: geoError } = useGeolocation()
   const [showClockOut, setShowClockOut] = useState(false)
@@ -74,7 +76,9 @@ export function HomeScreen({ onNavigate }: Props) {
   }
 
   // Supervisor stat bar
-  const isSupervisor = currentUser.role === 'supervisor' || currentUser.role === 'ceo'
+  const isAdmin = isUserAdmin(currentUserEmail)
+  const isCEO = getAllCrew().find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+  const isSupervisor = isAdmin || isCEO
 
   return (
     <AppLayout>

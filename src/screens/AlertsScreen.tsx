@@ -5,7 +5,6 @@ import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
 import type { Alert } from '../types'
-import { currentUser } from '../data/mockData'
 import { approveRequest, denyRequest, getRequestById } from '../services/timeoff'
 import { isUserAdmin, getAllCrew } from '../services/crew'
 
@@ -20,13 +19,10 @@ const typeConfig: Record<string, { color: string; border: string; icon: typeof I
   leave_request:{ color: 'border-l-emerald-500', border: 'border-emerald-500/20', icon: CalendarDays, iconColor: 'text-emerald-400', label: 'Leave Request' },
 }
 
-const isSupervisor = currentUser.role === 'supervisor' || currentUser.role === 'ceo' || currentUser.role === 'admin'
-
 type PostType = 'urgent' | 'general' | 'weather' | 'schedule' | 'vendor'
 
 export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
-  const { alerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert } = useAppStore()
-  const { currentUserEmail } = useAppStore()
+  const { alerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert, currentUserEmail, currentUserName } = useAppStore()
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showCompose, setShowCompose] = useState(false)
   const [postType, setPostType] = useState<PostType>('general')
@@ -38,6 +34,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
   const isAdmin = isUserAdmin(currentUserEmail)
   const isCEO = getAllCrew().find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
   const canApprove = isAdmin || isCEO
+  const isSupervisor = isAdmin || isCEO
 
   function handleExpand(alert: Alert) {
     setExpanded(expanded === alert.id ? null : alert.id)
@@ -53,7 +50,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
       body: postBody,
       timestamp: Date.now(),
       read: false,
-      author: `${currentUser.firstName} ${currentUser.lastName}`,
+      author: currentUserName,
     })
     setPostTitle('')
     setPostBody('')
@@ -62,7 +59,7 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
 
   function handleApproveLeave(alert: Alert) {
     if (alert.leaveRequestId) {
-      approveRequest(alert.leaveRequestId, currentUser.firstName + ' ' + currentUser.lastName)
+      approveRequest(alert.leaveRequestId, currentUserName)
       markAlertRead(alert.id)
       setExpanded(null)
     }
