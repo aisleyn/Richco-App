@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
-import { mockAlerts, mockMessages, currentUser } from '../data/mockData'
+import { mockAlerts, mockMessages } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
 import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod } from '../services/supabase'
 import { getMandatoryBreakHours } from '../services/dataverse'
@@ -70,9 +70,9 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       // Authentication
-      currentUserName: currentUser.firstName + ' ' + currentUser.lastName,
-      currentUserEmail: currentUser.email,
-      currentUserAadId: currentUser.id,
+      currentUserName: '',
+      currentUserEmail: '',
+      currentUserAadId: '',
       initializeUser: (name: string, email: string, aadId: string) => {
         console.log('[Store] Initializing user:', name, email)
         set({
@@ -91,7 +91,7 @@ export const useAppStore = create<AppState>()(
         })
       },
 
-      // Clock state
+      // Clock state (initialized per-user in initializeUser)
       clockedIn: false,
       clockInTime: null,
       breakActive: false,
@@ -400,6 +400,8 @@ export const useAppStore = create<AppState>()(
         activeSheetEntry: state.activeSheetEntry,
         currentShiftIsOvernight: state.currentShiftIsOvernight,
         currentUserAadId: state.currentUserAadId,
+        currentUserName: state.currentUserName,
+        currentUserEmail: state.currentUserEmail,
         crewMessages: state.crewMessages,
         crewActiveThread: state.crewActiveThread,
       }),

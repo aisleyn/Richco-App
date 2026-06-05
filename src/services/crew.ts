@@ -67,26 +67,6 @@ function saveCrew(crew: StoredCrewMember[]) {
 
 export function initializeCrew() {
   const existing = getStoredCrew()
-
-  // Ensure Aisley is always in the crew list
-  const aaisleyExists = existing.some(m => m.email.toLowerCase() === 'aisley@richcogroup.com')
-  if (!aaisleyExists) {
-    const adminUser: StoredCrewMember = {
-      id: 'admin-aisley',
-      firstName: 'Aisley',
-      lastName: 'Nolan',
-      email: 'aisley@richcogroup.com',
-      role: 'admin',
-      roleLabel: 'Admin',
-      phone: '',
-      status: 'available',
-      isAdmin: true,
-    }
-    existing.push(adminUser)
-    saveCrew(existing)
-    console.log('[Crew] Added Aisley as admin user')
-  }
-
   if (existing.length === 0) {
     console.log('[Crew] Initialized with empty crew list')
   }
@@ -190,4 +170,14 @@ export function ensureCrewMemberExists(
     email,
     role: 'field',
   })
+}
+
+export function clearAllCrew(): void {
+  localStorage.setItem(CREW_STORAGE_KEY, JSON.stringify([]))
+  console.log('[Crew] Cleared all crew members')
+}
+
+export function hasUserCompletedRegistration(email: string): boolean {
+  const member = getCrewMemberByEmail(email)
+  return member !== undefined
 }
