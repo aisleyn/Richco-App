@@ -29,7 +29,7 @@ export function RegistrationModal({ email, displayName, onComplete }: Props) {
     try {
       if (!formData.firstName.trim()) throw new Error('First name is required')
 
-      addCrewMember({
+      await addCrewMember({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email,

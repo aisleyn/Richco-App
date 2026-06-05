@@ -32,6 +32,8 @@ export function HomeScreen({ onNavigate }: Props) {
   const [selectedSite, setSelectedSite] = useState<DataverseSite | null>(null)
   const [isLoadingSites, setIsLoadingSites] = useState(false)
   const [isClockingIn, setIsClockingIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isCEO, setIsCEO] = useState(false)
   const today = new Date()
 
   useEffect(() => {
@@ -43,6 +45,17 @@ export function HomeScreen({ onNavigate }: Props) {
     }
     loadSites()
   }, [])
+
+  useEffect(() => {
+    const loadUserStatus = async () => {
+      const admin = await isUserAdmin(currentUserEmail)
+      setIsAdmin(admin)
+      const crew = await getAllCrew()
+      const userIsCEO = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+      setIsCEO(userIsCEO ?? false)
+    }
+    loadUserStatus()
+  }, [currentUserEmail])
 
   function handleClockIn(isOvernight: boolean) {
     setShowSitePicker(true)
@@ -76,8 +89,6 @@ export function HomeScreen({ onNavigate }: Props) {
   }
 
   // Supervisor stat bar
-  const isAdmin = isUserAdmin(currentUserEmail)
-  const isCEO = getAllCrew().find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
   const isSupervisor = isAdmin || isCEO
 
   return (

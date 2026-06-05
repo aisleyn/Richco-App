@@ -17,9 +17,20 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
   const [pendingRequests, setPendingRequests] = useState<LeaveRequest[]>([])
   const [approveModal, setApproveModal] = useState<LeaveRequest | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
-  const isAdminUser = isUserAdmin(currentUserEmail)
-  const isCEO = getAllCrew().find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+  const [isAdminUser, setIsAdminUser] = useState(false)
+  const [isCEO, setIsCEO] = useState(false)
   const canApprove = isAdminUser || isCEO
+
+  useEffect(() => {
+    const loadUserStatus = async () => {
+      const admin = await isUserAdmin(currentUserEmail)
+      setIsAdminUser(admin)
+      const crew = await getAllCrew()
+      const userIsCEO = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+      setIsCEO(userIsCEO ?? false)
+    }
+    loadUserStatus()
+  }, [currentUserEmail])
 
   useEffect(() => {
     setRequests(getEmployeeRequests(currentUserEmail))

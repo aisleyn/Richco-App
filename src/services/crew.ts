@@ -1,7 +1,10 @@
 import type { CrewMember } from '../types'
-
-const CREW_STORAGE_KEY = 'richco-crew-members'
-const ADMIN_EMAILS_KEY = 'richco-admin-emails'
+import {
+  addCrewMember as supabaseAddCrewMember,
+  getCrewMemberByEmail as supabaseGetCrewMemberByEmail,
+  getAllCrewMembers,
+  updateCrewMember as supabaseUpdateCrewMember,
+} from './supabase'
 
 export interface EmergencyContact {
   name: string
@@ -30,9 +33,11 @@ export interface LeaveData {
   pending: number
 }
 
-export interface StoredCrewMember extends CrewMember {
+export interface StoredCrewMember extends Omit<CrewMember, 'status'> {
+  id: number
   email: string
   isAdmin: boolean
+  status: 'available' | 'onsite' | 'enroute' | 'off' | string
   hourlyRate?: number
   salary?: number
   paymentType?: 'hourly' | 'salary'
@@ -48,122 +53,131 @@ export interface StoredCrewMember extends CrewMember {
   leaveData?: LeaveData
 }
 
-function getStoredCrew(): StoredCrewMember[] {
-  try {
-    const stored = localStorage.getItem(CREW_STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
-  }
-}
-
-function saveCrew(crew: StoredCrewMember[]) {
-  try {
-    localStorage.setItem(CREW_STORAGE_KEY, JSON.stringify(crew))
-  } catch (err) {
-    console.error('[Crew] Failed to save crew:', err)
-  }
-}
-
 export function initializeCrew() {
-  const existing = getStoredCrew()
-  if (existing.length === 0) {
-    console.log('[Crew] Initialized with empty crew list')
+  console.log('[Crew] Initialized (using Supabase backend)')
+}
+
+export async function getAllCrew(): Promise<StoredCrewMember[]> {
+  const members = await getAllCrewMembers()
+  return members.map(m => ({
+    id: m.id,
+    firstName: m.firstName,
+    lastName: m.lastName,
+    email: m.email,
+    role: m.role,
+    roleLabel: `${m.firstName} ${m.lastName}`,
+    phone: m.phone || '',
+    status: m.status || 'available',
+    isAdmin: m.isAdmin || false,
+  }))
+}
+
+export async function getCrewMemberByEmail(email: string): Promise<StoredCrewMember | undefined> {
+  const member = await supabaseGetCrewMemberByEmail(email)
+  if (!member) return undefined
+
+  return {
+    id: member.id,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    email: member.email,
+    role: member.role,
+    roleLabel: `${member.firstName} ${member.lastName}`,
+    phone: member.phone || '',
+    status: member.status || 'available',
+    isAdmin: member.isAdmin || false,
   }
 }
 
-export function getAllCrew(): StoredCrewMember[] {
-  return getStoredCrew()
-}
-
-export function getCrewMemberByEmail(email: string): StoredCrewMember | undefined {
-  return getStoredCrew().find(m => m.email.toLowerCase() === email.toLowerCase())
-}
-
-export function isUserAdmin(email: string): boolean {
-  const member = getCrewMemberByEmail(email)
+export async function isUserAdmin(email: string): Promise<boolean> {
+  const member = await getCrewMemberByEmail(email)
   return member?.isAdmin ?? false
 }
 
-export function addCrewMember(data: {
+export async function addCrewMember(data: {
   firstName: string
   lastName: string
   email: string
-  role: 'field' | 'supervisor' | 'admin' | 'ceo'
+  role?: 'field' | 'supervisor' | 'admin' | 'ceo'
   phone?: string
   isAdmin?: boolean
-}): StoredCrewMember {
-  const existing = getStoredCrew()
-
+}): Promise<StoredCrewMember> {
   // Check if email already exists
-  if (existing.some(m => m.email.toLowerCase() === data.email.toLowerCase())) {
+  const existing = await getCrewMemberByEmail(data.email)
+  if (existing) {
     throw new Error('Employee with this email already exists')
   }
 
-  const roleLabels: Record<string, string> = {
-    field: 'Field Worker',
-    supervisor: 'Supervisor',
-    admin: 'Administrator',
-    ceo: 'CEO',
-  }
-
-  const newMember: StoredCrewMember = {
-    id: `crew-${Date.now()}`,
+  const result = await supabaseAddCrewMember({
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
-    role: data.role,
-    roleLabel: roleLabels[data.role] || data.role,
-    phone: data.phone || '',
-    status: 'available',
-    isAdmin: data.isAdmin ?? false,
+    role: data.role || 'field',
+    phone: data.phone,
+    isAdmin: data.isAdmin,
+  })
+
+  if (!result) {
+    throw new Error('Failed to create crew member in Supabase')
   }
 
-  existing.push(newMember)
-  saveCrew(existing)
-  console.log('[Crew] Added crew member:', newMember)
-  return newMember
+  console.log('[Crew] Added crew member:', result.email, 'ID:', result.id)
+
+  return {
+    id: result.id,
+    firstName: result.firstName,
+    lastName: result.lastName,
+    email: result.email,
+    role: result.role,
+    roleLabel: `${result.firstName} ${result.lastName}`,
+    phone: result.phone || '',
+    status: result.status || 'available',
+    isAdmin: result.isAdmin || false,
+  }
 }
 
-export function updateCrewMember(
+export async function updateCrewMember(
   email: string,
   updates: Partial<Omit<StoredCrewMember, 'id' | 'email'>>
-): StoredCrewMember | null {
-  const crew = getStoredCrew()
-  const index = crew.findIndex(m => m.email.toLowerCase() === email.toLowerCase())
+): Promise<StoredCrewMember | null> {
+  const updatePayload: any = {}
+  if (updates.firstName) updatePayload.firstName = updates.firstName
+  if (updates.lastName) updatePayload.lastName = updates.lastName
+  if (updates.phone) updatePayload.phone = updates.phone
+  if (updates.role) updatePayload.role = updates.role
+  if (updates.status) updatePayload.status = updates.status
+  if (updates.isAdmin !== undefined) updatePayload.isAdmin = updates.isAdmin
 
-  if (index === -1) return null
+  const result = await supabaseUpdateCrewMember(email, updatePayload)
+  if (!result) return null
 
-  crew[index] = { ...crew[index], ...updates }
-  saveCrew(crew)
-  console.log('[Crew] Updated crew member:', crew[index])
-  return crew[index]
+  console.log('[Crew] Updated crew member:', email)
+
+  return {
+    id: result.id,
+    firstName: result.firstName,
+    lastName: result.lastName,
+    email: result.email,
+    role: result.role,
+    roleLabel: `${result.firstName} ${result.lastName}`,
+    phone: result.phone || '',
+    status: result.status || 'available',
+    isAdmin: result.isAdmin || false,
+  }
 }
 
-export function removeCrewMember(email: string): boolean {
-  const crew = getStoredCrew()
-  const filtered = crew.filter(m => m.email.toLowerCase() !== email.toLowerCase())
-
-  if (filtered.length === crew.length) return false
-
-  saveCrew(filtered)
-  console.log('[Crew] Removed crew member:', email)
-  return true
-}
-
-export function setAdminStatus(email: string, isAdmin: boolean): StoredCrewMember | null {
+export async function setAdminStatus(email: string, isAdmin: boolean): Promise<StoredCrewMember | null> {
   return updateCrewMember(email, { isAdmin })
 }
 
-export function ensureCrewMemberExists(
+export async function ensureCrewMemberExists(
   email: string,
   firstName?: string,
   lastName?: string
-): StoredCrewMember {
-  const existing = getCrewMemberByEmail(email)
+): Promise<StoredCrewMember> {
+  const existing = await getCrewMemberByEmail(email)
   if (existing) return existing
 
-  // Create a new crew member with basic info
   return addCrewMember({
     firstName: firstName || email.split('@')[0],
     lastName: lastName || 'User',
@@ -172,12 +186,18 @@ export function ensureCrewMemberExists(
   })
 }
 
-export function clearAllCrew(): void {
-  localStorage.setItem(CREW_STORAGE_KEY, JSON.stringify([]))
-  console.log('[Crew] Cleared all crew members')
+export async function hasUserCompletedRegistration(email: string): Promise<boolean> {
+  const member = await getCrewMemberByEmail(email)
+  return member !== undefined
 }
 
-export function hasUserCompletedRegistration(email: string): boolean {
-  const member = getCrewMemberByEmail(email)
-  return member !== undefined
+// Stub for backwards compatibility - removing from Supabase should be done carefully
+export async function removeCrewMember(_email: string): Promise<boolean> {
+  console.warn('[Crew] removeCrewMember not implemented for Supabase backend')
+  return false
+}
+
+// Stub for backwards compatibility - clearing all crew should be done carefully
+export async function clearAllCrew(): Promise<void> {
+  console.warn('[Crew] clearAllCrew not implemented for Supabase backend')
 }

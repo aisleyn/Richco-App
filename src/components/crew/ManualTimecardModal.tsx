@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { X, Loader } from 'lucide-react'
 import { getAllCrew } from '../../services/crew'
 import { jobSites } from '../../data/mockData'
-import type { TimesheetEntry } from '../../types'
+import type { TimesheetEntry, CrewMember } from '../../types'
 
 interface Props {
   onClose: () => void
@@ -11,7 +11,17 @@ interface Props {
 }
 
 export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
-  const crew = getAllCrew()
+  const [crew, setCrew] = useState<CrewMember[]>([])
+  const [loadingCrew, setLoadingCrew] = useState(true)
+
+  useEffect(() => {
+    const loadCrew = async () => {
+      const members = await getAllCrew()
+      setCrew(members)
+      setLoadingCrew(false)
+    }
+    loadCrew()
+  }, [])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({

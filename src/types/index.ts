@@ -107,14 +107,14 @@ export interface Alert {
 }
 
 export interface CrewMember {
-  id: string
+  id: string | number
   firstName: string
   lastName: string
   role: UserRole
   roleLabel: string
   phone: string
   email: string
-  status: 'onsite' | 'enroute' | 'available' | 'off'
+  status: 'onsite' | 'enroute' | 'available' | 'off' | string
   currentSite?: string
   clockedInAt?: number
 }

@@ -202,3 +202,188 @@ export async function getTimeEntryBreakPeriods(timeEntryId: string): Promise<Bre
     return []
   }
 }
+
+// ─── Crew Members ─────────────────────────────────────────────────────────
+
+export interface CrewMemberData {
+  id: number
+  email: string
+  firstName: string
+  lastName: string
+  phone?: string
+  role: 'field' | 'supervisor' | 'admin' | 'ceo'
+  status?: string
+  isAdmin?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+async function crewRequest(
+  method: string,
+  endpoint: string,
+  data?: unknown,
+  returnRepresentation = false
+): Promise<any> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn('[Supabase] Missing credentials')
+    return null
+  }
+
+  const url = `${SUPABASE_URL}/rest/v1${endpoint}`
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+  }
+
+  if (returnRepresentation && (method === 'POST' || method === 'PATCH')) {
+    headers['Prefer'] = 'return=representation'
+  }
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+    })
+
+    if (!res.ok) {
+      const errorBody = await res.text()
+      console.error(`[Supabase] ${method} ${endpoint} failed:`, res.status, errorBody)
+      throw new Error(`Supabase error: ${res.status}`)
+    }
+
+    const text = await res.text()
+    return text ? JSON.parse(text) : null
+  } catch (err) {
+    console.error('[Supabase] Crew request failed:', err)
+    throw err
+  }
+}
+
+export async function addCrewMember(data: Omit<CrewMemberData, 'id'>): Promise<CrewMemberData | null> {
+  try {
+    const payload = {
+      email: data.email,
+      first_name: data.firstName,
+      last_name: data.lastName,
+      phone: data.phone || '',
+      role: data.role || 'field',
+      status: data.status || 'available',
+      is_admin: data.isAdmin || false,
+    }
+
+    const result = await crewRequest('POST', '/crew_members', payload, true)
+    if (result && result.length > 0) {
+      const member = result[0]
+      console.log('[Supabase] Added crew member:', member.email, 'ID:', member.id)
+      return {
+        id: member.id,
+        email: member.email,
+        firstName: member.first_name,
+        lastName: member.last_name,
+        phone: member.phone,
+        role: member.role,
+        status: member.status,
+        isAdmin: member.is_admin,
+        createdAt: member.created_at,
+        updatedAt: member.updated_at,
+      }
+    }
+    return null
+  } catch (err) {
+    console.error('[Supabase] Failed to add crew member:', err)
+    return null
+  }
+}
+
+export async function getCrewMemberByEmail(email: string): Promise<CrewMemberData | null> {
+  try {
+    const result = await crewRequest('GET', `/crew_members?email=eq.${encodeURIComponent(email)}`)
+    if (result && result.length > 0) {
+      const member = result[0]
+      return {
+        id: member.id,
+        email: member.email,
+        firstName: member.first_name,
+        lastName: member.last_name,
+        phone: member.phone,
+        role: member.role,
+        status: member.status,
+        isAdmin: member.is_admin,
+        createdAt: member.created_at,
+        updatedAt: member.updated_at,
+      }
+    }
+    return null
+  } catch (err) {
+    console.error('[Supabase] Failed to fetch crew member:', err)
+    return null
+  }
+}
+
+export async function getAllCrewMembers(): Promise<CrewMemberData[]> {
+  try {
+    const result = await crewRequest('GET', '/crew_members?order=id.asc')
+    if (result && Array.isArray(result)) {
+      return result.map((member: any) => ({
+        id: member.id,
+        email: member.email,
+        firstName: member.first_name,
+        lastName: member.last_name,
+        phone: member.phone,
+        role: member.role,
+        status: member.status,
+        isAdmin: member.is_admin,
+        createdAt: member.created_at,
+        updatedAt: member.updated_at,
+      }))
+    }
+    return []
+  } catch (err) {
+    console.error('[Supabase] Failed to fetch crew members:', err)
+    return []
+  }
+}
+
+export async function updateCrewMember(
+  email: string,
+  updates: Partial<Omit<CrewMemberData, 'id' | 'email'>>
+): Promise<CrewMemberData | null> {
+  try {
+    const payload: Record<string, any> = {}
+    if (updates.firstName) payload.first_name = updates.firstName
+    if (updates.lastName) payload.last_name = updates.lastName
+    if (updates.phone) payload.phone = updates.phone
+    if (updates.role) payload.role = updates.role
+    if (updates.status) payload.status = updates.status
+    if (updates.isAdmin !== undefined) payload.is_admin = updates.isAdmin
+
+    const result = await crewRequest(
+      'PATCH',
+      `/crew_members?email=eq.${encodeURIComponent(email)}`,
+      payload,
+      true
+    )
+    if (result && result.length > 0) {
+      const member = result[0]
+      console.log('[Supabase] Updated crew member:', email)
+      return {
+        id: member.id,
+        email: member.email,
+        firstName: member.first_name,
+        lastName: member.last_name,
+        phone: member.phone,
+        role: member.role,
+        status: member.status,
+        isAdmin: member.is_admin,
+        createdAt: member.created_at,
+        updatedAt: member.updated_at,
+      }
+    }
+    return null
+  } catch (err) {
+    console.error('[Supabase] Failed to update crew member:', err)
+    return null
+  }
+}

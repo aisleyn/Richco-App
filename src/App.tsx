@@ -41,14 +41,14 @@ export default function App() {
           initializeCrew()
 
           // Check if user has completed registration
-          const hasRegistered = hasUserCompletedRegistration(user.mail)
+          const hasRegistered = await hasUserCompletedRegistration(user.mail)
           if (!hasRegistered) {
             console.log('[App] New user - showing registration modal')
             setCurrentUser(user)
             setShowRegistration(true)
           } else {
             console.log('[App] Returning user - proceeding to app')
-            setAdminStatus(user.mail, true) // Keep admin check for existing users
+            await setAdminStatus(user.mail, true) // Keep admin check for existing users
             setAuthenticated(true)
           }
         } else {
@@ -80,10 +80,10 @@ export default function App() {
       <RegistrationModal
         email={currentUser.mail}
         displayName={currentUser.displayName}
-        onComplete={() => {
+        onComplete={async () => {
           setShowRegistration(false)
           setCurrentUser(null)
-          setAdminStatus(currentUser.mail, true)
+          await setAdminStatus(currentUser.mail, true)
           setAuthenticated(true)
         }}
       />

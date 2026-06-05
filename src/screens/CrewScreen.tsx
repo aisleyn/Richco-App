@@ -41,7 +41,7 @@ function saveThreadMessage(threadId: string, message: Message) {
   }
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; color: string; text: string }> = {
   online:    { label: 'Online',    color: 'bg-emerald-400', text: 'text-emerald-400' },
   onsite:    { label: 'On Site',   color: 'bg-emerald-400', text: 'text-emerald-400' },
   enroute:   { label: 'En Route',  color: 'bg-amber-400',   text: 'text-amber-400' },
@@ -53,7 +53,7 @@ function getOnlineStatus(member: StoredCrewMember): { label: string; color: stri
   if (member.clockedInAt) {
     return statusConfig.online
   }
-  return statusConfig[member.status]
+  return statusConfig[member.status] || statusConfig.available
 }
 
 const roleFilters = ['All', 'Field Crew', 'Supervisor', 'Office', 'Leadership'] as const
@@ -129,14 +129,20 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
     }
   }
 
+  const [isAdmin, setIsAdmin] = useState(false)
+
   useEffect(() => {
     // Initialize crew system and load crew members
-    initializeCrew()
-    setCrew(getAllCrew())
-    setUnreadMessageCount(calculateUnreadCount())
-  }, [setUnreadMessageCount])
-
-  const isAdmin = isUserAdmin(currentUserEmail)
+    const loadCrew = async () => {
+      initializeCrew()
+      const members = await getAllCrew()
+      setCrew(members)
+      const admin = await isUserAdmin(currentUserEmail)
+      setIsAdmin(admin)
+      setUnreadMessageCount(calculateUnreadCount())
+    }
+    loadCrew()
+  }, [setUnreadMessageCount, currentUserEmail])
   const currentUserMember = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())
   const canViewTimesheets = isAdmin || currentUserMember?.role === 'supervisor' || currentUserMember?.role === 'ceo'
 
@@ -146,7 +152,9 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
     .filter(m => search ? `${m.firstName} ${m.lastName}`.toLowerCase().includes(search.toLowerCase()) : true)
 
   function startConversation(member: StoredCrewMember) {
-    const threadId = getThreadId(currentUserMember?.id ?? 'user', member.id)
+    const currentId = String(currentUserMember?.id ?? 'user')
+    const memberId = String(member.id)
+    const threadId = getThreadId(currentId, memberId)
     setActiveThreadId(threadId)
   }
 
@@ -155,7 +163,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
     const msg: Message = {
       id: `msg-${Date.now()}`,
       threadId: activeThreadId,
-      senderId: currentUserMember.id,
+      senderId: String(currentUserMember.id),
       senderName: `${currentUserMember.firstName} ${currentUserMember.lastName}`,
       body: messageInput.trim(),
       timestamp: Date.now(),
@@ -176,8 +184,9 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   }, [activeThreadId])
 
   const currentThreadMsgs = activeThreadId ? getThreadMessages(activeThreadId) : []
-  const otherUserId = activeThreadId?.split('-').find(id => id !== currentUserMember?.id) ?? ''
-  const otherUser = crew.find(m => m.id === otherUserId)
+  const currentUserIdStr = String(currentUserMember?.id ?? 'user')
+  const otherUserId = activeThreadId?.split('-').find(id => id !== currentUserIdStr) ?? ''
+  const otherUser = crew.find(m => String(m.id) === otherUserId)
 
   // Get all unique conversations
   const conversations = new Map<string, { member: StoredCrewMember; lastMessage?: Message }>()
@@ -187,9 +196,10 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
       const messagesByThread = JSON.parse(allMessages)
       Object.entries(messagesByThread).forEach(([threadId, messages]: [string, any]) => {
         const ids = threadId.split('-')
-        const otherUserId = ids.find(id => id !== currentUserMember?.id)
+        const currentIdStr = String(currentUserMember?.id ?? 'user')
+        const otherUserId = ids.find(id => id !== currentIdStr)
         if (otherUserId) {
-          const member = crew.find(m => m.id === otherUserId)
+          const member = crew.find(m => String(m.id) === otherUserId)
           if (member) {
             const lastMsg = messages[messages.length - 1]
             conversations.set(threadId, { member, lastMessage: lastMsg })
@@ -224,7 +234,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" key={`messages-${activeThreadId}-${refresh}`}>
               {currentThreadMsgs.map(msg => {
-                const isMe = msg.senderId === currentUserMember?.id
+                const isMe = msg.senderId === String(currentUserMember?.id)
                 return (
                   <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? 'justify-end' : 'justify-start'} gap-2`}>
                     {!isMe && <Avatar name={msg.senderName} size={28} />}
@@ -379,7 +389,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.06 }}
                       onClick={() => {
-                        const threadId = getThreadId(currentUserMember?.id ?? 'user', conv.member.id)
+                        const threadId = getThreadId(String(currentUserMember?.id ?? 'user'), String(conv.member.id))
                         setActiveThreadId(threadId)
                       }}
                       className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
@@ -409,8 +419,9 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
         {showAddCrew && (
           <AddCrewModal
             onClose={() => setShowAddCrew(false)}
-            onCrewAdded={() => {
-              setCrew(getAllCrew())
+            onCrewAdded={async () => {
+              const members = await getAllCrew()
+              setCrew(members)
               setShowAddCrew(false)
             }}
           />
@@ -419,8 +430,9 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
           <EditCrewModal
             member={editingMember}
             onClose={() => setEditingMember(null)}
-            onUpdated={() => {
-              setCrew(getAllCrew())
+            onUpdated={async () => {
+              const members = await getAllCrew()
+              setCrew(members)
               setEditingMember(null)
             }}
           />
@@ -431,10 +443,11 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             onClose={() => setViewingProfile(null)}
             isAdmin={isAdmin}
             canViewTimesheets={canViewTimesheets}
-            onUpdated={() => {
-              setCrew(getAllCrew())
+            onUpdated={async () => {
+              const members = await getAllCrew()
+              setCrew(members)
               // Find and update the viewing profile with new data
-              const updated = getAllCrew().find(m => m.email === viewingProfile.email)
+              const updated = members.find(m => m.email === viewingProfile.email)
               if (updated) {
                 setViewingProfile(updated)
               }

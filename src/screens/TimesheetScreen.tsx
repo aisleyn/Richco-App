@@ -37,8 +37,16 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const [timecardRefresh, setTimecardRefresh] = useState(0)
   const [completedTodayHours, setCompletedTodayHours] = useState(0)
   const [weekStats, setWeekStats] = useState<WeekStats>({ today: 0, week: 0, remaining: 0, overtimeWeek: 0, month: 0 })
-  const isAdmin = isUserAdmin(currentUserEmail)
+  const [isAdmin, setIsAdmin] = useState(false)
   const hours = elapsed / 3600000
+
+  useEffect(() => {
+    const loadAdminStatus = async () => {
+      const admin = await isUserAdmin(currentUserEmail)
+      setIsAdmin(admin)
+    }
+    loadAdminStatus()
+  }, [currentUserEmail])
 
   // Calculate stats from stored timecards
   useEffect(() => {

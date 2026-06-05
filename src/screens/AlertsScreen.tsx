@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Info, Cloud, CalendarDays, MessageSquare, Truck, Clock, Award, X, Plus } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
@@ -30,9 +30,20 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
   const [postBody, setPostBody] = useState('')
   const [denyingAlertId, setDenyingAlertId] = useState<string | null>(null)
   const [denialReason, setDenialReason] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isCEO, setIsCEO] = useState(false)
 
-  const isAdmin = isUserAdmin(currentUserEmail)
-  const isCEO = getAllCrew().find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+  useEffect(() => {
+    const loadUserStatus = async () => {
+      const admin = await isUserAdmin(currentUserEmail)
+      setIsAdmin(admin)
+      const crew = await getAllCrew()
+      const userIsCEO = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
+      setIsCEO(userIsCEO ?? false)
+    }
+    loadUserStatus()
+  }, [currentUserEmail])
+
   const canApprove = isAdmin || isCEO
   const isSupervisor = isAdmin || isCEO
 
