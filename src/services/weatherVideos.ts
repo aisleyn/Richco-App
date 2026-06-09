@@ -43,10 +43,10 @@ export function getWeatherType(condition: string): WeatherType {
 // Example public video URLs (replace with your own):
 const VIDEO_MAP: Record<WeatherType, Record<TimeOfDay, string>> = {
   sunny: {
-    sunrise: '/videos/sunny-sunrise.mp4', // sunrise over mountains
-    daytime: '/videos/sunny-daytime.mp4', // bright sunny sky
-    sunset: '/videos/sunny-sunset.mp4', // golden hour
-    night: '/videos/sunny-night.mp4', // starry night
+    sunrise: '/videos/sunny-sunrise.mp4',
+    daytime: '/videos/sunny-daytime.mp4',
+    sunset: '/videos/sunny-sunset.mp4',
+    night: '/videos/sunny-night.mp4',
   },
   cloudy: {
     sunrise: '/videos/cloudy-sunrise.mp4',
@@ -67,16 +67,16 @@ const VIDEO_MAP: Record<WeatherType, Record<TimeOfDay, string>> = {
     night: '/videos/stormy-night.mp4',
   },
   snowy: {
-    sunrise: '/videos/snowy-sunrise.mp4',
+    sunrise: '/videos/snowy-daytime.mp4', // fallback to daytime for missing sunrise
     daytime: '/videos/snowy-daytime.mp4',
-    sunset: '/videos/snowy-sunset.mp4',
+    sunset: '/videos/snowy-daytime.mp4', // fallback to daytime for missing sunset
     night: '/videos/snowy-night.mp4',
   },
   foggy: {
     sunrise: '/videos/foggy-sunrise.mp4',
     daytime: '/videos/foggy-daytime.mp4',
     sunset: '/videos/foggy-sunset.mp4',
-    night: '/videos/foggy-night.mp4',
+    night: '/videos/cloudy-night.mp4', // fallback to cloudy for missing foggy-night
   },
 }
 
