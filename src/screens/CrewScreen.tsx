@@ -147,7 +147,6 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const canViewTimesheets = isAdmin || currentUserMember?.role === 'supervisor' || currentUserMember?.role === 'ceo'
 
   const filtered = crew
-    .filter(m => isAdmin ? true : m.email.toLowerCase() === currentUserEmail.toLowerCase())
     .filter(m => roleMatch(m, roleFilter))
     .filter(m => search ? `${m.firstName} ${m.lastName}`.toLowerCase().includes(search.toLowerCase()) : true)
 
