@@ -1,35 +1,42 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { LogIn, AlertCircle } from 'lucide-react'
-import { login } from '../services/auth'
+import { LogIn, AlertCircle, Mail, Lock } from 'lucide-react'
+import { login } from '../services/supabaseAuth'
 
 interface Props {
   onLoginSuccess: () => void
 }
 
 export function LoginScreen({ onLoginSuccess }: Props) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleLogin() {
-    // Prevent multiple clicks
-    if (loading) return
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+
+    if (!email || !password) {
+      setError('Please enter email and password')
+      return
+    }
 
     setLoading(true)
     setError(null)
 
     try {
-      const user = await login()
-      // If login succeeds and returns a user (mock login), proceed
+      const user = await login(email, password)
       if (user) {
+        console.log('[LoginScreen] Login successful:', user.email)
         onLoginSuccess()
+      } else {
+        setError('Invalid email or password')
       }
-      // If login doesn't return (redirect flow), the page will navigate away
-      // so this code won't execute
     } catch (err) {
-      setLoading(false)
-      setError('Login failed. Please check your Azure AD configuration and try again.')
+      setError('Login failed. Please try again.')
       console.error('[LoginScreen] Login error:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -45,7 +52,7 @@ export function LoginScreen({ onLoginSuccess }: Props) {
           <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
             <div className="text-3xl font-bold text-blue-600">RC</div>
           </div>
-          <h1 className="text-slate-800 text-3xl font-bold">Richco Construction</h1>
+          <h1 className="text-slate-800 dark:text-slate-100 text-3xl font-bold">Richco Construction</h1>
           <p className="text-slate-400 text-sm mt-2">Field Operations App</p>
         </div>
 
@@ -61,41 +68,66 @@ export function LoginScreen({ onLoginSuccess }: Props) {
           </motion.div>
         )}
 
-        {/* Login button */}
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 active:bg-blue-600Dark disabled:opacity-50 transition-all rounded-xl text-slate-900 font-bold text-base"
-        >
-          <LogIn size={18} />
-          {loading ? 'Signing in...' : 'Sign in with Microsoft'}
-        </button>
+        {/* Login form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Email input */}
+          <div>
+            <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+              Email
+            </label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-3 top-3.5 text-slate-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                disabled={loading}
+                className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+              />
+            </div>
+          </div>
 
-        {/* Info text */}
-        <p className="text-slate-500 text-xs text-center mt-6">
-          Sign in with your Richco company email. Your email is used to fetch crew information and link timesheets to your Azure AD identity.
-        </p>
+          {/* Password input */}
+          <div>
+            <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <Lock size={16} className="absolute left-3 top-3.5 text-slate-400" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                disabled={loading}
+                className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+              />
+            </div>
+          </div>
 
-        {/* Dev mode fallback */}
-        {!import.meta.env.VITE_AZURE_CLIENT_ID && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl"
+          {/* Login button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-all rounded-lg text-white font-semibold text-base"
           >
-            <p className="text-yellow-200 text-xs mb-2 font-semibold">⚠️ Development Mode</p>
-            <p className="text-yellow-300 text-xs">
-              Azure AD not configured. Add <code className="bg-yellow-500/20 px-1.5 py-0.5 rounded">VITE_AZURE_CLIENT_ID</code> and <code className="bg-yellow-500/20 px-1.5 py-0.5 rounded">VITE_AZURE_TENANT_ID</code> to .env to enable live Dataverse sync.
-            </p>
-            <button
-              onClick={onLoginSuccess}
-              className="mt-3 w-full py-2 bg-yellow-500/20 text-yellow-300 rounded-lg text-xs font-medium"
-            >
-              Continue with Mock Data
-            </button>
-          </motion.div>
-        )}
+            <LogIn size={18} />
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+
+        {/* Help text */}
+        <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+          <p className="text-slate-600 dark:text-slate-400 text-xs">
+            <strong>Don't have an account?</strong> Contact your admin to be added to the system.
+          </p>
+        </div>
+
+        {/* Dev info */}
+        <p className="text-slate-500 text-xs text-center mt-6">
+          Crew members are added by administrators only. Your email and profile are used to track timesheets and communications.
+        </p>
       </motion.div>
     </div>
   )

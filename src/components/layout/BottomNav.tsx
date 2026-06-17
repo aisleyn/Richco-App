@@ -14,9 +14,10 @@ const tabs = [
 interface Props {
   active: string
   onChange: (id: string) => void
+  onLogout?: () => void
 }
 
-export function BottomNav({ active, onChange }: Props) {
+export function BottomNav({ active, onChange, onLogout }: Props) {
   const { unreadAlertCount, unreadMessageCount } = useAppStore()
 
   return (

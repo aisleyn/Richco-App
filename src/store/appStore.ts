@@ -11,8 +11,8 @@ interface AppState {
   // Authentication
   currentUserName: string
   currentUserEmail: string
-  currentUserAadId: string
-  initializeUser: (name: string, email: string, aadId: string) => void
+  currentUserId: string
+  initializeUser: (name: string, email: string, userId: string) => void
 
   // Clock state
   clockedIn: boolean
@@ -72,13 +72,13 @@ export const useAppStore = create<AppState>()(
       // Authentication
       currentUserName: '',
       currentUserEmail: '',
-      currentUserAadId: '',
-      initializeUser: (name: string, email: string, aadId: string) => {
+      currentUserId: '',
+      initializeUser: (name: string, email: string, userId: string) => {
         console.log('[Store] Initializing user:', name, email)
         set({
           currentUserName: name,
           currentUserEmail: email,
-          currentUserAadId: aadId,
+          currentUserId: userId,
           // Reset per-user data when a new user logs in
           clockedIn: false,
           clockInTime: null,
@@ -127,11 +127,11 @@ export const useAppStore = create<AppState>()(
       clockIn: async (siteId, siteName, isOvernight, gps) => {
         const now = Date.now()
         const id = `ts-${now}`
-        const { currentUserAadId, currentUserEmail, currentUserName } = get()
+        const { currentUserId, currentUserEmail, currentUserName } = get()
 
         // Create Supabase entry (source of truth)
         const entryId = await createTimeEntry({
-          employee_id: currentUserAadId,
+          employee_id: currentUserId,
           employee_name: currentUserName,
           site_id: siteId,
           site_name: siteName,
@@ -162,7 +162,7 @@ export const useAppStore = create<AppState>()(
 
         // Also send to Power Automate for reporting/notifications
         sendClockIn({
-          employeeId: currentUserAadId,
+          employeeId: currentUserId,
           employeeName: currentUserName,
           siteId,
           siteName,
@@ -176,7 +176,7 @@ export const useAppStore = create<AppState>()(
       },
 
       clockOut: async (data) => {
-        const { clockInTime, breakStartTime, totalBreakMs, activeTimesheetId, currentShiftIsOvernight, currentUserAadId, currentUserEmail, currentUserName } = get()
+        const { clockInTime, breakStartTime, totalBreakMs, activeTimesheetId, currentShiftIsOvernight, currentUserId, currentUserEmail, currentUserName } = get()
         const now = Date.now()
 
         // Calculate total elapsed time and break duration
@@ -263,7 +263,7 @@ export const useAppStore = create<AppState>()(
 
         // Also send to Power Automate for compatibility
         sendClockOut({
-          employeeId: currentUserAadId,
+          employeeId: currentUserId,
           employeeName: currentUserName,
           timesheetId: activeTimesheetId ?? `ts-${now}`,
           siteId: data.siteId ?? '',
@@ -283,7 +283,7 @@ export const useAppStore = create<AppState>()(
       },
 
       startBreak: async () => {
-        const { activeTimesheetId, currentUserAadId } = get()
+        const { activeTimesheetId, currentUserId } = get()
         const now = Date.now()
         const nowIso = new Date(now).toISOString()
 
@@ -297,7 +297,7 @@ export const useAppStore = create<AppState>()(
 
         // Also notify Power Automate
         sendBreakEvent({
-          employeeId: currentUserAadId,
+          employeeId: currentUserId,
           timesheetId: activeTimesheetId ?? '',
           event: 'start',
           timestamp: nowIso,
@@ -305,7 +305,7 @@ export const useAppStore = create<AppState>()(
       },
 
       endBreak: async () => {
-        const { breakStartTime, totalBreakMs, activeTimesheetId, activeBreakPeriodId, currentUserAadId } = get()
+        const { breakStartTime, totalBreakMs, activeTimesheetId, activeBreakPeriodId, currentUserId } = get()
         const now = Date.now()
         const nowIso = new Date(now).toISOString()
         const additionalBreak = breakStartTime ? now - breakStartTime : 0
@@ -326,7 +326,7 @@ export const useAppStore = create<AppState>()(
 
         // Also notify Power Automate
         sendBreakEvent({
-          employeeId: currentUserAadId,
+          employeeId: currentUserId,
           timesheetId: activeTimesheetId ?? '',
           event: 'end',
           timestamp: nowIso,
@@ -399,7 +399,7 @@ export const useAppStore = create<AppState>()(
         activeBreakPeriodId: state.activeBreakPeriodId,
         activeSheetEntry: state.activeSheetEntry,
         currentShiftIsOvernight: state.currentShiftIsOvernight,
-        currentUserAadId: state.currentUserAadId,
+        currentUserId: state.currentUserId,
         currentUserName: state.currentUserName,
         currentUserEmail: state.currentUserEmail,
         crewMessages: state.crewMessages,
