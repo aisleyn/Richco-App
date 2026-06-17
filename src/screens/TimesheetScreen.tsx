@@ -4,7 +4,7 @@ import { Clock, TrendingUp, Calendar, Plus } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { ClockInCard } from '../components/home/ClockInCard'
 import { ClockOutModal } from '../components/timesheet/ClockOutModal'
-import { TimecardList } from '../components/timesheet/Timecard'
+import { TimecardGrid } from '../components/timesheet/TimecardGrid'
 import { TimeOffCard } from '../components/timesheet/TimeOffCard'
 import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
 import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
@@ -215,18 +215,17 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
 
         {/* Timecards */}
         <div className="mt-6 flex items-center justify-between mb-3">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Recent Timecards</h3>
           {isAdmin && (
             <button
               onClick={() => setShowManualTimecard(true)}
               className="text-blue-600 hover:text-amber-500 flex items-center gap-1 text-xs font-semibold transition-colors"
             >
-              <Plus size={12} /> Manual
+              <Plus size={12} /> Manual Entry
             </button>
           )}
         </div>
         <div className="mt-0">
-          <TimecardList key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} />
+          <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} />
         </div>
 
         {/* Time Off Card */}
