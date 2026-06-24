@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { BottomNav } from './components/layout/BottomNav'
 import { LoginScreen } from './screens/LoginScreen'
+import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { TimesheetScreen } from './screens/TimesheetScreen'
 import { PhotosScreen } from './screens/PhotosScreen'
@@ -9,11 +10,12 @@ import { AlertsScreen } from './screens/AlertsScreen'
 import { CrewScreen } from './screens/CrewScreen'
 import { AdminCrewScreen } from './screens/AdminCrewScreen'
 import { AIHelpScreen } from './screens/AIHelpScreen'
-import { getCurrentUser, logout, isUserAdmin } from './services/supabaseAuth'
+import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supabaseAuth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
 import { initializeCrew } from './services/crew'
 import { syncEmployeeTimesheets } from './services/supabase'
+import { SetPasswordModal } from './components/crew/SetPasswordModal'
 
 type ScreenProps = { onNavigate: (s: string) => void }
 
@@ -22,12 +24,65 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [checking, setChecking] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const { initializeUser } = useAppStore()
   useDarkMode()
+
+  // Handle email confirmation from Supabase
+  useEffect(() => {
+    const handleAuthCallback = async () => {
+      const fullHash = window.location.hash
+      console.log('[App] Full hash:', fullHash)
+
+      const params = new URLSearchParams(fullHash.slice(1))
+      const token = params.get('token_hash') || params.get('token')
+      const type = params.get('type')
+
+      console.log('[App] Parsed params - token:', token, 'type:', type)
+
+      if (token && (type === 'signup' || type === 'recovery')) {
+        try {
+          console.log('[App] Processing email confirmation token...')
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type as 'signup' | 'recovery',
+          })
+
+          if (error) {
+            console.error('[App] Email confirmation failed:', error.message)
+            return
+          }
+
+          if (data.user) {
+            console.log('[App] Email confirmed for:', data.user.email, 'showing password setup modal...')
+            setPendingEmail(data.user.email || null)
+            setShowPasswordModal(true)
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname)
+          }
+        } catch (err) {
+          console.error('[App] Error handling auth callback:', err)
+        }
+      } else {
+        console.log('[App] No auth token found in hash')
+      }
+    }
+
+    handleAuthCallback()
+  }, [])
 
   // Check if user is already logged in
   useEffect(() => {
     const checkUser = async () => {
+      // Skip auth check if we're showing password modal
+      if (showPasswordModal) {
+        console.log('[App] Skipping user check - showing password modal')
+        setChecking(false)
+        return
+      }
+
       try {
         console.log('[App] Checking for authenticated user...')
         const user = await getCurrentUser()
@@ -57,7 +112,7 @@ export default function App() {
       }
     }
     checkUser()
-  }, [initializeUser])
+  }, [initializeUser, showPasswordModal])
 
   if (checking) {
     return (
@@ -71,8 +126,29 @@ export default function App() {
     )
   }
 
+  if (showPasswordModal && pendingEmail) {
+    return (
+      <SetPasswordModal
+        email={pendingEmail}
+        onComplete={() => {
+          setShowPasswordModal(false)
+          setPendingEmail(null)
+          setAuthenticated(true)
+        }}
+      />
+    )
+  }
+
   if (!authenticated) {
-    return <LoginScreen onLoginSuccess={() => setAuthenticated(true)} />
+    if (showForgotPassword) {
+      return <ForgotPasswordScreen onBackToLogin={() => setShowForgotPassword(false)} />
+    }
+    return (
+      <LoginScreen
+        onLoginSuccess={() => setAuthenticated(true)}
+        onForgotPassword={() => setShowForgotPassword(true)}
+      />
+    )
   }
 
   const renderScreen = () => {

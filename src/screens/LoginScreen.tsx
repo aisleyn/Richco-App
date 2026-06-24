@@ -5,9 +5,10 @@ import { login } from '../services/supabaseAuth'
 
 interface Props {
   onLoginSuccess: () => void
+  onForgotPassword: () => void
 }
 
-export function LoginScreen({ onLoginSuccess }: Props) {
+export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -114,6 +115,16 @@ export function LoginScreen({ onLoginSuccess }: Props) {
           >
             <LogIn size={18} />
             {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+
+          {/* Forgot password link */}
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            disabled={loading}
+            className="w-full mt-3 text-blue-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 transition-colors"
+          >
+            Forgot password?
           </button>
         </form>
 

@@ -183,7 +183,7 @@ export async function requestPasswordReset(email: string): Promise<{ success: bo
   try {
     const appUrl = import.meta.env.VITE_APP_URL || 'https://mango-rock-0fadbc31e.7.azurestaticapps.net'
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${appUrl}/#/reset-password`,
+      redirectTo: `${appUrl}`,
     })
 
     if (error) {
