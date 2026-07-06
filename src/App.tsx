@@ -73,7 +73,7 @@ export default function App() {
     handleAuthCallback()
   }, [])
 
-  // Check if user is already logged in
+  // Check if user is already logged in (silent auto-login on startup)
   useEffect(() => {
     const checkUser = async () => {
       // Skip auth check if we're showing password modal
@@ -87,7 +87,7 @@ export default function App() {
         console.log('[App] Checking for authenticated user...')
         const user = await getCurrentUser()
         if (user) {
-          console.log('[App] User found:', user.email)
+          console.log('[App] ✅ Silent auto-login: restoring session for', user.email)
           initializeUser(user.name, user.email, user.id)
 
           // Check if user is admin
@@ -103,7 +103,7 @@ export default function App() {
 
           setAuthenticated(true)
         } else {
-          console.log('[App] No authenticated user found')
+          console.log('[App] No authenticated user found - showing login screen')
         }
       } catch (err) {
         console.error('[App] Error checking user:', err)
