@@ -46,6 +46,10 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
       if (!formData.date) throw new Error('Date is required')
       if (!formData.clockInTime) throw new Error('Clock in time is required')
       if (!formData.clockOutTime) throw new Error('Clock out time is required')
+      if (!formData.siteName) throw new Error('Site is required')
+      if (!formData.vehicleUsed) throw new Error('Vehicle used is required')
+      if (!formData.shiftSummary.trim()) throw new Error('Shift summary is required')
+      if (!formData.concerns.trim()) throw new Error('Concerns is required')
 
       const [inHour, inMin] = formData.clockInTime.split(':').map(Number)
       const [outHour, outMin] = formData.clockOutTime.split(':').map(Number)
@@ -210,7 +214,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
               className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
             >
               <option value="">Select a site...</option>
-              {jobSites.map(site => (
+              {jobSites.filter(site => site.status === 'active').map(site => (
                 <option key={site.id} value={site.name}>{site.name}</option>
               ))}
             </select>
@@ -220,13 +224,21 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
             <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
               Vehicle Used
             </label>
-            <input
-              type="text"
+            <select
               value={formData.vehicleUsed}
               onChange={e => setFormData({ ...formData, vehicleUsed: e.target.value })}
-              placeholder="e.g., F-350 #1"
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
-            />
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+            >
+              <option value="">Select a vehicle...</option>
+              <option value="No Company Vehicle">No Company Vehicle</option>
+              <option value="Black F150">Black F150</option>
+              <option value="Blue Truck">Blue Truck</option>
+              <option value="Escape">Escape</option>
+              <option value="Green Truck">Green Truck</option>
+              <option value="Grey Truck">Grey Truck</option>
+              <option value="Red Truck">Red Truck</option>
+              <option value="Selene F150">Selene F150</option>
+            </select>
           </div>
 
           <div>
@@ -255,22 +267,25 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-bg-surface border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors mb-4"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
-            >
-              {loading && <Loader size={16} className="animate-spin" />}
-              Create Timecard
-            </button>
+
+            <div className="bg-bg-surface border border-slate-200 rounded-lg p-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-6 py-4 text-slate-900 font-bold text-base transition-colors flex items-center justify-center gap-2"
+              >
+                {loading && <Loader size={18} className="animate-spin" />}
+                Create Timecard
+              </button>
+            </div>
           </div>
         </form>
       </motion.div>

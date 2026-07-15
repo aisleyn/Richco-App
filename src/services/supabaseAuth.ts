@@ -255,3 +255,23 @@ export async function deleteCrewMember(userId: string): Promise<{ success: boole
     return { success: false, message: 'Failed to delete crew member' }
   }
 }
+
+// Set password directly (admin only - no email verification)
+export async function setPasswordDirect(userId: string, password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      password,
+    })
+
+    if (error) {
+      console.error('[Auth] Failed to set password:', error.message)
+      return { success: false, message: error.message }
+    }
+
+    console.log('[Auth] ✅ Password set directly for user:', userId)
+    return { success: true, message: 'Password updated successfully' }
+  } catch (err) {
+    console.error('[Auth] Set password error:', err)
+    return { success: false, message: 'Failed to set password' }
+  }
+}

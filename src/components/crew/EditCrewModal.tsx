@@ -38,7 +38,7 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
         ceo: 'CEO',
       }
 
-      updateCrewMember(member.email, {
+      const result = await updateCrewMember(member.email, {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         phone: formData.phone.trim(),
@@ -46,6 +46,10 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
         roleLabel: roleLabels[formData.role] || formData.role,
         isAdmin: formData.isAdmin,
       })
+
+      if (!result) {
+        throw new Error('Failed to update crew member')
+      }
 
       onUpdated()
       onClose()
