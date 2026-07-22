@@ -974,3 +974,93 @@ export async function createDailyChecklist(items: Omit<ChecklistItemData, 'id' |
     return null
   }
 }
+
+// ─── Shift Assignments ────────────────────────────────────────────────────
+
+export interface ShiftAssignmentData {
+  id?: string
+  shift_id: string
+  crew_member_id: number
+  assigned_date: string
+  created_at?: string
+  updated_at?: string
+}
+
+export async function assignCrewToShift(crewMemberId: number, shiftId: string, assignedDate: string): Promise<ShiftAssignmentData | null> {
+  try {
+    const payload = {
+      shift_id: shiftId,
+      crew_member_id: crewMemberId,
+      assigned_date: assignedDate,
+    }
+    const result = await shiftRosterRequest('POST', '/shift_assignments', payload, true)
+    if (result && result.length > 0) {
+      console.log('[Supabase] Assigned crew', crewMemberId, 'to shift', shiftId)
+      return result[0]
+    }
+    return null
+  } catch (err) {
+    console.error('[Supabase] Failed to assign crew to shift:', err)
+    return null
+  }
+}
+
+export async function getCrewShiftAssignment(crewMemberId: number, date: string): Promise<ShiftData & { locations: ShiftLocationData[] } | null> {
+  try {
+    // Get the assignment
+    const assignmentResult = await shiftRosterRequest(
+      'GET',
+      `/shift_assignments?crew_member_id=eq.${crewMemberId}&assigned_date=eq.${date}`
+    )
+
+    if (!assignmentResult || assignmentResult.length === 0) {
+      return null
+    }
+
+    const assignment = assignmentResult[0]
+
+    // Get the full shift with locations
+    const shiftResult = await shiftRosterRequest(
+      'GET',
+      `/shifts?id=eq.${assignment.shift_id}`
+    )
+
+    if (!shiftResult || shiftResult.length === 0) {
+      return null
+    }
+
+    const shift = shiftResult[0]
+
+    // Get locations
+    const locations = await getShiftLocations(shift.id)
+
+    return { ...shift, locations }
+  } catch (err) {
+    console.error('[Supabase] Failed to fetch crew shift assignment:', err)
+    return null
+  }
+}
+
+export async function getShiftAssignments(shiftId: string): Promise<(ShiftAssignmentData & { crew_member?: CrewMemberData })[]> {
+  try {
+    const result = await shiftRosterRequest(
+      'GET',
+      `/shift_assignments?shift_id=eq.${shiftId}&order=assigned_date.asc`
+    )
+    return result || []
+  } catch (err) {
+    console.error('[Supabase] Failed to fetch shift assignments:', err)
+    return []
+  }
+}
+
+export async function removeCrewFromShift(assignmentId: string): Promise<boolean> {
+  try {
+    await shiftRosterRequest('DELETE', `/shift_assignments?id=eq.${assignmentId}`)
+    console.log('[Supabase] Removed crew from shift:', assignmentId)
+    return true
+  } catch (err) {
+    console.error('[Supabase] Failed to remove crew from shift:', err)
+    return false
+  }
+}

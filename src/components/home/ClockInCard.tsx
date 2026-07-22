@@ -1,22 +1,57 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Clock, Play, Pause, Square, ChevronDown, Plus } from 'lucide-react'
+import { MapPin, Clock, Play, Pause, Square, ChevronDown } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { useElapsedTime, formatElapsed } from '../../hooks/useTimer'
-import { todayShifts } from '../../data/mockData'
+import { getCrewShiftAssignment, getCrewMemberByEmail } from '../../services/supabase'
+import type { ShiftData, ShiftLocationData } from '../../services/supabase'
 
 interface Props {
-  onClockIn: (isOvernight: boolean) => void
+  onClockIn: (isOvernight: boolean, siteId?: string, siteName?: string) => void
   onClockOut: () => void
   onNavigateTime: () => void
   isOvernightShift?: boolean
 }
 
 export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernightShift = false }: Props) {
-  const { clockedIn, clockInTime, breakActive, breakStartTime, totalBreakMs, startBreak, endBreak } = useAppStore()
+  const { clockedIn, clockInTime, breakActive, breakStartTime, totalBreakMs, startBreak, endBreak, currentUserEmail } = useAppStore()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
-  const [shiftsExpanded, setShiftsExpanded] = useState(false)
-  const shift = todayShifts[0]
+  const [assignedShift, setAssignedShift] = useState<(ShiftData & { locations: ShiftLocationData[] }) | null>(null)
+  const [selectedLocation, setSelectedLocation] = useState<ShiftLocationData | null>(null)
+  const [locationsExpanded, setLocationsExpanded] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAssignedShift()
+  }, [currentUserEmail])
+
+  const fetchAssignedShift = async () => {
+    setLoading(true)
+    try {
+      const crew = await getCrewMemberByEmail(currentUserEmail)
+      if (crew?.id) {
+        const today = new Date().toISOString().split('T')[0]
+        const shift = await getCrewShiftAssignment(crew.id as number, today)
+        setAssignedShift(shift)
+
+        if (shift?.locations && shift.locations.length > 0) {
+          setSelectedLocation(shift.locations[0])
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching assigned shift:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleClockIn = () => {
+    if (assignedShift && selectedLocation) {
+      onClockIn(isOvernightShift, selectedLocation.location_name, selectedLocation.location_name)
+    } else {
+      onClockIn(isOvernightShift, 'shift', 'Shift')
+    }
+  }
 
   if (clockedIn) {
     return (
@@ -35,9 +70,6 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               />
               <span className="text-emerald-400 text-sm font-semibold">Clocked In</span>
             </div>
-            <span className="text-slate-400 text-xs">
-              {clockInTime ? new Date(clockInTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '--'}
-            </span>
           </div>
 
           <div className="flex items-center justify-between">
@@ -52,10 +84,12 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               )}
             </div>
             <div className="text-right">
-              <p className="text-slate-800 text-sm font-medium">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
-              <p className="text-slate-400 text-xs flex items-center gap-1 justify-end">
-                <MapPin size={10} /> Zone A – Foundation
-              </p>
+              <p className="text-slate-800 text-sm font-medium">{selectedLocation?.location_name ?? 'Shift'}</p>
+              {selectedLocation?.address && (
+                <p className="text-slate-400 text-xs flex items-center gap-1 justify-end">
+                  <MapPin size={10} /> {selectedLocation.address}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -81,6 +115,18 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
     )
   }
 
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden p-4"
+      >
+        <div className="text-center py-8 text-slate-500">Loading...</div>
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -90,36 +136,47 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Today's Shift</p>
-            <p className="text-slate-800 dark:text-slate-100 font-semibold">{shift?.siteName ?? 'Grandview Heights Phase 3'}</p>
-            <p className="text-slate-400 dark:text-slate-500 text-sm flex items-center gap-1 mt-0.5">
-              <Clock size={12} />
-              {shift ? `${shift.startTime} – ${shift.endTime}` : '07:00 – 15:30'}
+            <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium mb-1">Shift</p>
+            <p className="text-slate-800 dark:text-slate-100 font-semibold">
+              {selectedLocation?.location_name ?? 'Shift'}
             </p>
+            {assignedShift && (
+              <p className="text-slate-400 dark:text-slate-500 text-sm flex items-center gap-1 mt-0.5">
+                <Clock size={12} />
+                {assignedShift.start_time} – {assignedShift.end_time}
+              </p>
+            )}
           </div>
           <div className="bg-blue-600/10 dark:bg-blue-600/20 border border-blue-600/20 dark:border-blue-600/30 rounded-xl px-3 py-1.5">
-            <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Scheduled</p>
+            <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">
+              {assignedShift ? 'Scheduled' : 'No Shift'}
+            </p>
           </div>
         </div>
       </div>
 
       <AnimatePresence>
-        {todayShifts.length > 1 && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+        {assignedShift && assignedShift.locations && assignedShift.locations.length > 1 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <button
-              onClick={() => setShiftsExpanded(!shiftsExpanded)}
+              onClick={() => setLocationsExpanded(!locationsExpanded)}
               className="w-full flex items-center gap-2 px-4 py-3 border-t border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-bg-elevated/30 dark:hover:bg-bg-elevated-dark/30 transition-colors group"
             >
-              <motion.div animate={{ rotate: shiftsExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
-                <Plus size={14} className="text-slate-400 dark:text-slate-500 group-hover:text-slate-300 dark:group-hover:text-slate-400" />
+              <motion.div animate={{ rotate: locationsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown size={14} className="text-slate-400 dark:text-slate-500 group-hover:text-slate-300 dark:group-hover:text-slate-400" />
               </motion.div>
               <span className="text-xs font-semibold">
-                {shiftsExpanded ? 'Hide Other Shifts' : `Show Other Shifts (${todayShifts.length - 1})`}
+                Shift Locations ({assignedShift.locations.length})
               </span>
             </button>
 
             <AnimatePresence>
-              {shiftsExpanded && (
+              {locationsExpanded && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -128,16 +185,39 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
                   className="overflow-hidden border-t border-slate-200 dark:border-slate-700"
                 >
                   <div className="p-3 space-y-2 bg-bg-elevated/30 dark:bg-bg-elevated-dark/30">
-                    {todayShifts.slice(1).map((s, i) => (
-                      <div key={i} className="flex items-center justify-between text-sm p-2 rounded-lg bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700">
-                        <div>
-                          <p className="text-slate-800 dark:text-slate-100 font-medium text-xs">{s.siteName}</p>
-                          <p className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 mt-0.5">
-                            <Clock size={10} />
-                            {s.startTime} – {s.endTime}
-                          </p>
+                    {assignedShift.locations.map((loc) => (
+                      <button
+                        key={loc.id}
+                        onClick={() => {
+                          setSelectedLocation(loc)
+                          setLocationsExpanded(false)
+                        }}
+                        className={`w-full text-left p-2 rounded-lg border transition-colors ${
+                          selectedLocation?.id === loc.id
+                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700'
+                            : 'bg-bg-surface dark:bg-bg-surface-dark border-slate-200 dark:border-slate-700 hover:bg-bg-elevated dark:hover:bg-bg-elevated-dark'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <p className="text-slate-800 dark:text-slate-100 font-medium text-xs">
+                              {loc.sequence_order}. {loc.location_name}
+                            </p>
+                            {loc.address && (
+                              <p className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 mt-0.5">
+                                <MapPin size={10} />
+                                {loc.address}
+                              </p>
+                            )}
+                            {loc.start_time && (
+                              <p className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 mt-0.5">
+                                <Clock size={10} />
+                                {loc.start_time} – {loc.end_time}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </motion.div>
@@ -148,7 +228,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
       </AnimatePresence>
 
       <button
-        onClick={() => onClockIn(isOvernightShift)}
+        onClick={handleClockIn}
         className="w-full flex items-center justify-center gap-2 py-4 bg-brand-green active:bg-brand-greenDark transition-colors"
       >
         <motion.div

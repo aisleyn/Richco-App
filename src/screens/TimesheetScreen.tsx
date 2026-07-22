@@ -10,6 +10,7 @@ import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
 import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
 import { UpcomingShiftCard } from '../components/shifts/UpcomingShiftCard'
 import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
+import { CreateShiftForm } from '../components/admin/CreateShiftForm'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
 import { useGeolocation } from '../hooks/useGeolocation'
@@ -42,6 +43,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const [weekStats, setWeekStats] = useState<WeekStats>({ today: 0, week: 0, remaining: 0, overtimeWeek: 0, month: 0 })
   const [isAdmin, setIsAdmin] = useState(false)
   const [crewMemberId, setCrewMemberId] = useState<number | null>(null)
+  const [showCreateShift, setShowCreateShift] = useState(false)
   const hours = elapsed / 3600000
 
   useEffect(() => {
@@ -111,11 +113,21 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     setEditingTimecard(null)
   }
 
-  async function handleClockIn(isOvernight: boolean) {
-    // Admins default to Office, others default to first active site
-    const defaultSite = isAdmin ? jobSites.find(s => s.id === 'office') : jobSites.find(s => s.status === 'active' && s.id !== 'office')
-    const siteId = defaultSite?.id ?? 'office'
-    const siteName = defaultSite?.name ?? 'Office'
+  async function handleClockIn(isOvernight: boolean, overrideSiteId?: string, overrideSiteName?: string) {
+    // Use provided site/shift, or default to Admins->Office, others->first active site
+    let siteId: string
+    let siteName: string
+    let defaultSite: typeof jobSites[0] | undefined
+
+    if (overrideSiteId && overrideSiteName) {
+      siteId = overrideSiteId
+      siteName = overrideSiteName
+      defaultSite = jobSites.find(s => s.id === 'office')
+    } else {
+      defaultSite = isAdmin ? jobSites.find(s => s.id === 'office') : jobSites.find(s => s.status === 'active' && s.id !== 'office')
+      siteId = defaultSite?.id ?? 'office'
+      siteName = defaultSite?.name ?? 'Office'
+    }
 
     // Request real GPS coordinates
     console.log('[TimesheetScreen] Requesting GPS for quick clock in...')
@@ -127,7 +139,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     }
 
     // Use real GPS if available, otherwise use site location
-    const gps = location || (defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: 'Richco Office' })
+    const gps = location || (defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: siteName })
     console.log('[TimesheetScreen] Clocking in with GPS data:', gps)
     clockIn(siteId, siteName, isOvernight, gps)
   }
@@ -213,6 +225,23 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           )}
         </motion.div>
 
+        {/* Admin controls */}
+        {isAdmin && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mt-5"
+          >
+            <button
+              onClick={() => setShowCreateShift(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
+            >
+              <Calendar size={16} /> Create Shift
+            </button>
+          </motion.div>
+        )}
+
         {/* Clock in card */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-5">
           <ClockInCard
@@ -252,6 +281,14 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
 
       {showClockOut && (
         <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => { setShowClockOut(false); setTimecardRefresh(prev => prev + 1) }} />
+      )}
+
+      {showCreateShift && (
+        <CreateShiftForm
+          isOpen={showCreateShift}
+          onClose={() => setShowCreateShift(false)}
+          onSuccess={() => {}}
+        />
       )}
 
       <AnimatePresence>
