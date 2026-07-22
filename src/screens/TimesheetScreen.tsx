@@ -11,6 +11,7 @@ import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
 import { UpcomingShiftCard } from '../components/shifts/UpcomingShiftCard'
 import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
 import { CreateShiftForm } from '../components/admin/CreateShiftForm'
+import { ShiftAssignmentManager } from '../components/admin/ShiftAssignmentManager'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
 import { useGeolocation } from '../hooks/useGeolocation'
@@ -231,7 +232,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="mt-5"
+            className="mt-5 space-y-4"
           >
             <button
               onClick={() => setShowCreateShift(true)}
@@ -239,6 +240,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             >
               <Calendar size={16} /> Create Shift
             </button>
+            <ShiftAssignmentManager />
           </motion.div>
         )}
 
