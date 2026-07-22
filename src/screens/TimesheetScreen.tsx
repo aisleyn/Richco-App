@@ -10,8 +10,8 @@ import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
 import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
 import { UpcomingShiftCard } from '../components/shifts/UpcomingShiftCard'
 import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
-import { CreateShiftForm } from '../components/admin/CreateShiftForm'
-import { ShiftAssignmentManager } from '../components/admin/ShiftAssignmentManager'
+import { CreateShiftFormV2 } from '../components/admin/CreateShiftFormV2'
+import { ShiftAssignmentManagerV2 } from '../components/admin/ShiftAssignmentManagerV2'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
 import { useGeolocation } from '../hooks/useGeolocation'
@@ -240,7 +240,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             >
               <Calendar size={16} /> Create Shift
             </button>
-            <ShiftAssignmentManager />
+            <ShiftAssignmentManagerV2 />
           </motion.div>
         )}
 
@@ -285,13 +285,11 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
         <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => { setShowClockOut(false); setTimecardRefresh(prev => prev + 1) }} />
       )}
 
-      {showCreateShift && (
-        <CreateShiftForm
-          isOpen={showCreateShift}
-          onClose={() => setShowCreateShift(false)}
-          onSuccess={() => {}}
-        />
-      )}
+      <CreateShiftFormV2
+        isOpen={showCreateShift}
+        onClose={() => setShowCreateShift(false)}
+        onSuccess={() => {}}
+      />
 
       <AnimatePresence>
         {showManualTimecard && (

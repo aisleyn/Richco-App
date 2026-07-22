@@ -677,6 +677,9 @@ export interface ShiftData {
   shift_type: 'day' | 'night'
   status?: 'scheduled' | 'active' | 'completed' | 'cancelled'
   notes?: string
+  project_id?: string
+  park_opening_hour?: string
+  park_closing_hour?: string
   created_at?: string
   updated_at?: string
   created_by?: string
