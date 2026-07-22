@@ -176,3 +176,62 @@ export interface ChatMessage {
   videoCard?: { title: string; duration: string; thumbnail: string }
   loading?: boolean
 }
+
+// Shift Roster & Daily Checklist Types
+export interface ShiftRoster {
+  id: string
+  crew_member_id: number
+  scheduled_date: string // YYYY-MM-DD
+  start_time: string // HH:MM
+  end_time: string // HH:MM
+  shift_type: 'day' | 'night'
+  status: 'scheduled' | 'active' | 'completed' | 'cancelled'
+  notes?: string
+  locations?: ShiftLocation[]
+  created_at?: string
+  updated_at?: string
+  created_by?: string
+}
+
+export interface ShiftLocation {
+  id: string
+  shift_id: string
+  sequence_order: number
+  location_name: string
+  latitude?: number
+  longitude?: number
+  address?: string
+  start_time?: string
+  end_time?: string
+  notes?: string
+  created_at?: string
+}
+
+export interface DailyChecklist {
+  id: string
+  checklist_date: string // YYYY-MM-DD
+  items?: ChecklistItem[]
+  created_at?: string
+  updated_at?: string
+  created_by?: string
+}
+
+export interface ChecklistItem {
+  id: string
+  daily_checklist_id: string
+  title: string
+  description?: string
+  order_num: number
+  created_at?: string
+}
+
+export interface ChecklistSubmission {
+  id: string
+  checklist_item_id: string
+  crew_member_id: number
+  checklist_date: string // YYYY-MM-DD
+  is_complete: boolean
+  reason_text?: string
+  submitted_at?: string
+  updated_at?: string
+}

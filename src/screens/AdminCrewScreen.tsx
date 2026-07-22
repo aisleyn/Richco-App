@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, AlertCircle, CheckCircle, Mail } from 'lucide-react'
+import { Plus, Trash2, AlertCircle, CheckCircle, Mail, Lock, Calendar, CheckSquare } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
-import { createCrewMember, getAllCrewMembers, deleteCrewMember, User } from '../services/supabaseAuth'
+import { createCrewMember, getAllCrewMembers, deleteCrewMember, setPasswordDirect, User } from '../services/supabaseAuth'
+import { CreateShiftForm } from '../components/admin/CreateShiftForm'
+import { CreateChecklistForm } from '../components/admin/CreateChecklistForm'
 
 interface Props {
   onNavigate: (s: string) => void
@@ -16,6 +18,13 @@ export function AdminCrewScreen({ onNavigate }: Props) {
   const [name, setName] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [selectedCrewId, setSelectedCrewId] = useState<string | null>(null)
+  const [selectedCrewName, setSelectedCrewName] = useState<string>('')
+  const [newPassword, setNewPassword] = useState('')
+  const [settingPassword, setSettingPassword] = useState(false)
+  const [showCreateShift, setShowCreateShift] = useState(false)
+  const [showCreateChecklist, setShowCreateChecklist] = useState(false)
 
   useEffect(() => {
     loadCrewMembers()
@@ -63,6 +72,34 @@ export function AdminCrewScreen({ onNavigate }: Props) {
     }
   }
 
+  function openPasswordModal(crew: User) {
+    setSelectedCrewId(crew.id)
+    setSelectedCrewName(crew.name)
+    setNewPassword('')
+    setShowPasswordModal(true)
+  }
+
+  async function handleSetPassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedCrewId || !newPassword) {
+      setMessage({ type: 'error', text: 'Please enter a password' })
+      return
+    }
+
+    setSettingPassword(true)
+    const result = await setPasswordDirect(selectedCrewId, newPassword)
+    setSettingPassword(false)
+
+    if (result.success) {
+      setMessage({ type: 'success', text: `Password set for ${selectedCrewName}` })
+      setShowPasswordModal(false)
+      setNewPassword('')
+      setSelectedCrewId(null)
+    } else {
+      setMessage({ type: 'error', text: result.message })
+    }
+  }
+
   return (
     <AppLayout>
       <div className="pt-14">
@@ -96,16 +133,32 @@ export function AdminCrewScreen({ onNavigate }: Props) {
           )}
         </AnimatePresence>
 
-        {/* Add crew button */}
-        <motion.button
+        {/* Action buttons */}
+        <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="mt-5 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
+          className="mt-5 flex flex-wrap gap-2"
         >
-          <Plus size={16} /> Add Crew Member
-        </motion.button>
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            <Plus size={16} /> Add Crew Member
+          </button>
+          <button
+            onClick={() => setShowCreateShift(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            <Calendar size={16} /> Create Shift
+          </button>
+          <button
+            onClick={() => setShowCreateChecklist(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            <CheckSquare size={16} /> Create Checklist
+          </button>
+        </motion.div>
 
         {/* Add crew form */}
         <AnimatePresence>
@@ -197,17 +250,93 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                       <Mail size={12} /> {crew.email}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteCrew(crew.id)}
-                    className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
-                  >
-                    <Trash2 size={12} /> Delete
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openPasswordModal(crew)}
+                      className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                    >
+                      <Lock size={12} /> Set Password
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCrew(crew.id)}
+                      className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Set Password Modal */}
+        <AnimatePresence>
+          {showPasswordModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-bg-base dark:bg-bg-base-dark rounded-xl border border-slate-200 dark:border-slate-700 max-w-sm w-full p-6"
+              >
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+                  Set Password for {selectedCrewName}
+                </h2>
+                <p className="text-slate-500 text-sm mb-4">
+                  Enter a new password. No email verification needed.
+                </p>
+
+                <form onSubmit={handleSetPassword} className="space-y-4">
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter password"
+                      disabled={settingPassword}
+                      className="w-full px-3 py-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={settingPassword || !newPassword}
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                      {settingPassword ? 'Setting...' : 'Set Password'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordModal(false)}
+                      disabled={settingPassword}
+                      className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Shift and Checklist Modals */}
+        <CreateShiftForm
+          isOpen={showCreateShift}
+          onClose={() => setShowCreateShift(false)}
+          onSuccess={() => loadCrewMembers()}
+        />
+        <CreateChecklistForm
+          isOpen={showCreateChecklist}
+          onClose={() => setShowCreateChecklist(false)}
+          onSuccess={() => {}}
+        />
       </div>
     </AppLayout>
   )

@@ -8,10 +8,13 @@ import { TimecardGrid } from '../components/timesheet/TimecardGrid'
 import { TimeOffCard } from '../components/timesheet/TimeOffCard'
 import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
 import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
+import { UpcomingShiftCard } from '../components/shifts/UpcomingShiftCard'
+import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { isUserAdmin } from '../services/crew'
+import { getCrewMemberByEmail } from '../services/supabase'
 import { jobSites } from '../data/mockData'
 import type { TimesheetEntry } from '../types'
 
@@ -38,14 +41,21 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const [completedTodayHours, setCompletedTodayHours] = useState(0)
   const [weekStats, setWeekStats] = useState<WeekStats>({ today: 0, week: 0, remaining: 0, overtimeWeek: 0, month: 0 })
   const [isAdmin, setIsAdmin] = useState(false)
+  const [crewMemberId, setCrewMemberId] = useState<number | null>(null)
   const hours = elapsed / 3600000
 
   useEffect(() => {
-    const loadAdminStatus = async () => {
+    const loadUserData = async () => {
       const admin = await isUserAdmin(currentUserEmail)
       setIsAdmin(admin)
+
+      // Load crew member ID
+      const crewMember = await getCrewMemberByEmail(currentUserEmail)
+      if (crewMember) {
+        setCrewMemberId(crewMember.id as number)
+      }
     }
-    loadAdminStatus()
+    loadUserData()
   }, [currentUserEmail])
 
   // Calculate stats from stored timecards
@@ -212,6 +222,14 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             isOvernightShift={false}
           />
         </motion.div>
+
+        {/* Shift & Checklist Cards */}
+        {crewMemberId && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
+            <UpcomingShiftCard crewMemberId={crewMemberId} />
+            <DailyChecklistCard crewMemberId={crewMemberId} />
+          </motion.div>
+        )}
 
         {/* Timecards */}
         <div className="mt-6 flex items-center justify-between mb-3">
