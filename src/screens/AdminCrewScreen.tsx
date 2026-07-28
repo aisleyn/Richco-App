@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, AlertCircle, CheckCircle, Mail, Lock, Calendar, CheckSquare } from 'lucide-react'
+import { Plus, Trash2, AlertCircle, CheckCircle, Mail, Lock, Calendar, CheckSquare, Bell } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { createCrewMember, getAllCrewMembers, deleteCrewMember, setPasswordDirect, User } from '../services/supabaseAuth'
 import { CreateShiftForm } from '../components/admin/CreateShiftForm'
 import { CreateChecklistForm } from '../components/admin/CreateChecklistForm'
+import { postNotification } from '../services/notificationService'
+import { useAppStore } from '../store/appStore'
 
 interface Props {
   onNavigate: (s: string) => void
 }
 
 export function AdminCrewScreen({ onNavigate }: Props) {
+  const { currentUserEmail } = useAppStore()
   const [crews, setCrews] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -25,6 +28,11 @@ export function AdminCrewScreen({ onNavigate }: Props) {
   const [settingPassword, setSettingPassword] = useState(false)
   const [showCreateShift, setShowCreateShift] = useState(false)
   const [showCreateChecklist, setShowCreateChecklist] = useState(false)
+  const [showPostNotification, setShowPostNotification] = useState(false)
+  const [notificationTitle, setNotificationTitle] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState('')
+  const [notificationType, setNotificationType] = useState<'update' | 'alert' | 'announcement'>('update')
+  const [postingNotification, setPostingNotification] = useState(false)
 
   useEffect(() => {
     loadCrewMembers()
@@ -100,6 +108,33 @@ export function AdminCrewScreen({ onNavigate }: Props) {
     }
   }
 
+  async function handlePostNotification(e: React.FormEvent) {
+    e.preventDefault()
+    if (!notificationTitle.trim() || !notificationMessage.trim()) {
+      setMessage({ type: 'error', text: 'Please enter title and message' })
+      return
+    }
+
+    setPostingNotification(true)
+    try {
+      postNotification(
+        notificationTitle.trim(),
+        notificationMessage.trim(),
+        currentUserEmail || 'Admin',
+        notificationType
+      )
+      setMessage({ type: 'success', text: 'Update posted successfully' })
+      setShowPostNotification(false)
+      setNotificationTitle('')
+      setNotificationMessage('')
+      setNotificationType('update')
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to post update' })
+    } finally {
+      setPostingNotification(false)
+    }
+  }
+
   return (
     <AppLayout>
       <div className="pt-14">
@@ -157,6 +192,12 @@ export function AdminCrewScreen({ onNavigate }: Props) {
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
           >
             <CheckSquare size={16} /> Create Checklist
+          </button>
+          <button
+            onClick={() => setShowPostNotification(!showPostNotification)}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            <Bell size={16} /> Post Update
           </button>
         </motion.div>
 
@@ -323,6 +364,84 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                 </form>
               </motion.div>
             </div>
+          )}
+        </AnimatePresence>
+
+        {/* Post Notification Form */}
+        <AnimatePresence>
+          {showPostNotification && (
+            <motion.form
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              onSubmit={handlePostNotification}
+              className="mt-4 p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800 space-y-4"
+            >
+              <h3 className="font-semibold text-slate-900 dark:text-slate-100">Post Update to Crew</h3>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={notificationTitle}
+                  onChange={(e) => setNotificationTitle(e.target.value)}
+                  placeholder="e.g., New Schedule Available"
+                  disabled={postingNotification}
+                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-600 disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+                  Message
+                </label>
+                <textarea
+                  value={notificationMessage}
+                  onChange={(e) => setNotificationMessage(e.target.value)}
+                  placeholder="Enter your message..."
+                  disabled={postingNotification}
+                  rows={3}
+                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-600 disabled:opacity-50 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+                  Type
+                </label>
+                <select
+                  value={notificationType}
+                  onChange={(e) => setNotificationType(e.target.value as 'update' | 'alert' | 'announcement')}
+                  disabled={postingNotification}
+                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-600 disabled:opacity-50"
+                >
+                  <option value="update">Update</option>
+                  <option value="alert">Alert</option>
+                  <option value="announcement">Announcement</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={postingNotification || !notificationTitle.trim() || !notificationMessage.trim()}
+                  className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  <Bell size={14} />
+                  {postingNotification ? 'Posting...' : 'Post Update'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPostNotification(false)}
+                  disabled={postingNotification}
+                  className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.form>
           )}
         </AnimatePresence>
 

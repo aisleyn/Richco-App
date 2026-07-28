@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { BottomNav } from './components/layout/BottomNav'
+import { NotificationsPanel } from './components/layout/NotificationsPanel'
 import { LoginScreen } from './screens/LoginScreen'
 import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen'
 import { HomeScreen } from './screens/HomeScreen'
@@ -10,6 +11,7 @@ import { AlertsScreen } from './screens/AlertsScreen'
 import { CrewScreen } from './screens/CrewScreen'
 import { AdminCrewScreen } from './screens/AdminCrewScreen'
 import { AIHelpScreen } from './screens/AIHelpScreen'
+import { ShiftRosterScreen } from './screens/ShiftRosterScreen'
 import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supabaseAuth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -157,6 +159,7 @@ export default function App() {
       case 'time':   return <TimesheetScreen onNavigate={setActive} />
       case 'photos': return <PhotosScreen onNavigate={setActive} />
       case 'alerts': return <AlertsScreen onNavigate={setActive} />
+      case 'roster': return isAdmin ? <ShiftRosterScreen /> : <HomeScreen onNavigate={setActive} />
       case 'crew':   return isAdmin ? <AdminCrewScreen onNavigate={setActive} /> : <CrewScreen onNavigate={setActive} />
       case 'ai':     return <AIHelpScreen onNavigate={setActive} />
       default:       return <HomeScreen onNavigate={setActive} />
@@ -170,19 +173,28 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={active}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18 }}
-        >
-          {renderScreen()}
-        </motion.div>
-      </AnimatePresence>
-      <BottomNav active={active} onChange={setActive} onLogout={handleLogout} />
+    <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
+      {/* Notifications Panel - Desktop only */}
+      <NotificationsPanel />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col md:pr-20">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="flex-1"
+          >
+            {renderScreen()}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Right Navigation - Desktop only */}
+        <BottomNav active={active} onChange={setActive} isAdmin={isAdmin} />
+      </div>
     </div>
   )
 }
