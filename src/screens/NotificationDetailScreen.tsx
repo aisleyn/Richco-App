@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Eye, MessageCircle, Send, AlertTriangle, Info, Cloud, CalendarDays, Truck, Megaphone, X, ThumbsUp, ThumbsDown, HelpCircle } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
-import { getNotificationComments, addNotificationComment, trackNotificationView, getNotificationViews, getNotificationViewers, addCommentReply, getCommentReplies, addCommentReaction, getCommentReactions, trackCommentView, type NotificationComment, type CommentReply } from '../services/notificationDetails'
+import { getNotificationComments, addNotificationComment, trackNotificationView, getNotificationViews, getNotificationViewers, addCommentReply, getCommentReplies, addCommentReaction, getCommentReactions, trackCommentView, addNotificationReaction, getNotificationReactions, type NotificationComment, type CommentReply } from '../services/notificationDetails'
 import { Avatar } from '../components/Avatar'
 import { CommentCard } from '../components/CommentCard'
 import { capitalizeName } from '../utils/formatting'
@@ -30,6 +30,8 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [notificationReactions, setNotificationReactions] = useState({ like: 0, dislike: 0, question: 0 })
+  const [userNotificationReactions, setUserNotificationReactions] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const loadDetails = async () => {
@@ -38,16 +40,18 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
         await trackNotificationView(notification.id, currentUserEmail)
       }
 
-      // Load comments, view count, and viewers list
-      const [loadedComments, views, viewersList] = await Promise.all([
+      // Load comments, view count, viewers list, and reactions
+      const [loadedComments, views, viewersList, reactions] = await Promise.all([
         getNotificationComments(notification.id),
         getNotificationViews(notification.id),
         getNotificationViewers(notification.id),
+        getNotificationReactions(notification.id),
       ])
 
       setComments(loadedComments)
       setViewCount(views)
       setViewers(viewersList)
+      setNotificationReactions(reactions as { like: number; dislike: number; question: number })
       setLoading(false)
     }
 
@@ -68,6 +72,24 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
     if (result) {
       setComments([result, ...comments])
       setNewComment('')
+    }
+  }
+
+  async function handleNotificationReaction(reactionType: 'like' | 'dislike' | 'question') {
+    const key = reactionType
+    const hasReacted = userNotificationReactions.has(key)
+
+    const success = await addNotificationReaction(notification.id, reactionType, currentUserEmail || '')
+    if (success) {
+      const newReactions = new Set(userNotificationReactions)
+      if (hasReacted) {
+        newReactions.delete(key)
+        setNotificationReactions((prev) => ({ ...prev, [reactionType]: Math.max(0, prev[reactionType] - 1) }))
+      } else {
+        newReactions.add(key)
+        setNotificationReactions((prev) => ({ ...prev, [reactionType]: prev[reactionType] + 1 }))
+      }
+      setUserNotificationReactions(newReactions)
     }
   }
 
@@ -111,18 +133,58 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
               {notification.message}
             </p>
 
-            {/* View count */}
-            <div className="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <button
-                onClick={() => setShowViewers(true)}
-                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              >
-                <Eye size={16} />
-                <span className="text-sm font-medium">{viewCount} {viewCount === 1 ? 'view' : 'views'}</span>
-              </button>
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                <MessageCircle size={16} />
-                <span className="text-sm font-medium">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</span>
+            {/* Reactions and stats */}
+            <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+              {/* Reaction buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleNotificationReaction('like')}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    userNotificationReactions.has('like')
+                      ? 'bg-blue-500/20 text-blue-500'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  <ThumbsUp size={13} />
+                  {notificationReactions.like > 0 && notificationReactions.like}
+                </button>
+                <button
+                  onClick={() => handleNotificationReaction('dislike')}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    userNotificationReactions.has('dislike')
+                      ? 'bg-red-500/20 text-red-500'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  <ThumbsDown size={13} />
+                  {notificationReactions.dislike > 0 && notificationReactions.dislike}
+                </button>
+                <button
+                  onClick={() => handleNotificationReaction('question')}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    userNotificationReactions.has('question')
+                      ? 'bg-amber-500/20 text-amber-500'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  <HelpCircle size={13} />
+                  {notificationReactions.question > 0 && notificationReactions.question}
+                </button>
+              </div>
+
+              {/* View count and comments */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setShowViewers(true)}
+                  className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <Eye size={16} />
+                  <span className="text-sm font-medium">{viewCount} {viewCount === 1 ? 'view' : 'views'}</span>
+                </button>
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <MessageCircle size={16} />
+                  <span className="text-sm font-medium">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</span>
+                </div>
               </div>
             </div>
           </div>

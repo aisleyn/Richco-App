@@ -309,3 +309,84 @@ export async function trackCommentView(commentId: string, viewedBy: string): Pro
     console.log('[NotificationDetails] Comment view tracked or already exists')
   }
 }
+
+export async function addNotificationReaction(
+  notificationId: string,
+  reactionType: 'like' | 'dislike' | 'question',
+  reactionBy: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notification_reactions')
+      .insert({
+        notification_id: notificationId,
+        reaction_type: reactionType,
+        reaction_by: reactionBy,
+      })
+
+    if (error?.code === '23505') {
+      // Reaction already exists - try to delete it (toggle off)
+      await removeNotificationReaction(notificationId, reactionType, reactionBy)
+      return true
+    }
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to add notification reaction:', error.message)
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error('[NotificationDetails] Error adding notification reaction:', err)
+    return false
+  }
+}
+
+export async function removeNotificationReaction(
+  notificationId: string,
+  reactionType: 'like' | 'dislike' | 'question',
+  reactionBy: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notification_reactions')
+      .delete()
+      .eq('notification_id', notificationId)
+      .eq('reaction_type', reactionType)
+      .eq('reaction_by', reactionBy)
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to remove notification reaction:', error.message)
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error('[NotificationDetails] Error removing notification reaction:', err)
+    return false
+  }
+}
+
+export async function getNotificationReactions(notificationId: string): Promise<Record<string, number>> {
+  try {
+    const { data, error } = await supabase
+      .from('notification_reactions')
+      .select('reaction_type, reaction_by', { count: 'exact' })
+      .eq('notification_id', notificationId)
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to fetch notification reactions:', error.message)
+      return { like: 0, dislike: 0, question: 0 }
+    }
+
+    const counts = { like: 0, dislike: 0, question: 0 }
+    data?.forEach((r: any) => {
+      counts[r.reaction_type as keyof typeof counts]++
+    })
+
+    return counts
+  } catch (err) {
+    console.error('[NotificationDetails] Error fetching notification reactions:', err)
+    return { like: 0, dislike: 0, question: 0 }
+  }
+}
