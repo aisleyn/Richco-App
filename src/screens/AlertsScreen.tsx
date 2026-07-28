@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import type { Alert } from '../types'
 import { approveRequest, denyRequest, getRequestById } from '../services/timeoff'
 import { isUserAdmin, getAllCrew } from '../services/crew'
+import { postNotification } from '../services/notificationService'
 
 const typeConfig: Record<string, { color: string; border: string; icon: typeof Info; iconColor: string; label: string }> = {
   urgent:      { color: 'border-l-red-500',    border: 'border-red-500/20',    icon: AlertTriangle, iconColor: 'text-red-400',    label: 'Urgent' },
@@ -52,8 +53,20 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
     markAlertRead(alert.id)
   }
 
-  function handlePost() {
+  async function handlePost() {
     if (!postTitle.trim() || !postBody.trim()) return
+
+    // Post to Supabase for persistence
+    const notificationType = postType === 'urgent' ? 'alert' : postType === 'weather' ? 'announcement' : 'update'
+    const result = await postNotification(postTitle.trim(), postBody.trim(), currentUserEmail || 'Admin', notificationType)
+
+    if (result) {
+      console.log('[AlertsScreen] Notification posted to Supabase:', result.id)
+    } else {
+      console.error('[AlertsScreen] Failed to post notification to Supabase')
+    }
+
+    // Also add to local alerts for immediate display
     addAlert({
       id: `a-${Date.now()}`,
       type: postType,
