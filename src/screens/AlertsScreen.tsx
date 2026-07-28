@@ -53,14 +53,25 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
   }, [currentUserEmail])
 
   // Load persistent alerts from Supabase
+  const loadAlertsFromSupabase = async () => {
+    setLoading(true)
+    const alerts = await getAlertsFromSupabase()
+    setPersistentAlerts(alerts)
+    setLoading(false)
+  }
+
   useEffect(() => {
-    const loadAlerts = async () => {
-      setLoading(true)
-      const alerts = await getAlertsFromSupabase()
-      setPersistentAlerts(alerts)
-      setLoading(false)
+    loadAlertsFromSupabase()
+  }, [])
+
+  // Reload alerts when new one is posted
+  useEffect(() => {
+    const handleNotificationPosted = () => {
+      console.log('[AlertsScreen] New notification posted, reloading alerts')
+      loadAlertsFromSupabase()
     }
-    loadAlerts()
+    window.addEventListener('notification:posted', handleNotificationPosted)
+    return () => window.removeEventListener('notification:posted', handleNotificationPosted)
   }, [])
 
   const canApprove = isAdmin || isCEO
