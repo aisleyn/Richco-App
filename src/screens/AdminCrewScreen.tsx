@@ -110,11 +110,14 @@ export function AdminCrewScreen({ onNavigate }: Props) {
 
   async function handlePostNotification(e: React.FormEvent) {
     e.preventDefault()
+    console.log('[AdminCrew] Form submitted - title:', notificationTitle, 'message:', notificationMessage)
     if (!notificationTitle.trim() || !notificationMessage.trim()) {
+      console.log('[AdminCrew] Form validation failed')
       setMessage({ type: 'error', text: 'Please enter title and message' })
       return
     }
 
+    console.log('[AdminCrew] Starting notification post...')
     setPostingNotification(true)
     try {
       const result = await postNotification(
