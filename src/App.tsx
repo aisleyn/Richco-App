@@ -175,6 +175,12 @@ export default function App() {
     setActive('home')
   }
 
+  // Handle nav changes - clear notification detail when navigating
+  function handleNavChange(screenId: string) {
+    setActive(screenId)
+    setSelectedNotification(null)
+  }
+
   // If a notification is selected, show its detail screen
   if (selectedNotification) {
     return (
@@ -185,7 +191,7 @@ export default function App() {
             notification={selectedNotification}
             onBack={() => setSelectedNotification(null)}
           />
-          <BottomNav active={active} onChange={setActive} isAdmin={isAdmin} />
+          <BottomNav active={active} onChange={handleNavChange} isAdmin={isAdmin} />
         </div>
       </div>
     )
