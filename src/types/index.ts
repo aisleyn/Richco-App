@@ -147,6 +147,8 @@ export interface Photo {
   thumbnailUrl: string
   siteId: string
   siteName: string
+  projectId?: string
+  projectName?: string
   submittedBy: string
   submittedById: string
   timestamp: number

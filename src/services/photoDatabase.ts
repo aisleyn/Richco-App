@@ -16,6 +16,7 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
         store.createIndex('siteId', 'siteId', { unique: false })
+        store.createIndex('projectId', 'projectId', { unique: false })
         store.createIndex('timestamp', 'timestamp', { unique: false })
         store.createIndex('uploadedBy', 'uploadedBy', { unique: false })
       }
@@ -180,6 +181,16 @@ export async function deletePhoto(id: string): Promise<boolean> {
   } catch (err) {
     console.error('[PhotoDB] Failed to delete photo:', err)
     return false
+  }
+}
+
+export async function getPhotosByProjectId(projectId: string, userEmail?: string): Promise<Photo[]> {
+  try {
+    const allPhotos = await getStoredPhotos(userEmail)
+    return allPhotos.filter(p => p.projectId === projectId).sort((a, b) => b.timestamp - a.timestamp)
+  } catch (err) {
+    console.error('[PhotoDB] Failed to get photos by project:', err)
+    return []
   }
 }
 
