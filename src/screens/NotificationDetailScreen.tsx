@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Eye, MessageCircle, Send, AlertTriangle, Info, Cloud, CalendarDays, Truck, Megaphone } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Eye, MessageCircle, Send, AlertTriangle, Info, Cloud, CalendarDays, Truck, Megaphone, X } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
-import { getNotificationComments, addNotificationComment, trackNotificationView, getNotificationViews, type NotificationComment } from '../services/notificationDetails'
+import { getNotificationComments, addNotificationComment, trackNotificationView, getNotificationViews, getNotificationViewers, type NotificationComment } from '../services/notificationDetails'
 import type { Notification } from '../services/notificationService'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -22,6 +22,8 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
   const { currentUserEmail, currentUserName } = useAppStore()
   const [comments, setComments] = useState<NotificationComment[]>([])
   const [viewCount, setViewCount] = useState(0)
+  const [viewers, setViewers] = useState<{ email: string; viewedAt: Date }[]>([])
+  const [showViewers, setShowViewers] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -33,14 +35,16 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
         await trackNotificationView(notification.id, currentUserEmail)
       }
 
-      // Load comments and view count
-      const [loadedComments, views] = await Promise.all([
+      // Load comments, view count, and viewers list
+      const [loadedComments, views, viewersList] = await Promise.all([
         getNotificationComments(notification.id),
         getNotificationViews(notification.id),
+        getNotificationViewers(notification.id),
       ])
 
       setComments(loadedComments)
       setViewCount(views)
+      setViewers(viewersList)
       setLoading(false)
     }
 
@@ -101,10 +105,13 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
 
             {/* View count */}
             <div className="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+              <button
+                onClick={() => setShowViewers(true)}
+                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
                 <Eye size={16} />
                 <span className="text-sm font-medium">{viewCount} {viewCount === 1 ? 'view' : 'views'}</span>
-              </div>
+              </button>
               <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                 <MessageCircle size={16} />
                 <span className="text-sm font-medium">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</span>
@@ -180,6 +187,56 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
             </div>
           )}
         </motion.div>
+
+        {/* Viewers Modal */}
+        <AnimatePresence>
+          {showViewers && (
+            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-bg-base dark:bg-bg-base-dark rounded-xl border border-slate-200 dark:border-slate-700 max-w-sm w-full max-h-[80vh] overflow-hidden flex flex-col"
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+                  <h2 className="font-bold text-slate-800 dark:text-slate-100">Who Viewed This</h2>
+                  <button
+                    onClick={() => setShowViewers(false)}
+                    className="w-8 h-8 rounded-full bg-bg-surface flex items-center justify-center"
+                  >
+                    <X size={16} className="text-slate-400" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {viewers.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+                      <p className="text-sm">No views yet</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-200 dark:divide-slate-700">
+                      {viewers.map((viewer, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="px-6 py-3 flex items-center justify-between"
+                        >
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                            {viewer.email}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {formatDistanceToNow(viewer.viewedAt, { addSuffix: true })}
+                          </p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   )

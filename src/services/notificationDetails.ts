@@ -47,6 +47,29 @@ export async function getNotificationViews(notificationId: string): Promise<numb
   }
 }
 
+export async function getNotificationViewers(notificationId: string): Promise<{ email: string; viewedAt: Date }[]> {
+  try {
+    const { data, error } = await supabase
+      .from('notifications_views')
+      .select('viewed_by, viewed_at')
+      .eq('notification_id', notificationId)
+      .order('viewed_at', { ascending: false })
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to get viewers:', error.message)
+      return []
+    }
+
+    return (data || []).map((v: any) => ({
+      email: v.viewed_by,
+      viewedAt: new Date(v.viewed_at),
+    }))
+  } catch (err) {
+    console.error('[NotificationDetails] Error getting viewers:', err)
+    return []
+  }
+}
+
 export async function getNotificationComments(notificationId: string): Promise<NotificationComment[]> {
   try {
     const { data, error } = await supabase
