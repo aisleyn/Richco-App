@@ -62,7 +62,7 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
               )}
             </button>
           )
-        }}
+        })}
       </div>
     </nav>
   )
