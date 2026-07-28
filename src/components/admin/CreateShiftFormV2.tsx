@@ -279,54 +279,75 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Project */}
-            <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
-                Project
-              </label>
-              <select
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-              >
-                <option value="">Select project...</option>
-                {projects.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
+          {/* Project */}
+          <div>
+            <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              Project
+            </label>
+            <select
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+              className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+            >
+              <option value="">Select project...</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
 
-            {/* Park Hours */}
+          <div className="grid grid-cols-4 gap-2">
             <div>
               <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
-                Park Hours
+                Park Open Hour
               </label>
-              <div className="flex gap-2 items-end">
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="23"
-                    value={parkOpenHour}
-                    onChange={(e) => setParkOpenHour(e.target.value.padStart(2, '0'))}
-                    placeholder="Open"
-                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs"
-                  />
-                </div>
-                <span className="text-slate-500">to</span>
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="23"
-                    value={parkCloseHour}
-                    onChange={(e) => setParkCloseHour(e.target.value.padStart(2, '0'))}
-                    placeholder="Close"
-                    className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs"
-                  />
-                </div>
-              </div>
+              <input
+                type="number"
+                min="0"
+                max="23"
+                value={parkOpenHour}
+                onChange={(e) => setParkOpenHour(e.target.value.padStart(2, '0'))}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+                Open Minute
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={parkOpenMinute}
+                onChange={(e) => setParkOpenMinute(e.target.value.padStart(2, '0'))}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+                Park Close Hour
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="23"
+                value={parkCloseHour}
+                onChange={(e) => setParkCloseHour(e.target.value.padStart(2, '0'))}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+                Close Minute
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={parkCloseMinute}
+                onChange={(e) => setParkCloseMinute(e.target.value.padStart(2, '0'))}
+                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              />
             </div>
           </div>
 

@@ -6,7 +6,6 @@ import { AppLayout } from '../components/layout/AppLayout'
 import { WeatherCard } from '../components/home/WeatherCard'
 import { ClockInCard } from '../components/home/ClockInCard'
 import { SiteCards } from '../components/home/SiteCards'
-import { AlertsStrip } from '../components/home/AlertsStrip'
 import { ClockOutModal } from '../components/timesheet/ClockOutModal'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { useGreeting } from '../hooks/useGreeting'
@@ -14,7 +13,6 @@ import { useGeolocation } from '../hooks/useGeolocation'
 import { useAppStore } from '../store/appStore'
 import { fetchSites, type DataverseSite } from '../services/dataverse'
 import { isUserAdmin, getAllCrew } from '../services/crew'
-import type { Alert } from '../types'
 
 interface Props {
   onNavigate: (screen: string) => void
@@ -141,15 +139,6 @@ export function HomeScreen({ onNavigate }: Props) {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <SiteCards />
         </motion.div>
-
-        {/* Alerts strip */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <AlertsStrip
-            onSeeAll={() => onNavigate('alerts')}
-            onTapAlert={(_a: Alert) => onNavigate('alerts')}
-          />
-        </motion.div>
-
       </div>
 
       {/* Clock out modal */}

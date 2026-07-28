@@ -1,0 +1,7 @@
+Session Memory:
+C:\Users\aisle\.claude\projects\C--Users-aisle\memory\richco_session_2026_07_08_password_management.md
+
+Tomorrow's Prompt:
+C:\Users\aisle\.claude\projects\C--Users-aisle\memory\richco_tomorrow_prompt_2026_07_08.md
+
+Both are already saved. Tomorrow, just ask me to read the tomorrow's prompt file and I'll continue from there!

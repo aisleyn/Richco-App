@@ -54,12 +54,6 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
               <span className={`text-[9px] font-medium ${isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}>
                 {label}
               </span>
-              {isActive && (
-                <motion.div
-                  layoutId="nav-dot"
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 md:bottom-1 md:right-1 md:left-auto md:top-auto md:translate-x-0 w-1 h-1 rounded-full bg-blue-600"
-                />
-              )}
             </button>
           )
         })}

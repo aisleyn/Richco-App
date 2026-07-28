@@ -3,5 +3,6 @@ export function useGreeting(firstName: string) {
   let greeting = 'Good Morning'
   if (hour >= 12 && hour < 17) greeting = 'Good Afternoon'
   else if (hour >= 17) greeting = 'Good Evening'
-  return `${greeting}, ${firstName}`
+  const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
+  return `${greeting}, ${capitalizedName}`
 }
