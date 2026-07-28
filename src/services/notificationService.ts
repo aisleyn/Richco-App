@@ -16,6 +16,7 @@ export async function postNotification(
   type: 'update' | 'alert' | 'announcement' = 'update'
 ): Promise<Notification | null> {
   try {
+    console.log('[Notifications] Posting notification:', { title, message, author, type })
     const { data, error } = await supabase
       .from('notifications')
       .insert({
@@ -23,13 +24,17 @@ export async function postNotification(
         message,
         author,
         type,
-        created_at: new Date().toISOString(),
       })
       .select()
       .single()
 
     if (error) {
-      console.error('[Notifications] Failed to post:', error.message)
+      console.error('[Notifications] Supabase error:', error.code, error.message, error.details)
+      return null
+    }
+
+    if (!data) {
+      console.error('[Notifications] No data returned from insert')
       return null
     }
 
@@ -47,7 +52,7 @@ export async function postNotification(
       new CustomEvent('notification:posted', { detail: notification })
     )
 
-    console.log('[Notifications] Posted:', title)
+    console.log('[Notifications] ✅ Posted successfully:', notification.id)
     return notification
   } catch (err) {
     console.error('[Notifications] Error posting:', err)
@@ -57,6 +62,7 @@ export async function postNotification(
 
 export async function getAllNotifications(): Promise<Notification[]> {
   try {
+    console.log('[Notifications] Fetching from Supabase...')
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -64,10 +70,11 @@ export async function getAllNotifications(): Promise<Notification[]> {
       .limit(50)
 
     if (error) {
-      console.error('[Notifications] Failed to fetch:', error.message)
+      console.error('[Notifications] Supabase error:', error.code, error.message, error.details)
       return []
     }
 
+    console.log('[Notifications] ✅ Fetched', (data || []).length, 'notifications')
     return (data || []).map((n: any) => ({
       id: n.id,
       title: n.title,
