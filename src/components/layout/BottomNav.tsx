@@ -51,7 +51,7 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
                   </span>
                 )}
               </div>
-              <span className={`text-[9px] font-medium ${isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}>
+              <span className={`text-sm font-medium ${isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}>
                 {label}
               </span>
             </button>
