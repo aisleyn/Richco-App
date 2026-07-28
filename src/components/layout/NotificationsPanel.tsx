@@ -1,33 +1,25 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-
-interface Notification {
-  id: string
-  title: string
-  message: string
-  author: string
-  timestamp: Date
-  type: 'update' | 'alert' | 'announcement'
-}
+import { getAllNotifications, deleteNotification, type Notification } from '../../services/notificationService'
 
 export function NotificationsPanel() {
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Load notifications from localStorage and listen for updates
+  // Load notifications from Supabase
   useEffect(() => {
-    const loadNotifications = () => {
-      const stored = localStorage.getItem('admin_notifications')
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        setNotifications(parsed.map((n: any) => ({ ...n, timestamp: new Date(n.timestamp) })))
-      }
+    const loadNotifications = async () => {
+      setLoading(true)
+      const data = await getAllNotifications()
+      setNotifications(data)
+      setLoading(false)
     }
 
     loadNotifications()
 
     // Listen for new notifications posted
-    const handleNotificationPosted = (e: Event) => {
+    const handleNotificationPosted = () => {
       loadNotifications()
     }
 
@@ -35,19 +27,30 @@ export function NotificationsPanel() {
       setNotifications([])
     }
 
+    const handleNotificationDeleted = () => {
+      loadNotifications()
+    }
+
     window.addEventListener('notification:posted', handleNotificationPosted)
     window.addEventListener('notification:cleared', handleNotificationCleared)
+    window.addEventListener('notification:deleted', handleNotificationDeleted)
+
+    // Poll for updates every 10 seconds to catch changes from other tabs
+    const pollInterval = setInterval(loadNotifications, 10000)
 
     return () => {
       window.removeEventListener('notification:posted', handleNotificationPosted)
       window.removeEventListener('notification:cleared', handleNotificationCleared)
+      window.removeEventListener('notification:deleted', handleNotificationDeleted)
+      clearInterval(pollInterval)
     }
   }, [])
 
-  const removeNotification = (id: string) => {
-    const updated = notifications.filter(n => n.id !== id)
-    setNotifications(updated)
-    localStorage.setItem('admin_notifications', JSON.stringify(updated))
+  const removeNotification = async (id: string) => {
+    const success = await deleteNotification(id)
+    if (success) {
+      setNotifications(notifications.filter(n => n.id !== id))
+    }
   }
 
   const getTypeColor = (type: string) => {

@@ -117,17 +117,21 @@ export function AdminCrewScreen({ onNavigate }: Props) {
 
     setPostingNotification(true)
     try {
-      postNotification(
+      const result = await postNotification(
         notificationTitle.trim(),
         notificationMessage.trim(),
         currentUserEmail || 'Admin',
         notificationType
       )
-      setMessage({ type: 'success', text: 'Update posted successfully' })
-      setShowPostNotification(false)
-      setNotificationTitle('')
-      setNotificationMessage('')
-      setNotificationType('update')
+      if (result) {
+        setMessage({ type: 'success', text: 'Update posted successfully' })
+        setShowPostNotification(false)
+        setNotificationTitle('')
+        setNotificationMessage('')
+        setNotificationType('update')
+      } else {
+        setMessage({ type: 'error', text: 'Failed to post update' })
+      }
     } catch (err) {
       setMessage({ type: 'error', text: 'Failed to post update' })
     } finally {

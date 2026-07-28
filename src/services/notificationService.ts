@@ -1,4 +1,6 @@
-interface Notification {
+import { supabase } from './supabaseAuth'
+
+export interface Notification {
   id: string
   title: string
   message: string
@@ -7,51 +9,119 @@ interface Notification {
   type: 'update' | 'alert' | 'announcement'
 }
 
-export function postNotification(
+export async function postNotification(
   title: string,
   message: string,
   author: string,
   type: 'update' | 'alert' | 'announcement' = 'update'
-): void {
-  const notification: Notification = {
-    id: Math.random().toString(36).substr(2, 9),
-    title,
-    message,
-    author,
-    timestamp: new Date(),
-    type,
+): Promise<Notification | null> {
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert({
+        title,
+        message,
+        author,
+        type,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[Notifications] Failed to post:', error.message)
+      return null
+    }
+
+    const notification: Notification = {
+      id: data.id,
+      title: data.title,
+      message: data.message,
+      author: data.author,
+      timestamp: new Date(data.created_at),
+      type: data.type,
+    }
+
+    // Trigger a custom event so other tabs/windows update
+    window.dispatchEvent(
+      new CustomEvent('notification:posted', { detail: notification })
+    )
+
+    console.log('[Notifications] Posted:', title)
+    return notification
+  } catch (err) {
+    console.error('[Notifications] Error posting:', err)
+    return null
   }
-
-  // Get existing notifications
-  const stored = localStorage.getItem('admin_notifications')
-  const notifications: Notification[] = stored ? JSON.parse(stored) : []
-
-  // Add new notification at the top
-  notifications.unshift(notification)
-
-  // Keep only last 50 notifications
-  const trimmed = notifications.slice(0, 50)
-
-  // Save back to localStorage
-  localStorage.setItem('admin_notifications', JSON.stringify(trimmed))
-
-  // Trigger a storage event so other tabs/windows update
-  window.dispatchEvent(
-    new CustomEvent('notification:posted', { detail: notification })
-  )
-
-  console.log('[Notifications] Posted:', title)
 }
 
-export function getAllNotifications(): Notification[] {
-  const stored = localStorage.getItem('admin_notifications')
-  if (!stored) return []
-  const parsed = JSON.parse(stored)
-  return parsed.map((n: any) => ({ ...n, timestamp: new Date(n.timestamp) }))
+export async function getAllNotifications(): Promise<Notification[]> {
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    if (error) {
+      console.error('[Notifications] Failed to fetch:', error.message)
+      return []
+    }
+
+    return (data || []).map((n: any) => ({
+      id: n.id,
+      title: n.title,
+      message: n.message,
+      author: n.author,
+      timestamp: new Date(n.created_at),
+      type: n.type,
+    }))
+  } catch (err) {
+    console.error('[Notifications] Error fetching:', err)
+    return []
+  }
 }
 
-export function clearAllNotifications(): void {
-  localStorage.removeItem('admin_notifications')
-  window.dispatchEvent(new CustomEvent('notification:cleared'))
-  console.log('[Notifications] Cleared all notifications')
+export async function deleteNotification(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('[Notifications] Failed to delete:', error.message)
+      return false
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('notification:deleted', { detail: { id } })
+    )
+    console.log('[Notifications] Deleted:', id)
+    return true
+  } catch (err) {
+    console.error('[Notifications] Error deleting:', err)
+    return false
+  }
+}
+
+export async function clearAllNotifications(): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .neq('id', '') // Delete all rows
+
+    if (error) {
+      console.error('[Notifications] Failed to clear:', error.message)
+      return false
+    }
+
+    window.dispatchEvent(new CustomEvent('notification:cleared'))
+    console.log('[Notifications] Cleared all notifications')
+    return true
+  } catch (err) {
+    console.error('[Notifications] Error clearing:', err)
+    return false
+  }
 }
