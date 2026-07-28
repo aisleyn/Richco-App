@@ -132,13 +132,13 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end">
+      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end p-4">
         <motion.div
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="bg-bg-base w-full max-h-[92vh] rounded-t-3xl overflow-hidden flex flex-col"
+          className="bg-bg-base w-full max-h-[92vh] rounded-3xl overflow-hidden flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
@@ -155,20 +155,20 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           <div className="mx-5 mt-4 bg-bg-surface rounded-xl p-4 space-y-3 shrink-0">
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
-                <p className="text-slate-800 font-mono text-lg">{formatElapsed(elapsed)}</p>
-                <p className="text-slate-500 text-[10px] mt-0.5">Work Time</p>
+                <p className="text-slate-800 font-mono text-2xl font-bold">{formatElapsed(elapsed)}</p>
+                <p className="text-slate-500 text-xs mt-0.5">Work Time</p>
               </div>
               <div className="text-center border-x border-slate-200">
-                <p className="text-emerald-400 font-semibold text-lg">{regularHours.toFixed(2)}h</p>
-                <p className="text-slate-500 text-[10px] mt-0.5">Regular</p>
+                <p className="text-emerald-400 font-semibold text-2xl font-bold">{regularHours.toFixed(2)}h</p>
+                <p className="text-slate-500 text-xs mt-0.5">Regular</p>
               </div>
               <div className="text-center">
-                <p className={`font-semibold text-lg ${overtimeHours > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{overtimeHours.toFixed(2)}h</p>
-                <p className="text-slate-500 text-[10px] mt-0.5">Overtime</p>
+                <p className={`font-bold text-2xl ${overtimeHours > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{overtimeHours.toFixed(2)}h</p>
+                <p className="text-slate-500 text-xs mt-0.5">Overtime</p>
               </div>
             </div>
-            <div className="text-center text-[10px] border-t border-slate-200 pt-2">
-              <p className="text-slate-500">Raw: {rawHours.toFixed(2)}h | Breaks: {breakHours.toFixed(2)}h | Mandatory: -{mandatoryBreakHours.toFixed(1)}h ({currentShiftIsOvernight ? 'Overnight' : 'Day shift'})</p>
+            <div className="text-center text-xs border-t border-slate-200 pt-2">
+              <p className="text-slate-700 dark:text-slate-300 font-medium">Raw: {rawHours.toFixed(2)}h | Breaks: {breakHours.toFixed(2)}h | Mandatory: -{mandatoryBreakHours.toFixed(1)}h ({currentShiftIsOvernight ? 'Overnight' : 'Day shift'})</p>
             </div>
           </div>
 
@@ -177,7 +177,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Site selector */}
             <div>
-              <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-2">Site Worked</label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Site Worked</label>
               <div className="relative">
                 <select
                   value={siteId}
@@ -193,7 +193,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Vehicle */}
             <div>
-              <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-2">Company Vehicle Used?</label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Company Vehicle Used?</label>
               <div className="flex gap-2 mb-2">
                 {(['no', 'yes'] as const).map(v => (
                   <button
@@ -223,7 +223,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Break taken */}
             <div>
-              <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-2">Mandatory Break Taken?</label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Mandatory Break Taken?</label>
               <div className="flex gap-2">
                 {(['yes', 'no'] as const).map(v => (
                   <button
@@ -240,7 +240,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Issues */}
             <div>
-              <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-2">Issues or Concerns <span className="text-slate-600 font-normal">(Optional)</span></label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Issues or Concerns <span className="text-slate-600 font-normal">(Optional)</span></label>
               <textarea
                 value={concerns}
                 onChange={e => setConcerns(e.target.value)}
@@ -252,7 +252,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Summary */}
             <div>
-              <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-2">Shift Summary <span className="text-red-400">*</span></label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Shift Summary <span className="text-red-400">*</span></label>
               <textarea
                 value={summary}
                 onChange={e => { setSummary(e.target.value); setErrors(p => ({ ...p, summary: '' })) }}
@@ -265,7 +265,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Photos */}
             <div>
-              <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider block mb-2">
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">
                 Site Photos <span className="text-red-400">*</span>
                 <span className="text-slate-600 font-normal ml-2">Min. 1 required</span>
               </label>
