@@ -132,110 +132,63 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
           </div>
         </div>
 
-        <div className="mt-5 space-y-2">
+        <div className="mt-5 space-y-3">
           {alerts.map((alert, i) => {
             const cfg = typeConfig[alert.type] ?? typeConfig.general
             const Icon = cfg.icon
-            const isOpen = expanded === alert.id
             return (
               <motion.div
                 key={alert.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-2 border ${cfg.color} ${cfg.border} overflow-hidden`}
+                className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden`}
               >
                 <button
                   onClick={() => handleExpand(alert)}
-                  className="w-full text-left p-4 flex items-start gap-3"
+                  className="w-full text-left p-4"
                 >
-                  <Icon size={15} className={`${cfg.iconColor} mt-0.5 shrink-0`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-semibold truncate ${!alert.read ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{alert.title}</p>
-                      {!alert.read && <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />}
+                  {/* User info header */}
+                  <div className="flex items-start gap-3 mb-3">
+                    {/* Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {alert.author?.charAt(0).toUpperCase() || 'A'}
                     </div>
-                    <p className="text-slate-400 dark:text-slate-500 text-xs truncate mt-0.5">{alert.body}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-bg-elevated dark:bg-bg-elevated-dark ${cfg.iconColor}`}>
-                        {cfg.label}
-                      </span>
-                      <span className="text-slate-600 dark:text-slate-500 text-[10px]">
+
+                    {/* User details and time */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+                        {alert.author || 'System'}
+                      </p>
+                      <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">
                         {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}
+                      </p>
+                    </div>
+
+                    {/* Unread indicator */}
+                    {!alert.read && <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0 mt-1.5" />}
+                  </div>
+
+                  {/* Alert content */}
+                  <div className="pl-0">
+                    {/* Title */}
+                    <p className={`text-sm font-bold ${!alert.read ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {alert.title}
+                    </p>
+
+                    {/* Body preview */}
+                    <p className="text-slate-600 dark:text-slate-400 text-xs mt-1.5 line-clamp-2">
+                      {alert.body}
+                    </p>
+
+                    {/* Alert type badge */}
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <span className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-bg-elevated dark:bg-bg-elevated-dark ${cfg.iconColor}`}>
+                        {cfg.label}
                       </span>
                     </div>
                   </div>
                 </button>
-
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 pb-4 pt-0 border-t border-slate-200">
-                        <p className="text-slate-300 text-sm leading-relaxed mt-3">{alert.body}</p>
-                        {alert.author && (
-                          <p className="text-slate-500 text-xs mt-3">— {alert.author}</p>
-                        )}
-
-                        {alert.type === 'leave_request' && canApprove && (
-                          <div className="mt-4 space-y-2">
-                            {denyingAlertId === alert.id ? (
-                              <>
-                                <textarea
-                                  value={denialReason}
-                                  onChange={e => setDenialReason(e.target.value)}
-                                  placeholder="Reason for denial..."
-                                  className="w-full bg-bg-elevated dark:bg-bg-elevated-dark border border-red-500/20 dark:border-red-500/30 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 text-sm resize-none placeholder:text-slate-600 dark:placeholder:text-slate-500"
-                                  rows={2}
-                                />
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => {
-                                      handleDenyLeave(alert)
-                                    }}
-                                    disabled={!denialReason.trim()}
-                                    className="flex-1 px-3 py-2 bg-red-500 disabled:opacity-40 text-white text-xs font-semibold rounded-lg transition-colors"
-                                  >
-                                    Confirm Denial
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setDenyingAlertId(null)
-                                      setDenialReason('')
-                                    }}
-                                    className="flex-1 px-3 py-2 bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition-colors"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </>
-                            ) : (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => handleApproveLeave(alert)}
-                                  className="flex-1 px-3 py-2 bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors hover:bg-emerald-600"
-                                >
-                                  Approve
-                                </button>
-                                <button
-                                  onClick={() => setDenyingAlertId(alert.id)}
-                                  className="flex-1 px-3 py-2 bg-red-500/20 text-red-400 text-xs font-semibold rounded-lg transition-colors hover:bg-red-500/30"
-                                >
-                                  Deny
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </motion.div>
             )
           })}
