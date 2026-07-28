@@ -22,7 +22,7 @@ export function WeatherCard() {
           <AlertTriangle size={16} className="text-red-600 mt-0.5 shrink-0" />
           <div>
             {alerts.map((a, i) => (
-              <p key={i} className="text-red-400 text-xs leading-relaxed">{a}</p>
+              <p key={i} className="text-red-400 text-base leading-relaxed">{a}</p>
             ))}
           </div>
         </motion.div>
@@ -75,8 +75,8 @@ export function WeatherCard() {
             ].map(({ icon: Icon, label, value, warn }) => (
               <div key={label} className="flex flex-col items-center gap-1">
                 <Icon size={13} className={warn ? 'text-amber-400' : 'text-slate-400'} />
-                <span className={`text-xs font-semibold ${warn ? 'text-amber-400' : 'text-slate-800'}`}>{value}</span>
-                <span className="text-slate-500 text-[9px]">{label}</span>
+                <span className={`text-base font-semibold ${warn ? 'text-amber-400' : 'text-slate-800'}`}>{value}</span>
+                <span className="text-slate-500 text-xs">{label}</span>
               </div>
             ))}
           </div>

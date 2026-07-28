@@ -96,7 +96,7 @@ export function HomeScreen({ onNavigate }: Props) {
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-slate-400 dark:text-slate-500 text-xs md:text-sm">{format(today, 'EEEE, MMMM d')}</p>
           <h1 className="text-slate-900 dark:text-slate-100 text-xl md:text-2xl font-bold mt-0.5">{greeting}</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-base mt-1">Week {format(today, 'w')} · {format(today, 'yyyy')}</p>
         </motion.div>
         <div className="flex items-center gap-2 pt-0">
           <ThemeToggle />
