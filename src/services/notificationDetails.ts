@@ -146,6 +146,9 @@ export interface CommentReply {
   reply: string
   author: string
   createdAt: Date
+  replyToId?: string
+  replyToAuthor?: string
+  nestedReplies?: CommentReply[]
 }
 
 export interface CommentReaction {
@@ -158,7 +161,8 @@ export interface CommentReaction {
 export async function addCommentReply(
   commentId: string,
   reply: string,
-  author: string
+  author: string,
+  replyToId?: string
 ): Promise<CommentReply | null> {
   try {
     const { data, error } = await supabase
@@ -167,6 +171,7 @@ export async function addCommentReply(
         comment_id: commentId,
         reply,
         author,
+        reply_to_id: replyToId || null,
       })
       .select()
       .single()
@@ -182,6 +187,7 @@ export async function addCommentReply(
       reply: data.reply,
       author: data.author,
       createdAt: new Date(data.created_at),
+      replyToId: data.reply_to_id,
     }
   } catch (err) {
     console.error('[NotificationDetails] Error adding reply:', err)
@@ -189,26 +195,43 @@ export async function addCommentReply(
   }
 }
 
-export async function getCommentReplies(commentId: string): Promise<CommentReply[]> {
+export async function getCommentReplies(commentId: string, parentReplyId?: string): Promise<CommentReply[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('notification_comment_replies')
       .select('*')
       .eq('comment_id', commentId)
-      .order('created_at', { ascending: true })
+
+    if (parentReplyId) {
+      query = query.eq('reply_to_id', parentReplyId)
+    } else {
+      query = query.is('reply_to_id', null)
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: true })
 
     if (error) {
       console.error('[NotificationDetails] Failed to fetch replies:', error.message)
       return []
     }
 
-    return (data || []).map((r: any) => ({
-      id: r.id,
-      commentId: r.comment_id,
-      reply: r.reply,
-      author: r.author,
-      createdAt: new Date(r.created_at),
-    }))
+    // Recursively fetch nested replies
+    const repliesWithNested = await Promise.all(
+      (data || []).map(async (r: any) => {
+        const nestedReplies = await getCommentReplies(commentId, r.id)
+        return {
+          id: r.id,
+          commentId: r.comment_id,
+          reply: r.reply,
+          author: r.author,
+          createdAt: new Date(r.created_at),
+          replyToId: r.reply_to_id,
+          nestedReplies: nestedReplies,
+        }
+      })
+    )
+
+    return repliesWithNested
   } catch (err) {
     console.error('[NotificationDetails] Error fetching replies:', err)
     return []
@@ -388,5 +411,54 @@ export async function getNotificationReactions(notificationId: string): Promise<
   } catch (err) {
     console.error('[NotificationDetails] Error fetching notification reactions:', err)
     return { like: 0, dislike: 0, question: 0 }
+  }
+}
+
+export interface ReactionDetail {
+  author: string
+  reactionType: 'like' | 'dislike' | 'question'
+}
+
+export async function getCommentReactionDetails(commentId: string): Promise<ReactionDetail[]> {
+  try {
+    const { data, error } = await supabase
+      .from('notification_comment_reactions')
+      .select('reaction_by, reaction_type')
+      .eq('comment_id', commentId)
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to fetch comment reaction details:', error.message)
+      return []
+    }
+
+    return (data || []).map((r: any) => ({
+      author: r.reaction_by,
+      reactionType: r.reaction_type,
+    }))
+  } catch (err) {
+    console.error('[NotificationDetails] Error fetching comment reaction details:', err)
+    return []
+  }
+}
+
+export async function getNotificationReactionDetails(notificationId: string): Promise<ReactionDetail[]> {
+  try {
+    const { data, error } = await supabase
+      .from('notification_reactions')
+      .select('reaction_by, reaction_type')
+      .eq('notification_id', notificationId)
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to fetch notification reaction details:', error.message)
+      return []
+    }
+
+    return (data || []).map((r: any) => ({
+      author: r.reaction_by,
+      reactionType: r.reaction_type,
+    }))
+  } catch (err) {
+    console.error('[NotificationDetails] Error fetching notification reaction details:', err)
+    return []
   }
 }
