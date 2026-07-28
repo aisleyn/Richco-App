@@ -3,7 +3,11 @@ import { Bell, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { getAllNotifications, deleteNotification, type Notification } from '../../services/notificationService'
 
-export function NotificationsPanel() {
+interface Props {
+  onNotificationClick?: (notification: Notification) => void
+}
+
+export function NotificationsPanel({ onNotificationClick }: Props) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -95,10 +99,13 @@ export function NotificationsPanel() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className={`rounded-lg border-l-4 p-3 space-y-1 ${getTypeColor(notification.type)}`}
+                  className={`rounded-lg border-l-4 p-3 space-y-1 cursor-pointer hover:opacity-80 transition-opacity ${getTypeColor(notification.type)}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
+                    <button
+                      onClick={() => onNotificationClick?.(notification)}
+                      className="flex-1 min-w-0 text-left"
+                    >
                       <div className="flex items-center gap-2">
                         <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                           {notification.title}
@@ -119,7 +126,7 @@ export function NotificationsPanel() {
                           })}
                         </span>
                       </div>
-                    </div>
+                    </button>
                     <button
                       onClick={() => removeNotification(notification.id)}
                       className="flex-shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"

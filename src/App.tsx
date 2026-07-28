@@ -12,12 +12,14 @@ import { CrewScreen } from './screens/CrewScreen'
 import { AdminCrewScreen } from './screens/AdminCrewScreen'
 import { AIHelpScreen } from './screens/AIHelpScreen'
 import { ShiftRosterScreen } from './screens/ShiftRosterScreen'
+import { NotificationDetailScreen } from './screens/NotificationDetailScreen'
 import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supabaseAuth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
 import { initializeCrew } from './services/crew'
 import { syncEmployeeTimesheets } from './services/supabase'
 import { SetPasswordModal } from './components/crew/SetPasswordModal'
+import type { Notification } from './services/notificationService'
 
 type ScreenProps = { onNavigate: (s: string) => void }
 
@@ -29,6 +31,7 @@ export default function App() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [pendingEmail, setPendingEmail] = useState<string | null>(null)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const { initializeUser } = useAppStore()
   useDarkMode()
 
@@ -172,10 +175,26 @@ export default function App() {
     setActive('home')
   }
 
+  // If a notification is selected, show its detail screen
+  if (selectedNotification) {
+    return (
+      <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
+        <NotificationsPanel onNotificationClick={setSelectedNotification} />
+        <div className="flex-1 flex flex-col md:pr-20">
+          <NotificationDetailScreen
+            notification={selectedNotification}
+            onBack={() => setSelectedNotification(null)}
+          />
+          <BottomNav active={active} onChange={setActive} isAdmin={isAdmin} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
       {/* Notifications Panel - Desktop only */}
-      <NotificationsPanel />
+      <NotificationsPanel onNotificationClick={setSelectedNotification} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col md:pr-20">
