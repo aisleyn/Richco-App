@@ -13,9 +13,11 @@ import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
 
-export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
+export function PhotosScreen(props: { onNavigate?: (s: string) => void; initialProjectId?: string }) {
   const { currentUserEmail } = useAppStore()
-  const [activeSite, setActiveSite] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'sites' | 'projects'>('sites')
+  const [activeSite, setActiveSite] = useState<string | null>(props.initialProjectId ? null : null)
+  const [activeProject, setActiveProject] = useState<string | null>(props.initialProjectId || null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
@@ -43,8 +45,21 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
   const sites = jobSites.filter(s => s.status === 'active')
   const currentSite = sites.find(s => s.id === activeSite)
 
+  // Extract unique projects from photos
+  const projects = Array.from(new Map(
+    allPhotos
+      .filter(p => p.projectId)
+      .map(p => [p.projectId, { id: p.projectId!, name: p.projectName || p.projectId! }])
+  ).values())
+
+  const currentProject = projects.find(p => p.id === activeProject)
+
   const filtered = allPhotos
-    .filter(p => activeSite ? p.siteId === activeSite : true)
+    .filter(p => {
+      if (viewMode === 'projects' && activeProject) return p.projectId === activeProject
+      if (viewMode === 'sites' && activeSite) return p.siteId === activeSite
+      return false
+    })
     .filter(p => activeCategory === 'All' ? true : p.category === activeCategory)
     .sort((a, b) => b.timestamp - a.timestamp)
 
@@ -95,15 +110,25 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
     <AppLayout noPad>
       <div className="pt-14 px-4">
         <div className="flex items-center justify-between mb-1">
-          {activeSite && (
-            <button onClick={() => setActiveSite(null)} className="flex items-center gap-1 text-blue-600 text-sm -ml-1">
-              <ChevronLeft size={16} /> Sites
+          {(activeSite || activeProject) && (
+            <button
+              onClick={() => {
+                setActiveSite(null)
+                setActiveProject(null)
+              }}
+              className="flex items-center gap-1 text-blue-600 text-sm -ml-1"
+            >
+              <ChevronLeft size={16} /> {viewMode === 'projects' ? 'Projects' : 'Sites'}
             </button>
           )}
-          <div className={activeSite ? '' : 'flex-1'}>
-            <h1 className="text-slate-800 dark:text-slate-100 text-2xl font-bold">{currentSite?.name ?? 'Photos'}</h1>
+          <div className={(activeSite || activeProject) ? '' : 'flex-1'}>
+            <h1 className="text-slate-800 dark:text-slate-100 text-2xl font-bold">
+              {activeProject ? currentProject?.name : currentSite?.name ?? 'Photos'}
+            </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-              {activeSite ? `${filtered.length} photos` : `${sites.length} active projects`}
+              {activeSite || activeProject
+                ? `${filtered.length} photos`
+                : `${viewMode === 'projects' ? projects.length : sites.length} ${viewMode}`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -160,36 +185,72 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
         </div>
       </div>
 
-      {!activeSite ? (
-        /* Project gallery cards */
-        <div className="px-4 mt-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sites.map((site, i) => {
-              const sitePhotos = allPhotos.filter(p => p.siteId === site.id)
-              const flagged = sitePhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
-              return (
-                <motion.button
-                  key={site.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  onClick={() => setActiveSite(site.id)}
-                  className="text-left bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors"
-                >
-                  {/* Photo strip preview */}
-                  <div className="flex h-24 lg:h-32 gap-0.5 overflow-hidden">
-                    {sitePhotos.slice(0, 3).map((p, j) => (
-                      <div key={j} className="flex-1 overflow-hidden">
-                        <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    ))}
-                    {sitePhotos.length === 0 && <div className="flex-1 bg-bg-elevated dark:bg-bg-elevated-dark flex items-center justify-center"><Camera size={24} className="text-slate-600 dark:text-slate-500" /></div>}
-                  </div>
-                  <div className="p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-800 dark:text-slate-100 font-semibold text-sm">{site.name}</p>
-                      <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{sitePhotos.length} photos</p>
+      {!activeSite && !activeProject ? (
+        /* View mode toggle and gallery */
+        <>
+          <div className="px-4 mt-5 flex gap-2 mb-4">
+            <button
+              onClick={() => {
+                setViewMode('sites')
+                setActiveProject(null)
+              }}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+                viewMode === 'sites'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-bg-surface dark:bg-bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              Sites
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('projects')
+                setActiveSite(null)
+              }}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+                viewMode === 'projects'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-bg-surface dark:bg-bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              Projects
+            </button>
+          </div>
+
+          {/* Gallery cards */}
+          <div className="px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(viewMode === 'sites' ? sites : projects).map((item, i) => {
+                const itemPhotos = viewMode === 'sites'
+                  ? allPhotos.filter(p => p.siteId === item.id)
+                  : allPhotos.filter(p => p.projectId === item.id)
+                const flagged = itemPhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
+                return (
+                  <motion.button
+                    key={item.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    onClick={() => {
+                      if (viewMode === 'sites') setActiveSite(item.id)
+                      else setActiveProject(item.id)
+                    }}
+                    className="text-left bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors"
+                  >
+                    {/* Photo strip preview */}
+                    <div className="flex h-24 lg:h-32 gap-0.5 overflow-hidden">
+                        {itemPhotos.slice(0, 3).map((p, j) => (
+                        <div key={j} className="flex-1 overflow-hidden">
+                          <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                      {itemPhotos.length === 0 && <div className="flex-1 bg-bg-elevated dark:bg-bg-elevated-dark flex items-center justify-center"><Camera size={24} className="text-slate-600 dark:text-slate-500" /></div>}
                     </div>
+                    <div className="p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-slate-800 dark:text-slate-100 font-semibold text-sm">{item.name}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{itemPhotos.length} photos</p>
+                      </div>
                     {flagged > 0 && (
                       <div className="flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-2.5 py-1.5">
                         <AlertTriangle size={12} className="text-amber-400" />
@@ -199,9 +260,10 @@ export function PhotosScreen(_props: { onNavigate?: (s: string) => void }) {
                   </div>
                 </motion.button>
               )
-            })}
+              })}
+            </div>
           </div>
-        </div>
+        </>
       ) : (
         /* Photo gallery */
         <div>

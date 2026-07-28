@@ -5,6 +5,8 @@ import { jobSites, mockVehicles } from '../../data/mockData'
 import { useAppStore } from '../../store/appStore'
 import { useGeolocation } from '../../hooks/useGeolocation'
 import { useElapsedTime, formatElapsed, msToDecimalHours } from '../../hooks/useTimer'
+import { addPhotos } from '../../services/photoDatabase'
+import type { Photo } from '../../types'
 
 interface Props {
   onClose: () => void
@@ -55,6 +57,33 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
     // Request GPS for clock out
     const gpsOut = await requestLocation()
+
+    // Get current project info from store
+    const { currentProjectId, currentProjectName, currentUserEmail, currentUserName, currentUserId } = useAppStore.getState()
+    const site = jobSites.find(s => s.id === siteId)
+
+    // Save photos to database with projectId
+    if (photos.length > 0 && currentProjectId) {
+      const photoObjects: Photo[] = photos.map((url, idx) => ({
+        id: `photo-${Date.now()}-${idx}`,
+        url,
+        thumbnailUrl: url,
+        siteId,
+        siteName: site?.name || '',
+        projectId: currentProjectId,
+        projectName: currentProjectName,
+        submittedBy: currentUserName,
+        submittedById: currentUserId,
+        timestamp: Date.now(),
+        category: 'Site Conditions',
+      }))
+      try {
+        await addPhotos(photoObjects, currentUserEmail)
+        console.log('[ClockOut] Saved', photos.length, 'photos with projectId:', currentProjectId)
+      } catch (err) {
+        console.error('[ClockOut] Failed to save photos:', err)
+      }
+    }
 
     await clockOut({
       clockOutTime: Date.now(),

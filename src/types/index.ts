@@ -42,6 +42,8 @@ export interface TimesheetEntry {
   date: string
   siteName: string
   siteId: string
+  projectId?: string
+  projectName?: string
   clockInTime: number // unix ms
   clockOutTime?: number
   breakMinutes: number

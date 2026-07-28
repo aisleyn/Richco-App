@@ -6,6 +6,7 @@ import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAuto
 import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod } from '../services/supabase'
 import { getMandatoryBreakHours } from '../services/dataverse'
 import { generateLeaveRequestAlerts } from '../services/timeoff'
+import { getProjectIdFromLocation } from '../services/projectLocationMap'
 
 interface AppState {
   // Authentication
@@ -24,6 +25,8 @@ interface AppState {
   activeBreakPeriodId: string | null
   activeSheetEntry: Partial<TimesheetEntry> | null
   currentShiftIsOvernight: boolean // Track for break deduction
+  currentProjectId?: string
+  currentProjectName?: string
 
   // Alerts
   alerts: Alert[]
@@ -129,6 +132,9 @@ export const useAppStore = create<AppState>()(
         const id = `ts-${now}`
         const { currentUserId, currentUserEmail, currentUserName } = get()
 
+        // Get projectId from location (location choice takes priority over shift roster)
+        const { projectId, projectName } = await getProjectIdFromLocation(siteId)
+
         // Create Supabase entry (source of truth)
         const entryId = await createTimeEntry({
           employee_id: currentUserId,
@@ -149,11 +155,15 @@ export const useAppStore = create<AppState>()(
           totalBreakMs: 0,
           activeTimesheetId: entryId || id,
           currentShiftIsOvernight: isOvernight,
+          currentProjectId: projectId,
+          currentProjectName: projectName,
           activeSheetEntry: {
             id: entryId || id,
             date: new Date().toISOString().split('T')[0],
             siteId,
             siteName,
+            projectId,
+            projectName,
             clockInTime: now,
             status: 'active',
             gpsIn: gps,
@@ -176,7 +186,7 @@ export const useAppStore = create<AppState>()(
       },
 
       clockOut: async (data) => {
-        const { clockInTime, breakStartTime, totalBreakMs, activeTimesheetId, currentShiftIsOvernight, currentUserId, currentUserEmail, currentUserName } = get()
+        const { clockInTime, breakStartTime, totalBreakMs, activeTimesheetId, currentShiftIsOvernight, currentUserId, currentUserEmail, currentUserName, currentProjectId, currentProjectName } = get()
         const now = Date.now()
 
         // Calculate total elapsed time and break duration
@@ -200,6 +210,8 @@ export const useAppStore = create<AppState>()(
           date: new Date(clockInTime ?? now).toISOString().split('T')[0],
           siteName: data.siteName ?? '',
           siteId: data.siteId ?? '',
+          projectId: currentProjectId,
+          projectName: currentProjectName,
           clockInTime: clockInTime ?? now,
           clockOutTime: now,
           breakMinutes: Math.round(breakDurationMs / 60000),
@@ -259,6 +271,8 @@ export const useAppStore = create<AppState>()(
           activeBreakPeriodId: null,
           activeSheetEntry: null,
           currentShiftIsOvernight: false,
+          currentProjectId: undefined,
+          currentProjectName: undefined,
         })
 
         // Also send to Power Automate for compatibility
