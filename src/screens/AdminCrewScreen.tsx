@@ -201,7 +201,10 @@ export function AdminCrewScreen({ onNavigate }: Props) {
             <CheckSquare size={16} /> Create Checklist
           </button>
           <button
-            onClick={() => setShowPostNotification(!showPostNotification)}
+            onClick={() => {
+              console.log('[AdminCrew] Post Update button clicked - current state:', showPostNotification)
+              setShowPostNotification(!showPostNotification)
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold text-sm transition-colors"
           >
             <Bell size={16} /> Post Update
