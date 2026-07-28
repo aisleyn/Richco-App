@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import type { Alert } from '../types'
 import { approveRequest, denyRequest, getRequestById } from '../services/timeoff'
 import { isUserAdmin, getAllCrew } from '../services/crew'
-import { postNotification } from '../services/notificationService'
+import { postNotification, getAlertsFromSupabase, type Notification } from '../services/notificationService'
 
 const typeConfig: Record<string, { color: string; border: string; icon: typeof Info; iconColor: string; label: string }> = {
   urgent:      { color: 'border-l-red-500',    border: 'border-red-500/20',    icon: AlertTriangle, iconColor: 'text-red-400',    label: 'Urgent' },
@@ -28,7 +28,8 @@ interface Props {
 }
 
 export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
-  const { alerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert, currentUserEmail, currentUserName } = useAppStore()
+  const { alerts: localAlerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert, currentUserEmail, currentUserName } = useAppStore()
+  const [persistentAlerts, setPersistentAlerts] = useState<Notification[]>([])
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showCompose, setShowCompose] = useState(false)
   const [postType, setPostType] = useState<PostType>('general')
@@ -38,6 +39,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
   const [denialReason, setDenialReason] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [isCEO, setIsCEO] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadUserStatus = async () => {
@@ -49,6 +51,17 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
     }
     loadUserStatus()
   }, [currentUserEmail])
+
+  // Load persistent alerts from Supabase
+  useEffect(() => {
+    const loadAlerts = async () => {
+      setLoading(true)
+      const alerts = await getAlertsFromSupabase()
+      setPersistentAlerts(alerts)
+      setLoading(false)
+    }
+    loadAlerts()
+  }, [])
 
   const canApprove = isAdmin || isCEO
   const isSupervisor = isAdmin || isCEO
@@ -133,20 +146,100 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
         </div>
 
         <div className="mt-5 space-y-3">
-          {alerts.map((alert, i) => {
-            const cfg = typeConfig[alert.type] ?? typeConfig.general
-            const Icon = cfg.icon
-            return (
-              <motion.div
-                key={alert.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden`}
-              >
-                <button
-                  onClick={() => handleExpand(alert)}
-                  className="w-full text-left p-4"
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+            </div>
+          ) : persistentAlerts.length === 0 && localAlerts.filter(a => a.type === 'leave_request').length === 0 ? (
+            <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-8">No alerts yet</p>
+          ) : (
+            <>
+              {/* Persistent alerts from Supabase */}
+              {persistentAlerts.map((notification, i) => {
+                // Map notification type to alert type for styling
+                const alertType = notification.type === 'alert' ? 'urgent' : notification.type === 'announcement' ? 'weather' : 'general'
+                const cfg = typeConfig[alertType] ?? typeConfig.general
+                const Icon = cfg.icon
+                return (
+                  <motion.div
+                    key={notification.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.3) }}
+                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden`}
+                  >
+                    <button
+                      onClick={() => {
+                        // Convert notification to alert format for detail view
+                        const alert: Alert = {
+                          id: notification.id,
+                          type: alertType as any,
+                          title: notification.title,
+                          body: notification.message,
+                          timestamp: notification.timestamp.getTime(),
+                          read: false,
+                          author: notification.author,
+                        }
+                        handleExpand(alert)
+                      }}
+                      className="w-full text-left p-4"
+                    >
+                      {/* User info header */}
+                      <div className="flex items-start gap-3 mb-3">
+                        {/* Avatar */}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                          {notification.author?.charAt(0).toUpperCase() || 'A'}
+                        </div>
+
+                        {/* User details and time */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">
+                            {notification.author || 'System'}
+                          </p>
+                          <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">
+                            {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Alert content */}
+                      <div className="pl-0">
+                        {/* Title */}
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                          {notification.title}
+                        </p>
+
+                        {/* Body preview */}
+                        <p className="text-slate-600 dark:text-slate-400 text-xs mt-1.5 line-clamp-2">
+                          {notification.message}
+                        </p>
+
+                        {/* Alert type badge */}
+                        <div className="flex items-center gap-2 mt-2.5">
+                          <span className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-bg-elevated dark:bg-bg-elevated-dark ${cfg.iconColor}`}>
+                            {cfg.label}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  </motion.div>
+                )
+              })}
+
+              {/* Local leave request alerts */}
+              {localAlerts.filter(a => a.type === 'leave_request').map((alert, i) => {
+                const cfg = typeConfig[alert.type] ?? typeConfig.general
+                return (
+                  <motion.div
+                    key={alert.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.05, 0.3) }}
+                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden`}
+                  >
+                    <button
+                      onClick={() => handleExpand(alert)}
+                      className="w-full text-left p-4"
                 >
                   {/* User info header */}
                   <div className="flex items-start gap-3 mb-3">
@@ -188,10 +281,12 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                       </span>
                     </div>
                   </div>
-                </button>
-              </motion.div>
-            )
-          })}
+                    </button>
+                  </motion.div>
+                )
+              })}
+            </>
+          )}
         </div>
       </div>
 

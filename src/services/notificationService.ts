@@ -132,3 +132,44 @@ export async function clearAllNotifications(): Promise<boolean> {
     return false
   }
 }
+
+// Map notification type to alert type for display
+function mapNotificationTypeToAlertType(notificationType: string): string {
+  switch (notificationType) {
+    case 'alert':
+      return 'urgent'
+    case 'announcement':
+      return 'weather'
+    default:
+      return 'general'
+  }
+}
+
+export async function getAlertsFromSupabase(): Promise<Notification[]> {
+  try {
+    console.log('[Notifications] Fetching alerts from Supabase...')
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100)
+
+    if (error) {
+      console.error('[Notifications] Failed to fetch alerts:', error.message)
+      return []
+    }
+
+    console.log('[Notifications] ✅ Fetched', (data || []).length, 'alerts')
+    return (data || []).map((n: any) => ({
+      id: n.id,
+      title: n.title,
+      message: n.message,
+      author: n.author,
+      timestamp: new Date(n.created_at),
+      type: n.type,
+    }))
+  } catch (err) {
+    console.error('[Notifications] Error fetching alerts:', err)
+    return []
+  }
+}
