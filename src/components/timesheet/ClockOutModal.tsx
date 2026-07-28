@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Camera, CheckCircle, ChevronDown, AlertCircle, MapPin } from 'lucide-react'
 import { jobSites, mockVehicles } from '../../data/mockData'
@@ -14,6 +14,12 @@ interface Props {
 }
 
 export function ClockOutModal({ onClose, onConfirm }: Props) {
+  const { setIsModalOpen } = useAppStore()
+
+  useEffect(() => {
+    setIsModalOpen(true)
+    return () => setIsModalOpen(false)
+  }, [])
   const { clockInTime, clockedIn, breakActive, breakStartTime, totalBreakMs, currentShiftIsOvernight, clockOut } = useAppStore()
   const { requestLocation, isLoading: isGeoLoading } = useGeolocation()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
@@ -132,52 +138,52 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end p-4">
+      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 md:pointer-events-none">
         <motion.div
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="bg-bg-base w-full max-h-[92vh] rounded-3xl overflow-hidden flex flex-col"
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="bg-bg-base w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 shrink-0">
             <div>
-              <h2 className="text-slate-800 font-bold text-lg">Clock Out</h2>
-              <p className="text-slate-400 text-sm">Complete before clocking out</p>
+              <h2 className="text-slate-800 font-bold text-base">Clock Out</h2>
+              <p className="text-slate-400 text-xs">Complete before clocking out</p>
             </div>
-            <button onClick={onClose} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
-              <X size={18} className="text-slate-400" />
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center flex-shrink-0">
+              <X size={16} className="text-slate-400" />
             </button>
           </div>
 
           {/* Time summary banner */}
-          <div className="mx-5 mt-4 bg-bg-surface rounded-xl p-4 space-y-3 shrink-0">
-            <div className="grid grid-cols-3 gap-3">
+          <div className="mx-4 mt-3 bg-bg-surface rounded-lg p-3 space-y-2 shrink-0">
+            <div className="grid grid-cols-3 gap-2">
               <div className="text-center">
-                <p className="text-slate-800 font-mono text-2xl font-bold">{formatElapsed(elapsed)}</p>
+                <p className="text-slate-800 font-mono text-xl font-bold">{formatElapsed(elapsed)}</p>
                 <p className="text-slate-500 text-xs mt-0.5">Work Time</p>
               </div>
               <div className="text-center border-x border-slate-200">
-                <p className="text-emerald-400 font-semibold text-2xl font-bold">{regularHours.toFixed(2)}h</p>
+                <p className="text-emerald-400 font-semibold text-xl font-bold">{regularHours.toFixed(2)}h</p>
                 <p className="text-slate-500 text-xs mt-0.5">Regular</p>
               </div>
               <div className="text-center">
-                <p className={`font-bold text-2xl ${overtimeHours > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{overtimeHours.toFixed(2)}h</p>
+                <p className={`font-bold text-xl ${overtimeHours > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{overtimeHours.toFixed(2)}h</p>
                 <p className="text-slate-500 text-xs mt-0.5">Overtime</p>
               </div>
             </div>
-            <div className="text-center text-xs border-t border-slate-200 pt-2">
+            <div className="text-center text-xs border-t border-slate-200 pt-1.5">
               <p className="text-slate-700 dark:text-slate-300 font-medium">Raw: {rawHours.toFixed(2)}h | Breaks: {breakHours.toFixed(2)}h | Mandatory: -{mandatoryBreakHours.toFixed(1)}h ({currentShiftIsOvernight ? 'Overnight' : 'Day shift'})</p>
             </div>
           </div>
 
           {/* Scrollable form */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
 
             {/* Site selector */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Site Worked</label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Site Worked</label>
               <div className="relative">
                 <select
                   value={siteId}
@@ -193,13 +199,13 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Vehicle */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Company Vehicle Used?</label>
-              <div className="flex gap-2 mb-2">
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Company Vehicle Used?</label>
+              <div className="flex gap-2 mb-1.5 w-fit">
                 {(['no', 'yes'] as const).map(v => (
                   <button
                     key={v}
                     onClick={() => setVehicleUsed(v)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400'}`}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
@@ -223,13 +229,13 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Break taken */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Mandatory Break Taken?</label>
-              <div className="flex gap-2">
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Mandatory Break Taken?</label>
+              <div className="flex gap-2 w-fit">
                 {(['yes', 'no'] as const).map(v => (
                   <button
                     key={v}
                     onClick={() => { setBreakTaken(v); setErrors(p => ({ ...p, break: '' })) }}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${breakTaken === v ? (v === 'yes' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-red-500/20 text-red-400 border border-red-500/40') : 'bg-bg-surface text-slate-400 border border-transparent'}`}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${breakTaken === v ? (v === 'yes' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-red-500/20 text-red-400 border border-red-500/40') : 'bg-bg-surface text-slate-400 border border-transparent'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
@@ -240,47 +246,47 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Issues */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Issues or Concerns <span className="text-slate-600 font-normal">(Optional)</span></label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Issues or Concerns <span className="text-slate-600 font-normal">(Optional)</span></label>
               <textarea
                 value={concerns}
                 onChange={e => setConcerns(e.target.value)}
                 placeholder="Any safety issues, equipment problems, or incidents to report..."
-                rows={3}
-                className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600"
+                rows={2}
+                className="w-full bg-bg-surface border border-white/10 rounded-lg px-3 py-2 text-slate-800 text-sm resize-none placeholder:text-slate-600"
               />
             </div>
 
             {/* Summary */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">Shift Summary <span className="text-red-400">*</span></label>
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Shift Summary <span className="text-red-400">*</span></label>
               <textarea
                 value={summary}
                 onChange={e => { setSummary(e.target.value); setErrors(p => ({ ...p, summary: '' })) }}
                 placeholder="Describe work completed today..."
-                rows={4}
-                className={`w-full bg-bg-surface border rounded-xl px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600 ${errors.summary ? 'border-red-500/50' : 'border-white/10'}`}
+                rows={3}
+                className={`w-full bg-bg-surface border rounded-lg px-3 py-2 text-slate-800 text-sm resize-none placeholder:text-slate-600 ${errors.summary ? 'border-red-500/50' : 'border-white/10'}`}
               />
               {errors.summary && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.summary}</p>}
             </div>
 
             {/* Photos */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-2">
+              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">
                 Site Photos <span className="text-red-400">*</span>
                 <span className="text-slate-600 font-normal ml-2">Min. 1 required</span>
               </label>
               <input ref={fileRef} type="file" accept="image/*" multiple capture="environment" onChange={handlePhoto} className="hidden" />
 
               {photos.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
+                <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1.5">
                   {photos.map((url, i) => (
-                    <div key={i} className="w-16 h-16 rounded-xl overflow-hidden shrink-0 relative">
+                    <div key={i} className="w-14 h-14 rounded-lg overflow-hidden shrink-0 relative">
                       <img src={url} alt="" className="w-full h-full object-cover" />
                       <button
                         onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center"
+                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 flex items-center justify-center"
                       >
-                        <X size={10} className="text-slate-800" />
+                        <X size={9} className="text-slate-800" />
                       </button>
                     </div>
                   ))}
@@ -289,29 +295,29 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
               <button
                 onClick={() => fileRef.current?.click()}
-                className={`w-full flex items-center justify-center gap-2 py-3.5 border-2 border-dashed rounded-xl text-sm font-medium transition-colors ${errors.photos ? 'border-red-500/50 text-red-400' : 'border-white/10 text-slate-400 active:border-blue-600/50 active:text-blue-600'}`}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed rounded-lg text-sm font-medium transition-colors ${errors.photos ? 'border-red-500/50 text-red-400' : 'border-white/10 text-slate-400 active:border-blue-600/50 active:text-blue-600'}`}
               >
-                <Camera size={16} />
+                <Camera size={14} />
                 {photos.length === 0 ? 'Add Photo' : 'Add Another Photo'}
               </button>
               {errors.photos && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.photos}</p>}
             </div>
 
-            <div className="h-2" />
+            <div className="h-1" />
           </div>
 
           {/* Footer */}
-          <div className="px-5 py-4 border-t border-slate-200 shrink-0">
+          <div className="px-4 py-3 border-t border-slate-200 shrink-0">
             {clockOutGps && isGeoLoading && (
-              <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2">
-                <MapPin size={14} className="text-blue-400 animate-pulse" />
+              <div className="mb-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2">
+                <MapPin size={12} className="text-blue-400 animate-pulse" />
                 <p className="text-blue-400 text-xs">Capturing location...</p>
               </div>
             )}
             <button
               onClick={handleSubmit}
               disabled={isGeoLoading}
-              className="w-full py-4 bg-red-500 active:bg-red-600 rounded-xl text-slate-800 font-bold text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-red-500 active:bg-red-600 rounded-lg text-slate-800 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGeoLoading && clockOutGps ? 'Getting Location...' : 'Finalize Clock Out'}
             </button>

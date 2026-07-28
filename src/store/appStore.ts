@@ -67,6 +67,10 @@ interface AppState {
   // AI
   addChatMessage: (msg: ChatMessage) => void
   clearChat: () => void
+
+  // Modal state
+  isModalOpen: boolean
+  setIsModalOpen: (open: boolean) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -400,6 +404,9 @@ export const useAppStore = create<AppState>()(
       addChatMessage: (msg) => set(state => ({ chatMessages: [...state.chatMessages, msg] })),
 
       clearChat: () => set({ chatMessages: [] }),
+
+      isModalOpen: false,
+      setIsModalOpen: (open) => set({ isModalOpen: open }),
     }),
     {
       name: 'richco-app-state',

@@ -23,12 +23,12 @@ interface Props {
 }
 
 export function BottomNav({ active, onChange, isAdmin = false }: Props) {
-  const { unreadAlertCount, unreadMessageCount } = useAppStore()
+  const { unreadAlertCount, unreadMessageCount, isModalOpen } = useAppStore()
 
   const tabs = isAdmin ? [...baseTabs, ...adminTabs] : baseTabs
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 md:bottom-auto md:right-0 md:left-auto md:top-0 md:w-20 md:h-screen z-50 bg-bg-surface/95 dark:bg-bg-surface-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 md:border-t-0 md:border-l safe-bottom md:safe-left">
+    <nav className={`fixed bottom-0 left-0 right-0 md:bottom-auto md:right-0 md:left-auto md:top-0 md:w-20 md:h-screen z-50 bg-bg-surface/95 dark:bg-bg-surface-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 md:border-t-0 md:border-l safe-bottom md:safe-left ${isModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
       <div className="flex items-stretch max-w-lg mx-auto md:flex-col md:h-full md:max-w-none">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = active === id
