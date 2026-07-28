@@ -139,3 +139,173 @@ export async function addNotificationComment(
     return null
   }
 }
+
+export interface CommentReply {
+  id: string
+  commentId: string
+  reply: string
+  author: string
+  createdAt: Date
+}
+
+export interface CommentReaction {
+  id: string
+  commentId: string
+  reactionBy: string
+  reactionType: 'like' | 'dislike' | 'question'
+}
+
+export async function addCommentReply(
+  commentId: string,
+  reply: string,
+  author: string
+): Promise<CommentReply | null> {
+  try {
+    const { data, error } = await supabase
+      .from('notification_comment_replies')
+      .insert({
+        comment_id: commentId,
+        reply,
+        author,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to add reply:', error.message)
+      return null
+    }
+
+    return {
+      id: data.id,
+      commentId: data.comment_id,
+      reply: data.reply,
+      author: data.author,
+      createdAt: new Date(data.created_at),
+    }
+  } catch (err) {
+    console.error('[NotificationDetails] Error adding reply:', err)
+    return null
+  }
+}
+
+export async function getCommentReplies(commentId: string): Promise<CommentReply[]> {
+  try {
+    const { data, error } = await supabase
+      .from('notification_comment_replies')
+      .select('*')
+      .eq('comment_id', commentId)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to fetch replies:', error.message)
+      return []
+    }
+
+    return (data || []).map((r: any) => ({
+      id: r.id,
+      commentId: r.comment_id,
+      reply: r.reply,
+      author: r.author,
+      createdAt: new Date(r.created_at),
+    }))
+  } catch (err) {
+    console.error('[NotificationDetails] Error fetching replies:', err)
+    return []
+  }
+}
+
+export async function addCommentReaction(
+  commentId: string,
+  reactionType: 'like' | 'dislike' | 'question',
+  reactionBy: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notification_comment_reactions')
+      .insert({
+        comment_id: commentId,
+        reaction_type: reactionType,
+        reaction_by: reactionBy,
+      })
+
+    if (error?.code === '23505') {
+      // Reaction already exists - try to delete it (toggle off)
+      await removeCommentReaction(commentId, reactionType, reactionBy)
+      return true
+    }
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to add reaction:', error.message)
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error('[NotificationDetails] Error adding reaction:', err)
+    return false
+  }
+}
+
+export async function removeCommentReaction(
+  commentId: string,
+  reactionType: 'like' | 'dislike' | 'question',
+  reactionBy: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notification_comment_reactions')
+      .delete()
+      .eq('comment_id', commentId)
+      .eq('reaction_type', reactionType)
+      .eq('reaction_by', reactionBy)
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to remove reaction:', error.message)
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error('[NotificationDetails] Error removing reaction:', err)
+    return false
+  }
+}
+
+export async function getCommentReactions(commentId: string): Promise<Record<string, number>> {
+  try {
+    const { data, error } = await supabase
+      .from('notification_comment_reactions')
+      .select('reaction_type, reaction_by', { count: 'exact' })
+      .eq('comment_id', commentId)
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to fetch reactions:', error.message)
+      return { like: 0, dislike: 0, question: 0 }
+    }
+
+    const counts = { like: 0, dislike: 0, question: 0 }
+    data?.forEach((r: any) => {
+      counts[r.reaction_type as keyof typeof counts]++
+    })
+
+    return counts
+  } catch (err) {
+    console.error('[NotificationDetails] Error fetching reactions:', err)
+    return { like: 0, dislike: 0, question: 0 }
+  }
+}
+
+export async function trackCommentView(commentId: string, viewedBy: string): Promise<void> {
+  try {
+    await supabase
+      .from('notification_comment_views')
+      .insert({
+        comment_id: commentId,
+        viewed_by: viewedBy,
+      })
+  } catch (err) {
+    // Silently ignore - view already tracked or other error
+    console.log('[NotificationDetails] Comment view tracked or already exists')
+  }
+}

@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Eye, MessageCircle, Send, AlertTriangle, Info, Cloud, CalendarDays, Truck, Megaphone, X } from 'lucide-react'
+import { ArrowLeft, Eye, MessageCircle, Send, AlertTriangle, Info, Cloud, CalendarDays, Truck, Megaphone, X, ThumbsUp, ThumbsDown, HelpCircle } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
-import { getNotificationComments, addNotificationComment, trackNotificationView, getNotificationViews, getNotificationViewers, type NotificationComment } from '../services/notificationDetails'
+import { getNotificationComments, addNotificationComment, trackNotificationView, getNotificationViews, getNotificationViewers, addCommentReply, getCommentReplies, addCommentReaction, getCommentReactions, trackCommentView, type NotificationComment, type CommentReply } from '../services/notificationDetails'
+import { Avatar } from '../components/Avatar'
+import { CommentCard } from '../components/CommentCard'
+import { capitalizeName } from '../utils/formatting'
 import type { Notification } from '../services/notificationService'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -91,10 +94,15 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
                 <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                   {notification.title}
                 </h1>
-                <div className="flex items-center gap-2 mt-2 text-sm text-slate-500">
-                  <span className="font-medium">{notification.author}</span>
-                  <span>•</span>
-                  <span>{formatDistanceToNow(notification.timestamp, { addSuffix: true })}</span>
+                <div className="flex items-center gap-3 mt-3">
+                  <Avatar name={notification.author} size="sm" />
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {capitalizeName(notification.author)}
+                    </span>
+                    <span>•</span>
+                    <span>{formatDistanceToNow(notification.timestamp, { addSuffix: true })}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -165,24 +173,12 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
           ) : (
             <div className="space-y-4">
               {comments.map((comment) => (
-                <motion.div
+                <CommentCard
                   key={comment.id}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-lg bg-bg-base dark:bg-bg-base-dark p-4"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium text-slate-800 dark:text-slate-100 text-sm">
-                      {comment.author}
-                    </p>
-                    <p className="text-slate-400 dark:text-slate-500 text-xs">
-                      {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
-                    </p>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                    {comment.comment}
-                  </p>
-                </motion.div>
+                  comment={comment}
+                  currentUserName={currentUserName}
+                  currentUserEmail={currentUserEmail}
+                />
               ))}
             </div>
           )}
