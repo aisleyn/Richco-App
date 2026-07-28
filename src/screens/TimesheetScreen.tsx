@@ -226,24 +226,6 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           )}
         </motion.div>
 
-        {/* Admin controls */}
-        {isAdmin && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="mt-5 space-y-4"
-          >
-            <button
-              onClick={() => setShowCreateShift(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
-            >
-              <Calendar size={16} /> Create Shift
-            </button>
-            <ShiftAssignmentManagerV2 />
-          </motion.div>
-        )}
-
         {/* Clock in card */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mt-5">
           <ClockInCard
@@ -254,11 +236,35 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           />
         </motion.div>
 
+        {/* Create Shift button - Admin only */}
+        {isAdmin && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.26 }}
+            className="mt-5"
+          >
+            <button
+              onClick={() => setShowCreateShift(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
+            >
+              <Calendar size={16} /> Create Shift
+            </button>
+          </motion.div>
+        )}
+
         {/* Shift & Checklist Cards */}
         {crewMemberId && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-6">
             <UpcomingShiftCard crewMemberId={crewMemberId} />
             <DailyChecklistCard crewMemberId={crewMemberId} />
+          </motion.div>
+        )}
+
+        {/* Admin shift assignment management */}
+        {isAdmin && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-6">
+            <ShiftAssignmentManagerV2 />
           </motion.div>
         )}
 

@@ -65,7 +65,7 @@ export function UpcomingShiftCard({ crewMemberId, isLoading = false }: Props) {
 
   if (loading) return <div className="card mb-4 p-4 text-slate-500">Loading shift...</div>
 
-  if (!shift) return <div className="card mb-4 p-4 text-slate-500">No shift scheduled for today</div>
+  if (!shift) return null
 
   return (
     <div className="card mb-4 bg-gradient-to-br from-blue-50 to-blue-50 dark:from-slate-800 dark:to-slate-800 border border-blue-200 dark:border-slate-700">

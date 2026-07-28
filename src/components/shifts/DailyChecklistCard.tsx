@@ -119,7 +119,7 @@ export function DailyChecklistCard({ crewMemberId, isLoading = false }: Props) {
   if (loading) return <div className="card p-4 text-slate-500">Loading checklist...</div>
 
   if (!checklist || !items || items.length === 0) {
-    return <div className="card p-4 text-slate-500">No checklist for today</div>
+    return null
   }
 
   const itemsSorted = [...items].sort((a, b) => a.order_num - b.order_num)

@@ -90,7 +90,7 @@ export function ShiftAssignmentManagerV2() {
   }
 
   if (shifts.length === 0) {
-    return <div className="text-slate-500 text-sm p-4">No shifts created yet. Create one to get started.</div>
+    return null
   }
 
   return (
