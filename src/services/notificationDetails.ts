@@ -17,6 +17,12 @@ export async function trackNotificationView(notificationId: string, viewedBy: st
         viewed_by: viewedBy,
       })
 
+    // Ignore unique constraint violations (user already viewed)
+    if (error?.code === '23505') {
+      console.log('[NotificationDetails] View already tracked for this user')
+      return
+    }
+
     if (error) {
       console.error('[NotificationDetails] Failed to track view:', error.message)
       return

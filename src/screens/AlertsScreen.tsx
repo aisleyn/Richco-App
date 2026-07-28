@@ -22,7 +22,12 @@ const typeConfig: Record<string, { color: string; border: string; icon: typeof I
 
 type PostType = 'urgent' | 'general' | 'weather' | 'schedule' | 'vendor'
 
-export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
+interface Props {
+  onNavigate?: (s: string) => void
+  onAlertClick?: (alert: Alert) => void
+}
+
+export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
   const { alerts, markAlertRead, markAllAlertsRead, unreadAlertCount, addAlert, currentUserEmail, currentUserName } = useAppStore()
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showCompose, setShowCompose] = useState(false)
@@ -49,8 +54,9 @@ export function AlertsScreen(_props: { onNavigate?: (s: string) => void }) {
   const isSupervisor = isAdmin || isCEO
 
   function handleExpand(alert: Alert) {
-    setExpanded(expanded === alert.id ? null : alert.id)
     markAlertRead(alert.id)
+    // Navigate to detail view instead of expanding
+    onAlertClick?.(alert)
   }
 
   async function handlePost() {

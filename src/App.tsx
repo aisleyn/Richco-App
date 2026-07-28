@@ -20,6 +20,7 @@ import { initializeCrew } from './services/crew'
 import { syncEmployeeTimesheets } from './services/supabase'
 import { SetPasswordModal } from './components/crew/SetPasswordModal'
 import type { Notification } from './services/notificationService'
+import type { Alert } from './types'
 
 type ScreenProps = { onNavigate: (s: string) => void }
 
@@ -161,7 +162,7 @@ export default function App() {
       case 'home':   return <HomeScreen onNavigate={setActive} />
       case 'time':   return <TimesheetScreen onNavigate={setActive} />
       case 'photos': return <PhotosScreen onNavigate={setActive} />
-      case 'alerts': return <AlertsScreen onNavigate={setActive} />
+      case 'alerts': return <AlertsScreen onNavigate={setActive} onAlertClick={handleAlertClick} />
       case 'roster': return isAdmin ? <ShiftRosterScreen /> : <HomeScreen onNavigate={setActive} />
       case 'crew':   return isAdmin ? <AdminCrewScreen onNavigate={setActive} /> : <CrewScreen onNavigate={setActive} />
       case 'ai':     return <AIHelpScreen onNavigate={setActive} />
@@ -179,6 +180,19 @@ export default function App() {
   function handleNavChange(screenId: string) {
     setActive(screenId)
     setSelectedNotification(null)
+  }
+
+  // Convert Alert to Notification for detail view
+  function handleAlertClick(alert: Alert) {
+    const notification: Notification = {
+      id: alert.id,
+      title: alert.title,
+      message: alert.body,
+      author: alert.author || 'System',
+      timestamp: new Date(alert.timestamp),
+      type: alert.type === 'urgent' ? 'alert' : alert.type === 'weather' ? 'announcement' : 'update',
+    }
+    setSelectedNotification(notification)
   }
 
   // If a notification is selected, show its detail screen
