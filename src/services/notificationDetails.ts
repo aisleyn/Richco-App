@@ -181,6 +181,20 @@ export async function addCommentReply(
       return null
     }
 
+    // Fetch parent reply's author if this is a nested reply
+    let replyToAuthor: string | undefined = undefined
+    if (data.reply_to_id) {
+      const parentReply = await supabase
+        .from('notification_comment_replies')
+        .select('author')
+        .eq('id', data.reply_to_id)
+        .single()
+
+      if (parentReply.data?.author) {
+        replyToAuthor = parentReply.data.author
+      }
+    }
+
     return {
       id: data.id,
       commentId: data.comment_id,
@@ -188,6 +202,8 @@ export async function addCommentReply(
       author: data.author,
       createdAt: new Date(data.created_at),
       replyToId: data.reply_to_id,
+      replyToAuthor: replyToAuthor,
+      nestedReplies: [],
     }
   } catch (err) {
     console.error('[NotificationDetails] Error adding reply:', err)
@@ -215,10 +231,25 @@ export async function getCommentReplies(commentId: string, parentReplyId?: strin
       return []
     }
 
-    // Recursively fetch nested replies
+    // Recursively fetch nested replies and parent author info
     const repliesWithNested = await Promise.all(
       (data || []).map(async (r: any) => {
         const nestedReplies = await getCommentReplies(commentId, r.id)
+
+        // Fetch parent reply's author name if this is a nested reply
+        let replyToAuthor: string | undefined = undefined
+        if (r.reply_to_id) {
+          const parentReply = await supabase
+            .from('notification_comment_replies')
+            .select('author')
+            .eq('id', r.reply_to_id)
+            .single()
+
+          if (parentReply.data?.author) {
+            replyToAuthor = parentReply.data.author
+          }
+        }
+
         return {
           id: r.id,
           commentId: r.comment_id,
@@ -226,6 +257,7 @@ export async function getCommentReplies(commentId: string, parentReplyId?: strin
           author: r.author,
           createdAt: new Date(r.created_at),
           replyToId: r.reply_to_id,
+          replyToAuthor: replyToAuthor,
           nestedReplies: nestedReplies,
         }
       })
@@ -321,15 +353,23 @@ export async function getCommentReactions(commentId: string): Promise<Record<str
 
 export async function trackCommentView(commentId: string, viewedBy: string): Promise<void> {
   try {
-    await supabase
+    const { error } = await supabase
       .from('notification_comment_views')
       .insert({
         comment_id: commentId,
         viewed_by: viewedBy,
       })
+
+    if (error?.code === '23505') {
+      // Unique constraint - already tracked, ignore silently
+      return
+    }
+
+    if (error) {
+      console.error('[NotificationDetails] Failed to track comment view:', error.message)
+    }
   } catch (err) {
-    // Silently ignore - view already tracked or other error
-    console.log('[NotificationDetails] Comment view tracked or already exists')
+    console.error('[NotificationDetails] Error tracking comment view:', err)
   }
 }
 
