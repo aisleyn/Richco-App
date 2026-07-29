@@ -1,0 +1,581 @@
+{
+  "version": "1.0.0",
+  "name": "Richco Construction Design System",
+  "description": "Comprehensive design system for Richco Field Time-Tracking Application",
+  "exportDate": "2026-07-29",
+  "metadata": {
+    "projectType": "React + TypeScript + Tailwind CSS",
+    "darkModeSupported": true,
+    "responsiveDesign": true,
+    "framework": "React 18+",
+    "compiler": "Vite + TypeScript"
+  },
+  "colors": {
+    "primary": {
+      "navy": {
+        "value": "#0A1628",
+        "name": "Navy Primary",
+        "usage": "Primary brand color, dark mode background"
+      },
+      "accent-blue": {
+        "value": "#4A90E2",
+        "name": "Accent Blue",
+        "usage": "Interactive elements, links, primary actions"
+      }
+    },
+    "semantic": {
+      "white": {
+        "value": "#FFFFFF",
+        "name": "White",
+        "usage": "Light surfaces, card backgrounds"
+      },
+      "green": {
+        "value": "#16A34A",
+        "name": "Success Green",
+        "usage": "Success states, positive indicators"
+      },
+      "green-dark": {
+        "value": "#15803D",
+        "name": "Success Green Dark",
+        "usage": "Success hover states"
+      },
+      "amber": {
+        "value": "#F59E0B",
+        "name": "Warning Amber",
+        "usage": "Warning states, pending indicators"
+      },
+      "amber-dark": {
+        "value": "#D97706",
+        "name": "Warning Amber Dark",
+        "usage": "Warning hover states"
+      },
+      "amber-light": {
+        "value": "#FCD34D",
+        "name": "Warning Amber Light",
+        "usage": "Warning backgrounds"
+      },
+      "red": {
+        "value": "#EF4444",
+        "name": "Error Red",
+        "usage": "Error states, destructive actions"
+      }
+    },
+    "text": {
+      "primary": {
+        "light": "#111827",
+        "dark": "#F3F4F6",
+        "name": "Primary Text",
+        "usage": "Main body text"
+      },
+      "secondary": {
+        "light": "#6B7280",
+        "dark": "#9CA3AF",
+        "name": "Secondary Text / Dim",
+        "usage": "Secondary content, metadata, hints"
+      },
+      "tertiary": {
+        "light": "#9CA3AF",
+        "dark": "#6B7280",
+        "name": "Tertiary Text",
+        "usage": "Disabled text, placeholders"
+      }
+    },
+    "background": {
+      "base": {
+        "light": "#F7F8FA",
+        "dark": "#0F1419",
+        "name": "Base Background",
+        "usage": "Page background"
+      },
+      "surface": {
+        "light": "#FFFFFF",
+        "dark": "#1A1F2E",
+        "name": "Surface",
+        "usage": "Card and component backgrounds"
+      },
+      "elevated": {
+        "light": "#F0F1F4",
+        "dark": "#252D3D",
+        "name": "Elevated Surface",
+        "usage": "Elevated cards, modals"
+      },
+      "card": {
+        "light": "#FFFFFF",
+        "dark": "#1A1F2E",
+        "name": "Card Background",
+        "usage": "Card component backgrounds"
+      }
+    },
+    "status": {
+      "onsite": {
+        "value": "#10B981",
+        "name": "Onsite Status",
+        "usage": "Worker onsite indicator"
+      },
+      "enroute": {
+        "value": "#F59E0B",
+        "name": "En Route Status",
+        "usage": "Worker en route indicator"
+      },
+      "available": {
+        "value": "#3B82F6",
+        "name": "Available Status",
+        "usage": "Worker available indicator"
+      },
+      "off": {
+        "value": "#64748B",
+        "name": "Off Status",
+        "usage": "Worker off/unavailable indicator"
+      },
+      "urgent": {
+        "value": "#EF4444",
+        "name": "Urgent Status",
+        "usage": "Urgent/critical alerts"
+      }
+    },
+    "interactive": {
+      "blue-palette": {
+        "50": "#EFF6FF",
+        "100": "#DBE4FE",
+        "200": "#D4E8FF",
+        "300": "#B5D9EE",
+        "400": "#9DD5F5",
+        "500": "#79BEE6",
+        "600": "#52B0E6",
+        "700": "#47A0D3",
+        "800": "#4794D3",
+        "900": "#3382B1",
+        "name": "Blue Interactive Palette",
+        "usage": "Interactive states, focus rings, hover states"
+      }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "primary": {
+        "family": "DM Sans, -apple-system, BlinkMacSystemFont, SF Pro Display, Segoe UI, sans-serif",
+        "name": "DM Sans",
+        "stack": "['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'sans-serif']",
+        "usage": "All text content"
+      }
+    },
+    "fontSizes": {
+      "xs": {
+        "value": "12px",
+        "lineHeight": "16px",
+        "usage": "Captions, badges, small labels",
+        "example": "text-xs"
+      },
+      "sm": {
+        "value": "14px",
+        "lineHeight": "20px",
+        "usage": "Secondary text, form labels, timestamps",
+        "example": "text-sm"
+      },
+      "base": {
+        "value": "16px",
+        "lineHeight": "24px",
+        "usage": "Body text, default size",
+        "example": "text-base"
+      },
+      "lg": {
+        "value": "18px",
+        "lineHeight": "28px",
+        "usage": "Subheadings, larger content",
+        "example": "text-lg"
+      },
+      "xl": {
+        "value": "20px",
+        "lineHeight": "28px",
+        "usage": "Section headings",
+        "example": "text-xl"
+      },
+      "2xl": {
+        "value": "24px",
+        "lineHeight": "32px",
+        "usage": "Major headings, page titles",
+        "example": "text-2xl"
+      }
+    },
+    "fontWeights": {
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+  "spacing": {
+    "scale": {
+      "0": "0px",
+      "1": "4px",
+      "2": "8px",
+      "3": "12px",
+      "4": "16px",
+      "5": "20px",
+      "6": "24px",
+      "7": "28px",
+      "8": "32px",
+      "9": "36px",
+      "10": "40px",
+      "12": "48px",
+      "16": "64px"
+    },
+    "padding": {
+      "common": ["px-2", "px-3", "px-4", "px-6", "py-1", "py-2", "py-3", "py-4", "py-6", "py-8"],
+      "description": "Use spacing scale for consistent padding across components"
+    },
+    "gaps": {
+      "common": ["gap-1", "gap-2", "gap-3", "gap-4"],
+      "description": "Flexbox gap values for component spacing"
+    }
+  },
+  "borderRadius": {
+    "values": {
+      "none": {
+        "value": "0px",
+        "usage": "No border radius",
+        "example": "rounded-none"
+      },
+      "sm": {
+        "value": "4px",
+        "usage": "Subtle rounding for inputs",
+        "example": "rounded-sm"
+      },
+      "base": {
+        "value": "6px",
+        "usage": "Default border radius",
+        "example": "rounded"
+      },
+      "md": {
+        "value": "8px",
+        "usage": "Standard rounding",
+        "example": "rounded-md"
+      },
+      "lg": {
+        "value": "12px",
+        "usage": "Cards and panels",
+        "example": "rounded-lg"
+      },
+      "xl": {
+        "value": "16px",
+        "usage": "Large components",
+        "example": "rounded-xl"
+      },
+      "2xl": {
+        "value": "20px",
+        "usage": "Extra large modals",
+        "example": "rounded-2xl"
+      },
+      "full": {
+        "value": "9999px",
+        "usage": "Fully rounded, pills, circles",
+        "example": "rounded-full"
+      },
+      "t": {
+        "value": "12px (top only)",
+        "usage": "Top border only (sheets)",
+        "example": "rounded-t"
+      }
+    }
+  },
+  "shadows": {
+    "card": {
+      "value": "0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
+      "usage": "Card elevation, default shadows"
+    },
+    "glow": {
+      "value": "0 0 20px rgba(245,158,11,0.3)",
+      "color": "Amber",
+      "usage": "Glow effect for warnings/highlights"
+    },
+    "glow-green": {
+      "value": "0 0 20px rgba(16,185,129,0.3)",
+      "color": "Green",
+      "usage": "Glow effect for success states"
+    }
+  },
+  "animations": {
+    "transitions": {
+      "fast": "150ms",
+      "base": "200ms",
+      "slow": "300ms",
+      "slower": "400ms"
+    },
+    "keyframes": {
+      "fade-in": {
+        "from": { "opacity": "0" },
+        "to": { "opacity": "1" },
+        "duration": "0.3s",
+        "timing": "ease-in-out",
+        "usage": "Component entrance animations"
+      },
+      "slide-up": {
+        "from": { "opacity": "0", "transform": "translateY(20px)" },
+        "to": { "opacity": "1", "transform": "translateY(0)" },
+        "duration": "0.4s",
+        "timing": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "usage": "Bottom sheet and modal entrance"
+      },
+      "pulse-slow": {
+        "duration": "3s",
+        "timing": "cubic-bezier(0.4, 0, 0.6, 1)",
+        "iteration": "infinite",
+        "usage": "Loading and attention indicators"
+      },
+      "spin-slow": {
+        "duration": "8s",
+        "timing": "linear",
+        "iteration": "infinite",
+        "usage": "Slow rotation for icons"
+      }
+    }
+  },
+  "components": {
+    "layout": {
+      "AppLayout": {
+        "file": "src/components/layout/AppLayout.tsx",
+        "purpose": "Main application layout wrapper with nav",
+        "props": ["children", "onNavigate"],
+        "exports": "AppLayout component"
+      },
+      "BottomNav": {
+        "file": "src/components/layout/BottomNav.tsx",
+        "purpose": "Bottom navigation bar for mobile",
+        "props": ["active", "onNavigate", "isAdmin"],
+        "exports": "BottomNav component with menu items"
+      },
+      "NotificationsPanel": {
+        "file": "src/components/layout/NotificationsPanel.tsx",
+        "purpose": "Notifications/alerts sidebar panel",
+        "props": ["isOpen", "onClose", "notifications"],
+        "exports": "NotificationsPanel component"
+      }
+    },
+    "ui": {
+      "Avatar": {
+        "file": "src/components/Avatar.tsx",
+        "purpose": "User avatar with initials",
+        "props": ["name", "size", "color"],
+        "sizes": ["sm", "md", "lg"],
+        "exports": "Avatar component"
+      },
+      "ThemeToggle": {
+        "file": "src/components/ThemeToggle.tsx",
+        "purpose": "Dark mode theme switcher",
+        "props": [],
+        "exports": "ThemeToggle component"
+      },
+      "CommentCard": {
+        "file": "src/components/CommentCard.tsx",
+        "purpose": "Notification comment with nested replies",
+        "props": ["comment", "currentUserName", "currentUserEmail"],
+        "features": ["nested replies", "reactions", "reply form", "reaction tooltips"],
+        "exports": "CommentCard and NestedReplyComponent"
+      },
+      "ReactionTooltip": {
+        "file": "src/components/ReactionTooltip.tsx",
+        "purpose": "Hover tooltip showing reaction authors",
+        "props": ["reactions", "children"],
+        "exports": "ReactionTooltip wrapper"
+      }
+    },
+    "home": {
+      "ClockInCard": {
+        "file": "src/components/home/ClockInCard.tsx",
+        "purpose": "Today's shift and clock in/out",
+        "props": ["currentUserName"],
+        "features": ["shift info", "location selection", "clock in/out"]
+      },
+      "WeatherCard": {
+        "file": "src/components/home/WeatherCard.tsx",
+        "purpose": "Weather forecast display",
+        "props": ["location"],
+        "features": ["temperature", "conditions", "forecast"]
+      },
+      "SiteCards": {
+        "file": "src/components/home/SiteCards.tsx",
+        "purpose": "Quick access to site/project cards",
+        "props": ["sites"],
+        "features": ["card grid", "click navigation"]
+      },
+      "AlertsStrip": {
+        "file": "src/components/home/AlertsStrip.tsx",
+        "purpose": "Recent alerts/notifications strip",
+        "props": [],
+        "features": ["alert list", "dismissible"]
+      }
+    },
+    "admin": {
+      "CreateShiftFormV2": {
+        "file": "src/components/admin/CreateShiftFormV2.tsx",
+        "purpose": "Advanced shift creation form",
+        "props": ["onShiftCreated"],
+        "features": ["date/time", "project selection", "park hours", "multi-location", "crew assignment"]
+      },
+      "ShiftAssignmentManagerV2": {
+        "file": "src/components/admin/ShiftAssignmentManagerV2.tsx",
+        "purpose": "Manage crew assignments for shifts",
+        "props": ["shifts", "crew", "onUpdate"],
+        "features": ["expand/collapse", "checkbox selection", "assign button"]
+      },
+      "CreateChecklistForm": {
+        "file": "src/components/admin/CreateChecklistForm.tsx",
+        "purpose": "Create daily checklists",
+        "props": ["onSubmit"],
+        "features": ["item input", "submit handling"]
+      }
+    },
+    "crew": {
+      "RegistrationModal": {
+        "file": "src/components/crew/RegistrationModal.tsx",
+        "purpose": "First-time user registration",
+        "props": ["email", "onRegister"],
+        "features": ["name input", "password", "form validation"]
+      },
+      "AddCrewModal": {
+        "file": "src/components/crew/AddCrewModal.tsx",
+        "purpose": "Add new crew member",
+        "props": ["onSubmit"],
+        "features": ["member form", "email input"]
+      },
+      "EditCrewModal": {
+        "file": "src/components/crew/EditCrewModal.tsx",
+        "purpose": "Edit crew member details",
+        "props": ["crew", "onSubmit"],
+        "features": ["edit form", "save button"]
+      },
+      "EmployeeProfileSheet": {
+        "file": "src/components/crew/EmployeeProfileSheet.tsx",
+        "purpose": "View employee profile",
+        "props": ["employee"],
+        "features": ["profile info", "contact details"]
+      },
+      "SetPasswordModal": {
+        "file": "src/components/crew/SetPasswordModal.tsx",
+        "purpose": "Set or reset user password",
+        "props": ["email", "onSuccess"],
+        "features": ["password input", "validation"]
+      }
+    },
+    "shifts": {
+      "ShiftRosterTable": {
+        "file": "src/components/shifts/ShiftRosterTable.tsx",
+        "purpose": "Display shift roster in table format",
+        "props": ["shifts", "crew"],
+        "features": ["sortable columns", "crew listing", "shift details"]
+      },
+      "UpcomingShiftCard": {
+        "file": "src/components/shifts/UpcomingShiftCard.tsx",
+        "purpose": "Card view of upcoming shift",
+        "props": ["shift"],
+        "features": ["shift summary", "location", "crew count"]
+      },
+      "DailyChecklistCard": {
+        "file": "src/components/shifts/DailyChecklistCard.tsx",
+        "purpose": "Daily checklist display",
+        "props": ["checklist"],
+        "features": ["item checkboxes", "completion tracking"]
+      }
+    },
+    "timesheet": {
+      "TimecardGrid": {
+        "file": "src/components/timesheet/TimecardGrid.tsx",
+        "purpose": "3-column timecard grid with expansion",
+        "props": ["timecards", "onSelect"],
+        "features": ["expandable", "weekly/monthly view", "click cards"]
+      },
+      "Timecard": {
+        "file": "src/components/timesheet/Timecard.tsx",
+        "purpose": "Individual timecard display",
+        "props": ["timecard"],
+        "features": ["hours", "status", "edit button"]
+      },
+      "ClockOutModal": {
+        "file": "src/components/timesheet/ClockOutModal.tsx",
+        "purpose": "Clock out confirmation modal",
+        "props": ["clockInTime", "onConfirm"],
+        "features": ["duration display", "confirm button"]
+      },
+      "EditTimecardModal": {
+        "file": "src/components/timesheet/EditTimecardModal.tsx",
+        "purpose": "Manual timecard entry/editing",
+        "props": ["timecard", "onSave"],
+        "features": ["time input", "notes field", "validation"]
+      },
+      "TimeOffCard": {
+        "file": "src/components/timesheet/TimeOffCard.tsx",
+        "purpose": "Time off request display",
+        "props": ["request"],
+        "features": ["date range", "status", "reason"]
+      }
+    },
+    "modals": {
+      "ManualTimecardModal": {
+        "file": "src/components/crew/ManualTimecardModal.tsx",
+        "purpose": "Manual timecard entry modal",
+        "type": "Modal"
+      },
+      "RequestTimeOffModal": {
+        "file": "src/components/timeoff/RequestTimeOffModal.tsx",
+        "purpose": "Request time off modal",
+        "type": "Modal"
+      },
+      "ApproveLeaveModal": {
+        "file": "src/components/timeoff/ApproveLeaveModal.tsx",
+        "purpose": "Approve/reject time off requests",
+        "type": "Modal"
+      },
+      "BulkUploadModal": {
+        "file": "src/components/photos/BulkUploadModal.tsx",
+        "purpose": "Bulk photo upload",
+        "type": "Modal"
+      },
+      "ImportPhotosModal": {
+        "file": "src/components/photos/ImportPhotosModal.tsx",
+        "purpose": "Import photos from external source",
+        "type": "Modal"
+      },
+      "EditPhotoModal": {
+        "file": "src/components/photos/EditPhotoModal.tsx",
+        "purpose": "Edit photo metadata",
+        "type": "Modal"
+      }
+    }
+  },
+  "patterns": {
+    "buttons": {
+      "primary": "bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg",
+      "secondary": "bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 px-4 py-2 rounded-lg",
+      "destructive": "bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg",
+      "ghost": "text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+    },
+    "inputs": {
+      "base": "px-3 py-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600",
+      "disabled": "disabled:opacity-50 disabled:cursor-not-allowed"
+    },
+    "cards": {
+      "base": "rounded-lg bg-bg-surface dark:bg-bg-surface-dark shadow-card p-4",
+      "elevated": "rounded-lg bg-bg-elevated dark:bg-bg-elevated-dark shadow-card p-4"
+    }
+  },
+  "screens": {
+    "mobile": "0px",
+    "tablet": "768px",
+    "desktop": "1024px"
+  },
+  "accessibilityGuidelines": [
+    "Always use semantic HTML elements (button, a, form, etc.)",
+    "Include alt text for images and icons when not decorative",
+    "Ensure color contrast ratios meet WCAG AA standards",
+    "Use focus states for keyboard navigation",
+    "Support dark mode for reduced eye strain",
+    "Use aria-labels for screen readers when needed",
+    "Ensure touch targets are minimum 44x44 pixels"
+  ],
+  "importInstructions": {
+    "designer": "Import this JSON into your design tool to sync with component library",
+    "development": "Reference this spec when building new components",
+    "documentation": "Use as single source of truth for design system documentation",
+    "customizing": "Update this file when adding new colors, sizes, or components"
+  }
+}
