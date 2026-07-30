@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, TrendingUp, Calendar, Plus } from 'lucide-react'
+import { Clock, TrendingUp, Calendar, Plus, X } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { ClockInCard } from '../components/home/ClockInCard'
 import { ClockOutModal } from '../components/timesheet/ClockOutModal'
@@ -45,6 +45,12 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const [isAdmin, setIsAdmin] = useState(false)
   const [crewMemberId, setCrewMemberId] = useState<number | null>(null)
   const [showCreateShift, setShowCreateShift] = useState(false)
+  const [showSitePicker, setShowSitePicker] = useState(false)
+  const [sites, setSites] = useState<typeof jobSites>([])
+  const [selectedSite, setSelectedSite] = useState<typeof jobSites[0] | null>(null)
+  const [isLoadingSites, setIsLoadingSites] = useState(false)
+  const [isClockingIn, setIsClockingIn] = useState(false)
+  const [pendingIsOvernight, setPendingIsOvernight] = useState(false)
   const hours = elapsed / 3600000
 
   useEffect(() => {
@@ -114,24 +120,25 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     setEditingTimecard(null)
   }
 
-  async function handleClockIn(isOvernight: boolean, overrideSiteId?: string, overrideSiteName?: string) {
-    // Use provided site/shift, or default to Admins->Office, others->first active site
-    let siteId: string
-    let siteName: string
-    let defaultSite: typeof jobSites[0] | undefined
-
+  function handleClockIn(isOvernight: boolean, overrideSiteId?: string, overrideSiteName?: string) {
+    // If override provided, clock in immediately
     if (overrideSiteId && overrideSiteName) {
-      siteId = overrideSiteId
-      siteName = overrideSiteName
-      defaultSite = jobSites.find(s => s.id === 'office')
-    } else {
-      defaultSite = isAdmin ? jobSites.find(s => s.id === 'office') : jobSites.find(s => s.status === 'active' && s.id !== 'office')
-      siteId = defaultSite?.id ?? 'office'
-      siteName = defaultSite?.name ?? 'Office'
+      confirmClockIn(overrideSiteId, overrideSiteName, isOvernight)
+      return
     }
 
+    // Otherwise show site picker
+    setPendingIsOvernight(isOvernight)
+    setShowSitePicker(true)
+    setSites(jobSites)
+    setSelectedSite(null)
+  }
+
+  async function confirmClockIn(siteId: string, siteName: string, isOvernight: boolean) {
+    setIsClockingIn(true)
+
     // Request real GPS coordinates
-    console.log('[TimesheetScreen] Requesting GPS for quick clock in...')
+    console.log('[TimesheetScreen] Requesting GPS for clock in...')
     const location = await requestLocation()
     console.log('[TimesheetScreen] GPS result:', location)
 
@@ -139,10 +146,14 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
       console.warn('[TimesheetScreen] GPS failed, using site location only')
     }
 
+    const site = jobSites.find(s => s.id === siteId)
     // Use real GPS if available, otherwise use site location
-    const gps = location || (defaultSite ? { lat: defaultSite.lat, lng: defaultSite.lng, address: defaultSite.address } : { lat: 49.1234, lng: -122.7654, address: siteName })
+    const gps = location || (site ? { lat: site.lat, lng: site.lng, address: site.address } : { lat: 49.1234, lng: -122.7654, address: siteName })
     console.log('[TimesheetScreen] Clocking in with GPS data:', gps)
     clockIn(siteId, siteName, isOvernight, gps)
+    setShowSitePicker(false)
+    setSelectedSite(null)
+    setIsClockingIn(false)
   }
 
   const todayHours = (clockedIn ? hours : 0) + completedTodayHours
@@ -289,6 +300,66 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
 
       {showClockOut && (
         <ClockOutModal onClose={() => setShowClockOut(false)} onConfirm={() => { setShowClockOut(false); setTimecardRefresh(prev => prev + 1) }} />
+      )}
+
+      {/* Site picker modal */}
+      {showSitePicker && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowSitePicker(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="w-full max-w-md bg-white rounded-2xl p-4 max-h-[90vh] overflow-y-auto shadow-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-slate-900 font-bold text-base">Select Job Site</h2>
+              <button
+                onClick={() => setShowSitePicker(false)}
+                className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center"
+              >
+                <X size={16} className="text-slate-600" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {sites.map((site) => (
+                <motion.button
+                  key={site.id}
+                  onClick={() => setSelectedSite(site)}
+                  className={`w-full p-3 rounded-lg text-left transition-colors text-sm ${
+                    selectedSite?.id === site.id
+                      ? 'bg-green-100 border border-green-600 text-slate-900'
+                      : 'bg-slate-50 border border-slate-300 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <p className="font-semibold">{site.name}</p>
+                  {site.address && (
+                    <p className="text-xs text-slate-500 mt-0.5">{site.address}</p>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => {
+                if (selectedSite) {
+                  confirmClockIn(selectedSite.id, selectedSite.name, pendingIsOvernight)
+                }
+              }}
+              disabled={!selectedSite || isClockingIn}
+              className="w-full mt-6 py-3 bg-green-600 hover:bg-amber-500 text-slate-900 font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isClockingIn ? 'Getting GPS...' : 'Clock In'}
+            </button>
+          </motion.div>
+        </motion.div>
       )}
 
       <CreateShiftFormV2

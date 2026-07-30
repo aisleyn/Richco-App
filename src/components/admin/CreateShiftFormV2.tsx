@@ -160,14 +160,14 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
-      <div className="bg-surface rounded-t-2xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-bg-base rounded-t-2xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[95vh] overflow-y-auto border border-slate-200">
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-primary">Create Shift</h2>
             <button
               type="button"
               onClick={onClose}
-              className="p-1 hover:bg-elevated rounded"
+              className="p-1 hover:bg-slate-50 rounded"
             >
               <X size={24} />
             </button>
@@ -189,7 +189,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 type="date"
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
                 required
               />
             </div>
@@ -235,7 +235,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={startHour}
                 onChange={(e) => setStartHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
             <div>
@@ -248,7 +248,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={startMinute}
                 onChange={(e) => setStartMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
             <div>
@@ -261,7 +261,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={endHour}
                 onChange={(e) => setEndHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
             <div>
@@ -274,7 +274,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={endMinute}
                 onChange={(e) => setEndMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
           </div>
@@ -287,7 +287,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             <select
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+              className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
             >
               <option value="">Select project...</option>
               {projects.map(p => (
@@ -307,7 +307,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={parkOpenHour}
                 onChange={(e) => setParkOpenHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
             <div>
@@ -320,7 +320,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={parkOpenMinute}
                 onChange={(e) => setParkOpenMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
             <div>
@@ -333,7 +333,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={parkCloseHour}
                 onChange={(e) => setParkCloseHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
             <div>
@@ -346,7 +346,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={parkCloseMinute}
                 onChange={(e) => setParkCloseMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
+                className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary"
               />
             </div>
           </div>
@@ -363,7 +363,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 value={locationInput}
                 onChange={(e) => setLocationInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLocation())}
-                className="flex-1 border border-border-light rounded p-2 bg-surface text-primary text-sm"
+                className="flex-1 border border-slate-300 rounded p-2 bg-bg-base text-primary text-sm"
               />
               <button
                 type="button"
@@ -375,7 +375,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             </div>
 
             {locations.map((loc, idx) => (
-              <div key={loc._temp_id} className="flex items-center justify-between p-2 bg-base rounded mb-1">
+              <div key={loc._temp_id} className="flex items-center justify-between p-2 bg-bg-surface rounded mb-1 border border-slate-200">
                 <div>
                   <p className="text-sm font-semibold text-primary">{idx + 1}. {loc.location_name}</p>
                 </div>
@@ -423,11 +423,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             )}
 
             {/* Checkbox List */}
-            <div className="border border-border-light rounded max-h-48 overflow-y-auto">
+            <div className="border border-slate-300 rounded max-h-48 overflow-y-auto">
               {crews.map(crew => (
                 <label
                   key={crew.id}
-                  className="flex items-center gap-3 p-3 border-b border-border-light last:border-b-0 hover:bg-elevated cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -455,7 +455,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes"
-              className="w-full border border-border-light rounded p-2 bg-surface text-primary text-sm"
+              className="w-full border border-slate-300 rounded p-2 bg-bg-base text-primary text-sm"
               rows={2}
             />
           </div>
@@ -465,14 +465,14 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-primary-base hover:bg-primary-dark disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-green-600 hover:bg-amber-500 disabled:opacity-50 text-slate-900 px-4 py-2 rounded font-semibold"
             >
               {loading ? 'Creating...' : 'Create Shift'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-elevated hover:bg-base text-primary px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-bg-surface border border-slate-300 hover:bg-slate-50 text-slate-800 px-4 py-2 rounded font-semibold"
             >
               Cancel
             </button>

@@ -310,12 +310,12 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="bg-surface w-full max-w-md rounded-2xl overflow-hidden shadow-md"
+              className="bg-bg-base w-full max-w-md rounded-2xl overflow-hidden shadow-md border border-slate-200"
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-                <h2 className="text-primary font-bold">Post Notification</h2>
-                <button onClick={() => setShowCompose(false)} className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center">
-                  <X size={16} className="text-muted" />
+                <h2 className="text-slate-900 font-bold">Post Notification</h2>
+                <button onClick={() => setShowCompose(false)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                  <X size={16} className="text-slate-600" />
                 </button>
               </div>
 
@@ -328,7 +328,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                       <button
                         key={t}
                         onClick={() => setPostType(t)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-green-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-green-600 text-slate-900' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}
                       >
                         {t}
                       </button>
@@ -337,19 +337,19 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                 </div>
 
                 <div>
-                  <label className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Title</label>
-                  <input value={postTitle} onChange={e => setPostTitle(e.target.value)} placeholder="Notification title..." className="w-full bg-bg-elevated dark:bg-bg-elevated-dark border border-white/10 dark:border-white/5 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500" />
+                  <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Title</label>
+                  <input value={postTitle} onChange={e => setPostTitle(e.target.value)} placeholder="Notification title..." className="w-full bg-bg-surface border border-slate-300 rounded-lg px-4 py-3 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600" />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider font-medium block mb-2">Message</label>
-                  <textarea value={postBody} onChange={e => setPostBody(e.target.value)} rows={4} placeholder="Full notification message..." className="w-full bg-bg-elevated dark:bg-bg-elevated-dark border border-white/10 dark:border-white/5 rounded-xl px-4 py-3 text-slate-800 dark:text-slate-100 text-sm resize-none placeholder:text-slate-600 dark:placeholder:text-slate-500" />
+                  <label className="text-slate-400 text-xs uppercase tracking-wider font-medium block mb-2">Message</label>
+                  <textarea value={postBody} onChange={e => setPostBody(e.target.value)} rows={4} placeholder="Full notification message..." className="w-full bg-bg-surface border border-slate-300 rounded-lg px-4 py-3 text-slate-800 text-sm resize-none placeholder:text-slate-600 focus:outline-none focus:border-green-600" />
                 </div>
 
                 <button
                   onClick={handlePost}
                   disabled={!postTitle.trim() || !postBody.trim()}
-                  className="w-full py-4 bg-green-600 disabled:opacity-40 rounded-xl text-slate-900 font-bold"
+                  className="w-full py-4 bg-green-600 hover:bg-amber-500 disabled:opacity-40 rounded-lg text-slate-900 font-bold transition-colors"
                 >
                   Post to All Crew
                 </button>

@@ -81,7 +81,15 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
                 <p className="text-primary text-sm font-medium">
                   {new Date(tc.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
-                <p className="text-secondary text-xs mt-0.5">{tc.siteName}</p>
+                <p className="text-secondary text-xs mt-0.5">
+                  {tc.siteName}
+                  {tc.gpsOut?.address && (
+                    <>
+                      <br />
+                      <span className="text-secondary/70">{tc.gpsOut.address}</span>
+                    </>
+                  )}
+                </p>
               </div>
               <div className="text-right">
                 <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-warning-base' : 'text-primary'}`}>

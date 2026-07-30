@@ -116,21 +116,21 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-md bg-surface rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
       >
         {editingPhoto ? (
           <>
             {/* Edit mode */}
             <div className="flex items-center justify-between mb-6">
-              <button onClick={() => setEditingIndex(null)} className="text-green-600 flex items-center gap-1">
+              <button onClick={() => setEditingIndex(null)} className="text-green-600 hover:text-green-700 flex items-center gap-1">
                 <ChevronLeft size={20} /> Back
               </button>
-              <h2 className="text-slate-900 text-xl font-bold">Edit Photo</h2>
+              <h2 className="text-slate-900 text-lg font-bold">Edit Photo</h2>
               <div className="w-6" />
             </div>
 
             <div className="space-y-4">
-              <div className="aspect-video rounded-xl overflow-hidden bg-bg-surface">
+              <div className="aspect-video rounded-xl overflow-hidden bg-white">
                 <img src={editingPhoto.preview} alt="" className="w-full h-full object-cover" />
               </div>
 
@@ -145,7 +145,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     updated[editingIndex!].category = e.target.value as PhotoCategory
                     setPendingPhotos(updated)
                   }}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600 placeholder:text-slate-600"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -166,7 +166,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     setPendingPhotos(updated)
                   }}
                   placeholder="Add a caption..."
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                 />
               </div>
 
@@ -182,14 +182,14 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     updated[editingIndex!].timestamp = new Date(e.target.value).getTime()
                     setPendingPhotos(updated)
                   }}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600 placeholder:text-slate-600"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setEditingIndex(null)}
-                  className="flex-1 bg-bg-surface border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+                  className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
                 >
                   Done
                 </button>
@@ -244,7 +244,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                       key={i}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="relative rounded-lg overflow-hidden bg-bg-surface"
+                      className="relative rounded-lg overflow-hidden bg-white"
                     >
                       <img src={photo.preview} alt="" className="w-full aspect-square object-cover" />
                       <button
@@ -259,7 +259,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
 
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full mb-4 bg-bg-surface border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+                  className="w-full mb-4 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
                 >
                   Add More Photos
                 </button>
@@ -267,7 +267,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                 <div className="flex gap-3">
                   <button
                     onClick={() => setPendingPhotos([])}
-                    className="flex-1 bg-bg-surface border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+                    className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
                   >
                     Clear
                   </button>
