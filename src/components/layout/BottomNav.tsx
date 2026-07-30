@@ -48,7 +48,7 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
                   className={isActive ? 'text-green-600' : 'text-slate-500 group-active:text-slate-300 transition-colors'}
                 />
                 {badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
+                  <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-md min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
                     {badge > 9 ? '9+' : badge}
                   </span>
                 )}

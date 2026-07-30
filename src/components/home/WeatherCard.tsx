@@ -40,7 +40,7 @@ export function WeatherCard() {
         <div className="relative z-10 p-4 h-48 md:h-64 flex flex-col justify-between">
           {/* Top: Time of day label */}
           <div className="flex items-center justify-between">
-            <span className="text-white/70 text-xs font-medium uppercase tracking-wider bg-black/40 px-3 py-1 rounded-full">
+            <span className="text-white/70 text-xs font-medium uppercase tracking-wider bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 shrink-0">
               {timeLabel}
             </span>
           </div>
@@ -124,9 +124,9 @@ export function WeatherCard() {
                       <span className="text-slate-900 dark:text-slate-100 text-sm font-semibold w-14">{d.day}</span>
                       <span className="text-accent-blue text-xs font-bold w-8 text-center">{d.precipChance > 20 ? `${d.precipChance}%` : '–'}</span>
                       <span className="text-slate-600 dark:text-slate-400 text-sm">{d.low}°</span>
-                      <div className="w-14 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden">
+                      <div className="w-14 h-2 rounded-md bg-slate-300 dark:bg-slate-600 overflow-hidden shrink-0">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-accent-blue to-warning-base"
+                          className="h-full rounded-md bg-gradient-to-r from-accent-blue to-warning-base"
                           style={{ width: `${Math.round(((d.high - d.low) / 40) * 100)}%` }}
                         />
                       </div>

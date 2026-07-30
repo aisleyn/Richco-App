@@ -103,7 +103,7 @@ export function HomeScreen({ onNavigate }: Props) {
           <button onClick={() => onNavigate('crew')} className="relative">
             <MessageSquare size={22} className="text-slate-400 dark:text-slate-500" />
             {unreadMessageCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-md w-4 h-4 flex items-center justify-center">
                 {unreadMessageCount}
               </span>
             )}
@@ -111,7 +111,7 @@ export function HomeScreen({ onNavigate }: Props) {
           <button onClick={() => onNavigate('alerts')} className="relative">
             <Bell size={22} className="text-slate-400 dark:text-slate-500" />
             {unreadAlertCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-md w-4 h-4 flex items-center justify-center">
                 {unreadAlertCount}
               </span>
             )}
@@ -169,7 +169,7 @@ export function HomeScreen({ onNavigate }: Props) {
               <h2 className="text-primary font-bold">Select Job Site</h2>
               <button
                 onClick={() => setShowSitePicker(false)}
-                className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center"
+                className="w-8 h-8 rounded-lg bg-elevated flex items-center justify-center"
               >
                 <X size={16} className="text-muted" />
               </button>

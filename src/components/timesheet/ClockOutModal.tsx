@@ -144,7 +144,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="bg-surface w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
+          className="bg-white w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">

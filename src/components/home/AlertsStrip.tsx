@@ -52,7 +52,7 @@ export function AlertsStrip({ onSeeAll, onTapAlert }: Props) {
                   {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}
                 </p>
               </div>
-              {!alert.read && <div className={`w-2 h-2 rounded-full ${cfg.dot} shrink-0 mt-1`} />}
+              {!alert.read && <div className={`w-2 h-2 rounded-sm ${cfg.dot} shrink-0 mt-1`} />}
             </motion.button>
           )
         })}

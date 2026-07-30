@@ -273,7 +273,7 @@ export function PhotosScreen(props: { onNavigate?: (s: string) => void; initialP
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-green-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-green-600 text-slate-900 border border-green-700' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
               >
                 {cat}
               </button>
@@ -439,7 +439,7 @@ export function PhotosScreen(props: { onNavigate?: (s: string) => void; initialP
                       <button
                         key={c}
                         onClick={() => setUploadCategory(c)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${uploadCategory === c ? 'bg-green-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${uploadCategory === c ? 'bg-green-600 text-slate-900 border border-green-700' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
                       >
                         {c}
                       </button>

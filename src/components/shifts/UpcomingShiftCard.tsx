@@ -93,9 +93,9 @@ export function UpcomingShiftCard({ crewMemberId, isLoading = false }: Props) {
           <span className="font-semibold text-slate-700 dark:text-slate-200">Shift Progress</span>
           <span className="text-slate-600 dark:text-slate-400">{Math.round(progressPercent)}%</span>
         </div>
-        <div className="w-full bg-gray-300 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-gray-300 dark:bg-slate-700 rounded-md h-2 overflow-hidden shrink-0">
           <div
-            className="bg-blue-500 h-full transition-all duration-300"
+            className="bg-blue-500 h-full rounded-md transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>

@@ -67,7 +67,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               <motion.div
                 animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-2.5 h-2.5 rounded-full bg-accent-cyan"
+                className="w-2.5 h-2.5 rounded-sm bg-accent-cyan shrink-0"
               />
               <span className="text-accent-cyan text-sm font-bold">Clocked In</span>
             </div>

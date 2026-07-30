@@ -122,9 +122,9 @@ export function ImportPhotosModal({ siteId, userEmail, siteName, onClose, onPhot
                 <span className="text-slate-800 text-sm font-medium">Importing photos...</span>
                 <span className="text-slate-500 text-xs">{progress}%</span>
               </div>
-              <div className="w-full bg-bg-elevated rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-bg-elevated rounded-md h-2 overflow-hidden shrink-0">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-amber-400 transition-all"
+                  className="h-full bg-gradient-to-r from-blue-600 to-amber-400 rounded-md transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>

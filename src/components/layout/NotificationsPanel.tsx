@@ -76,7 +76,7 @@ export function NotificationsPanel({ onNotificationClick }: Props) {
         <Bell size={20} className="text-green-600" />
         <h2 className="font-semibold text-slate-900">Updates</h2>
         {notifications.length > 0 && (
-          <span className="ml-auto text-xs bg-green-600 text-white rounded-full px-2 py-1">
+          <span className="ml-auto text-xs bg-green-600 text-white rounded-md px-2 py-1">
             {notifications.length}
           </span>
         )}
