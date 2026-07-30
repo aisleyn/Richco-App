@@ -144,21 +144,21 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="bg-white w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
+          className="bg-white dark:bg-slate-800 w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-light dark:border-slate-700 shrink-0">
             <div>
-              <h2 className="text-primary font-bold text-base">Clock Out</h2>
-              <p className="text-secondary text-xs">Complete before clocking out</p>
+              <h2 className="text-primary dark:text-slate-100 font-bold text-base">Clock Out</h2>
+              <p className="text-secondary dark:text-slate-400 text-xs">Complete before clocking out</p>
             </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-              <X size={16} className="text-muted" />
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+              <X size={16} className="text-muted dark:text-slate-400" />
             </button>
           </div>
 
           {/* Time summary banner */}
-          <div className="mx-4 mt-3 bg-white rounded-lg p-3 space-y-2 shrink-0">
+          <div className="mx-4 mt-3 bg-white dark:bg-slate-700 rounded-lg p-3 space-y-2 shrink-0">
             <div className="grid grid-cols-3 gap-2">
               <div className="text-center">
                 <p className="text-primary font-mono text-xl font-bold">{formatElapsed(elapsed)}</p>
@@ -188,7 +188,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 <select
                   value={siteId}
                   onChange={e => { setSiteId(e.target.value); setErrors(p => ({ ...p, site: '' })) }}
-                  className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-primary appearance-none text-sm"
+                  className="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-primary dark:text-slate-100 appearance-none text-sm"
                 >
                   {jobSites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
@@ -205,7 +205,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                   <button
                     key={v}
                     onClick={() => setVehicleUsed(v)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-primary-base text-white' : 'bg-white text-muted'}`}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-primary-base text-white' : 'bg-white dark:bg-slate-700 text-muted dark:text-slate-400'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
@@ -216,7 +216,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                   <select
                     value={vehicleId}
                     onChange={e => { setVehicleId(e.target.value); setErrors(p => ({ ...p, vehicle: '' })) }}
-                    className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-primary appearance-none text-sm"
+                    className="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-primary dark:text-slate-100 appearance-none text-sm"
                   >
                     <option value="">Select vehicle...</option>
                     {mockVehicles.map(v => <option key={v.id} value={v.id}>{v.name} – {v.plate}</option>)}
@@ -235,7 +235,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                   <button
                     key={v}
                     onClick={() => { setBreakTaken(v); setErrors(p => ({ ...p, break: '' })) }}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${breakTaken === v ? (v === 'yes' ? 'bg-success-base/20 text-success-base border border-success-base/40' : 'bg-error-base/20 text-error-base border border-error-base/40') : 'bg-white text-muted border border-transparent'}`}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${breakTaken === v ? (v === 'yes' ? 'bg-success-base/20 text-success-base border border-success-base/40' : 'bg-error-base/20 text-error-base border border-error-base/40') : 'bg-white dark:bg-slate-700 text-muted dark:text-slate-400 border border-transparent'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
@@ -252,7 +252,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 onChange={e => setConcerns(e.target.value)}
                 placeholder="Any safety issues, equipment problems, or incidents to report..."
                 rows={2}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-primary text-sm resize-none placeholder:text-muted"
+                className="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-primary dark:text-slate-100 text-sm resize-none placeholder:text-muted dark:placeholder:text-slate-400"
               />
             </div>
 
@@ -264,7 +264,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 onChange={e => { setSummary(e.target.value); setErrors(p => ({ ...p, summary: '' })) }}
                 placeholder="Describe work completed today..."
                 rows={3}
-                className={`w-full bg-white border rounded-lg px-3 py-2 text-primary text-sm resize-none placeholder:text-muted ${errors.summary ? 'border-error-base/50' : 'border-slate-300'}`}
+                className={`w-full bg-white dark:bg-slate-700 border rounded-lg px-3 py-2 text-primary dark:text-slate-100 text-sm resize-none placeholder:text-muted dark:placeholder:text-slate-400 ${errors.summary ? 'border-error-base/50' : 'border-slate-300 dark:border-slate-600'}`}
               />
               {errors.summary && <p className="text-error-base text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.summary}</p>}
             </div>
@@ -295,7 +295,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
               <button
                 onClick={() => fileRef.current?.click()}
-                className={`w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed rounded-lg text-sm font-medium transition-colors ${errors.photos ? 'border-error-base/50 text-error-base' : 'border-white/10 text-muted active:border-primary-base/50 active:text-primary-base'}`}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed rounded-lg text-sm font-medium transition-colors ${errors.photos ? 'border-error-base/50 text-error-base' : 'border-slate-300 dark:border-slate-600 text-muted dark:text-slate-400 active:border-primary-base/50 active:text-primary-base'}`}
               >
                 <Camera size={14} />
                 {photos.length === 0 ? 'Add Photo' : 'Add Another Photo'}
@@ -307,7 +307,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-border-light shrink-0">
+          <div className="px-4 py-3 border-t border-border-light dark:border-slate-700 shrink-0">
             {clockOutGps && isGeoLoading && (
               <div className="mb-2 p-2 bg-primary-base/10 border border-primary-base/30 rounded-lg flex items-center gap-2">
                 <MapPin size={12} className="text-primary-base animate-pulse" />

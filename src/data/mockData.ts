@@ -4,7 +4,7 @@ export const currentUser: User = {
   id: 'admin-aisley',
   firstName: 'Aisley',
   lastName: 'Nolan',
-  role: 'admin',
+  role: 'office_staff',
   phone: '',
   email: 'aisley@richcogroup.com',
   certifications: [],
@@ -177,14 +177,14 @@ export const mockWeather: WeatherData = {
 export const mockAlerts: Alert[] = []
 
 export const mockCrew: CrewMember[] = [
-  { id: 'u1', firstName: 'Jake', lastName: 'Morrison', role: 'supervisor', roleLabel: 'Site Supervisor', phone: '(604) 555-0182', email: 'j.morrison@richco.ca', status: 'onsite', currentSite: 'Grandview Heights Phase 3' },
-  { id: 'u3', firstName: 'Marcus', lastName: 'Webb', role: 'field', roleLabel: 'Labourer', phone: '(604) 555-0317', email: 'm.webb@richco.ca', status: 'onsite', currentSite: 'Port Kells Industrial', clockedInAt: Date.now() - 1000 * 60 * 95 },
-  { id: 'u4', firstName: 'Priya', lastName: 'Sharma', role: 'field', roleLabel: 'Electrician', phone: '(604) 555-0448', email: 'p.sharma@richco.ca', status: 'enroute', currentSite: 'Grandview Heights Phase 3' },
-  { id: 'u5', firstName: 'Connor', lastName: 'Buell', role: 'field', roleLabel: 'Carpenter', phone: '(604) 555-0529', email: 'c.buell@richco.ca', status: 'available' },
-  { id: 'u6', firstName: 'Sandra', lastName: 'Liu', role: 'admin', roleLabel: 'Office Admin', phone: '(604) 555-0634', email: 's.liu@richco.ca', status: 'available' },
-  { id: 'u7', firstName: 'Dave', lastName: 'Richco', role: 'ceo', roleLabel: 'CEO', phone: '(604) 555-0001', email: 'd.richco@richco.ca', status: 'available' },
-  { id: 'u8', firstName: 'Aaron', lastName: 'Trent', role: 'field', roleLabel: 'Equipment Operator', phone: '(604) 555-0712', email: 'a.trent@richco.ca', status: 'off' },
-  { id: 'u9', firstName: 'Benny', lastName: 'Park', role: 'field', roleLabel: 'Labourer', phone: '(604) 555-0866', email: 'b.park@richco.ca', status: 'onsite', currentSite: 'Clayton Townhomes', clockedInAt: Date.now() - 1000 * 60 * 60 },
+  { id: 'u1', firstName: 'Jake', lastName: 'Morrison', role: 'leadership', roleLabel: 'Site Supervisor', phone: '(604) 555-0182', email: 'j.morrison@richco.ca', status: 'onsite', currentSite: 'Grandview Heights Phase 3' },
+  { id: 'u3', firstName: 'Marcus', lastName: 'Webb', role: 'site_employee', roleLabel: 'Labourer', phone: '(604) 555-0317', email: 'm.webb@richco.ca', status: 'onsite', currentSite: 'Port Kells Industrial', clockedInAt: Date.now() - 1000 * 60 * 95 },
+  { id: 'u4', firstName: 'Priya', lastName: 'Sharma', role: 'site_employee', roleLabel: 'Electrician', phone: '(604) 555-0448', email: 'p.sharma@richco.ca', status: 'enroute', currentSite: 'Grandview Heights Phase 3' },
+  { id: 'u5', firstName: 'Connor', lastName: 'Buell', role: 'site_employee', roleLabel: 'Carpenter', phone: '(604) 555-0529', email: 'c.buell@richco.ca', status: 'available' },
+  { id: 'u6', firstName: 'Sandra', lastName: 'Liu', role: 'office_staff', roleLabel: 'Office Admin', phone: '(604) 555-0634', email: 's.liu@richco.ca', status: 'available' },
+  { id: 'u7', firstName: 'Dave', lastName: 'Richco', role: 'leadership', roleLabel: 'CEO', phone: '(604) 555-0001', email: 'd.richco@richco.ca', status: 'available' },
+  { id: 'u8', firstName: 'Aaron', lastName: 'Trent', role: 'site_employee', roleLabel: 'Equipment Operator', phone: '(604) 555-0712', email: 'a.trent@richco.ca', status: 'off' },
+  { id: 'u9', firstName: 'Benny', lastName: 'Park', role: 'site_employee', roleLabel: 'Labourer', phone: '(604) 555-0866', email: 'b.park@richco.ca', status: 'onsite', currentSite: 'Clayton Townhomes', clockedInAt: Date.now() - 1000 * 60 * 60 },
 ]
 
 export const mockThreads: MessageThread[] = []

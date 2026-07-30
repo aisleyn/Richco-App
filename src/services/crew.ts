@@ -98,7 +98,7 @@ export async function addCrewMember(data: {
   firstName: string
   lastName: string
   email: string
-  role?: 'field' | 'supervisor' | 'admin' | 'ceo'
+  role?: 'site_employee' | 'office_staff' | 'leadership'
   phone?: string
   isAdmin?: boolean
 }): Promise<StoredCrewMember> {
@@ -112,7 +112,7 @@ export async function addCrewMember(data: {
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
-    role: data.role || 'field',
+    role: data.role || 'site_employee',
     phone: data.phone,
     isAdmin: data.isAdmin,
   })
@@ -182,7 +182,7 @@ export async function ensureCrewMemberExists(
     firstName: firstName || email.split('@')[0],
     lastName: lastName || 'User',
     email,
-    role: 'field',
+    role: 'site_employee',
   })
 }
 

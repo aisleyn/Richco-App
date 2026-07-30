@@ -26,8 +26,8 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
       const admin = await isUserAdmin(currentUserEmail)
       setIsAdminUser(admin)
       const crew = await getAllCrew()
-      const userIsCEO = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'ceo'
-      setIsCEO(userIsCEO ?? false)
+      const userIsLeadership = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())?.role === 'leadership'
+      setIsCEO(userIsLeadership ?? false)
     }
     loadUserStatus()
   }, [currentUserEmail])

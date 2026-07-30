@@ -32,10 +32,9 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
       if (!formData.lastName.trim()) throw new Error('Last name is required')
 
       const roleLabels: Record<string, string> = {
-        field: 'Field Worker',
-        supervisor: 'Supervisor',
-        admin: 'Administrator',
-        ceo: 'CEO',
+        site_employee: 'Site Employee',
+        office_staff: 'Office Staff',
+        leadership: 'Leadership',
       }
 
       const result = await updateCrewMember(member.email, {
@@ -180,10 +179,9 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
                 onChange={e => setFormData({ ...formData, role: e.target.value as any })}
                 className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
               >
-                <option value="field">Field Worker</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="admin">Administrator</option>
-                <option value="ceo">CEO</option>
+                <option value="site_employee">Site Employee</option>
+                <option value="office_staff">Office Staff</option>
+                <option value="leadership">Leadership</option>
               </select>
             </div>
 

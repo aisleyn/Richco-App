@@ -33,7 +33,7 @@ export function RegistrationModal({ email, displayName, onComplete }: Props) {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email,
-        role: 'field',
+        role: 'site_employee',
         phone: formData.phone.trim(),
       })
 

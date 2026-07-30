@@ -56,15 +56,14 @@ function getOnlineStatus(member: StoredCrewMember): { label: string; color: stri
   return statusConfig[member.status] || statusConfig.available
 }
 
-const roleFilters = ['All', 'Field Crew', 'Supervisor', 'Office', 'Leadership'] as const
+const roleFilters = ['All', 'Site Employee', 'Office Staff', 'Leadership'] as const
 type RoleFilter = typeof roleFilters[number]
 
 function roleMatch(member: StoredCrewMember, filter: RoleFilter) {
   if (filter === 'All') return true
-  if (filter === 'Field Crew') return member.role === 'field'
-  if (filter === 'Supervisor') return member.role === 'supervisor'
-  if (filter === 'Office') return member.role === 'admin'
-  if (filter === 'Leadership') return member.role === 'ceo' || member.role === 'supervisor'
+  if (filter === 'Site Employee') return member.role === 'site_employee'
+  if (filter === 'Office Staff') return member.role === 'office_staff'
+  if (filter === 'Leadership') return member.role === 'leadership'
   return true
 }
 
@@ -144,7 +143,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
     loadCrew()
   }, [setUnreadMessageCount, currentUserEmail])
   const currentUserMember = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())
-  const canViewTimesheets = isAdmin || currentUserMember?.role === 'supervisor' || currentUserMember?.role === 'ceo'
+  const canViewTimesheets = isAdmin || currentUserMember?.role === 'leadership'
 
   const filtered = crew
     .filter(m => roleMatch(m, roleFilter))

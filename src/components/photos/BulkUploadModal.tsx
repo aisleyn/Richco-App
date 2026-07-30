@@ -116,7 +116,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
       >
         {editingPhoto ? (
           <>
@@ -125,12 +125,12 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
               <button onClick={() => setEditingIndex(null)} className="text-green-600 hover:text-green-700 flex items-center gap-1">
                 <ChevronLeft size={20} /> Back
               </button>
-              <h2 className="text-slate-900 text-lg font-bold">Edit Photo</h2>
+              <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold">Edit Photo</h2>
               <div className="w-6" />
             </div>
 
             <div className="space-y-4">
-              <div className="aspect-video rounded-xl overflow-hidden bg-white">
+              <div className="aspect-video rounded-xl overflow-hidden bg-white dark:bg-slate-700">
                 <img src={editingPhoto.preview} alt="" className="w-full h-full object-cover" />
               </div>
 
@@ -145,7 +145,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     updated[editingIndex!].category = e.target.value as PhotoCategory
                     setPendingPhotos(updated)
                   }}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600 placeholder:text-slate-600"
+                  className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2.5 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 placeholder:text-slate-600 dark:placeholder:text-slate-400"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -166,7 +166,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     setPendingPhotos(updated)
                   }}
                   placeholder="Add a caption..."
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
+                  className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2.5 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-400 focus:outline-none focus:border-green-600"
                 />
               </div>
 
@@ -182,14 +182,14 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     updated[editingIndex!].timestamp = new Date(e.target.value).getTime()
                     setPendingPhotos(updated)
                   }}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600 placeholder:text-slate-600"
+                  className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2.5 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 placeholder:text-slate-600 dark:placeholder:text-slate-400"
                 />
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setEditingIndex(null)}
-                  className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+                  className="flex-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-800 dark:text-slate-100 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
                 >
                   Done
                 </button>
@@ -200,13 +200,13 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
           <>
             {/* Upload mode */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-slate-900 text-xl font-bold">Upload Photos</h2>
-              <button onClick={onClose} className="text-slate-500 hover:text-slate-700">
+              <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold">Upload Photos</h2>
+              <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <X size={20} />
               </button>
             </div>
 
-            <p className="text-slate-500 text-sm mb-4">Project: <span className="text-slate-800 font-semibold">{site?.name}</span></p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Project: <span className="text-slate-800 dark:text-slate-100 font-semibold">{site?.name}</span></p>
 
             {pendingPhotos.length === 0 ? (
               <div
@@ -215,12 +215,12 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                  dragActive ? 'border-blue-600 bg-green-600/5' : 'border-slate-200'
+                  dragActive ? 'border-blue-600 bg-green-600/5' : 'border-slate-200 dark:border-slate-600'
                 }`}
               >
-                <Upload size={32} className="mx-auto text-slate-400 mb-3" />
-                <p className="text-slate-800 font-medium mb-1">Drag photos here or click to select</p>
-                <p className="text-slate-500 text-sm mb-4">You can select multiple files at once</p>
+                <Upload size={32} className="mx-auto text-slate-400 dark:text-slate-500 mb-3" />
+                <p className="text-slate-800 dark:text-slate-100 font-medium mb-1">Drag photos here or click to select</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">You can select multiple files at once</p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-green-600 hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
@@ -244,7 +244,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                       key={i}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="relative rounded-lg overflow-hidden bg-white"
+                      className="relative rounded-lg overflow-hidden bg-white dark:bg-slate-700"
                     >
                       <img src={photo.preview} alt="" className="w-full aspect-square object-cover" />
                       <button
@@ -259,7 +259,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
 
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full mb-4 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+                  className="w-full mb-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-800 dark:text-slate-100 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
                 >
                   Add More Photos
                 </button>
@@ -267,7 +267,7 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                 <div className="flex gap-3">
                   <button
                     onClick={() => setPendingPhotos([])}
-                    className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm hover:bg-bg-elevated transition-colors"
+                    className="flex-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-800 dark:text-slate-100 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
                   >
                     Clear
                   </button>

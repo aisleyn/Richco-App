@@ -211,7 +211,7 @@ export interface CrewMemberData {
   firstName: string
   lastName: string
   phone?: string
-  role: 'field' | 'supervisor' | 'admin' | 'ceo'
+  role: 'site_employee' | 'office_staff' | 'leadership'
   status?: string
   isAdmin?: boolean
   createdAt?: string
@@ -268,7 +268,7 @@ export async function addCrewMember(data: Omit<CrewMemberData, 'id'>): Promise<C
       first_name: data.firstName,
       last_name: data.lastName,
       phone: data.phone || '',
-      role: data.role || 'field',
+      role: data.role || 'site_employee',
       status: data.status || 'available',
       is_admin: data.isAdmin || false,
     }
