@@ -155,23 +155,23 @@ export function HomeScreen({ onNavigate }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-end"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setShowSitePicker(false)}
         >
           <motion.div
-            initial={{ y: 400 }}
-            animate={{ y: 0 }}
-            exit={{ y: 400 }}
-            className="w-full bg-bg-elevated rounded-t-3xl p-4 max-h-[70vh] overflow-y-auto"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="w-full max-w-md bg-surface rounded-2xl p-4 max-h-[90vh] overflow-y-auto shadow-md"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-slate-900 text-lg font-bold">Select Job Site</h2>
+              <h2 className="text-primary font-bold">Select Job Site</h2>
               <button
                 onClick={() => setShowSitePicker(false)}
-                className="text-slate-400 hover:text-slate-800"
+                className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center"
               >
-                <X size={20} />
+                <X size={16} className="text-muted" />
               </button>
             </div>
 

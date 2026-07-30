@@ -96,20 +96,20 @@ export function ImportPhotosModal({ siteId, userEmail, siteName, onClose, onPhot
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: 400, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 400, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full sm:w-full sm:max-w-md bg-bg-base rounded-t-3xl sm:rounded-2xl p-6 border border-slate-200"
+        className="w-full max-w-md bg-surface rounded-2xl p-6 shadow-md"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-slate-900 text-xl font-bold">Import Photos</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-700">
-            <X size={20} />
+          <h2 className="text-primary font-bold">Import Photos</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center">
+            <X size={16} className="text-muted" />
           </button>
         </div>
 

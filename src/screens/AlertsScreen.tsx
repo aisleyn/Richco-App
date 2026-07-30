@@ -304,18 +304,18 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
       {/* Compose modal */}
       <AnimatePresence>
         {showCompose && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end">
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="bg-bg-base dark:bg-bg-base-dark w-full rounded-t-3xl overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              className="bg-surface w-full max-w-md rounded-2xl overflow-hidden shadow-md"
             >
-              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200 dark:border-slate-700">
-                <h2 className="text-slate-800 dark:text-slate-100 font-bold text-lg">Post Notification</h2>
-                <button onClick={() => setShowCompose(false)} className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center">
-                  <X size={18} className="text-slate-400" />
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+                <h2 className="text-primary font-bold">Post Notification</h2>
+                <button onClick={() => setShowCompose(false)} className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center">
+                  <X size={16} className="text-muted" />
                 </button>
               </div>
 

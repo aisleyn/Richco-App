@@ -108,15 +108,15 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center sm:justify-center"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: 400, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 400, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full sm:w-full sm:max-w-2xl bg-bg-base rounded-t-3xl sm:rounded-2xl p-6 border border-slate-200 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md bg-surface rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
       >
         {editingPhoto ? (
           <>
