@@ -130,7 +130,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
               onClick={() => setActiveTab(tab.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-slate-900'
+                  ? 'bg-green-600 text-slate-900'
                   : 'bg-bg-surface border border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -152,7 +152,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                     type="text"
                     value={personal.firstName}
                     onChange={e => setPersonal({ ...personal, firstName: e.target.value })}
-                    className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                    className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                   />
                 </div>
                 <div>
@@ -163,7 +163,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                     type="text"
                     value={personal.lastName}
                     onChange={e => setPersonal({ ...personal, lastName: e.target.value })}
-                    className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                    className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                   />
                 </div>
               </div>
@@ -185,7 +185,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   value={personal.phone}
                   onChange={e => setPersonal({ ...personal, phone: e.target.value })}
                   placeholder="(604) 555-0000"
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                 />
               </div>
             </div>
@@ -201,7 +201,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                 <select
                   value={employment.role}
                   onChange={e => setEmployment({ ...employment, role: e.target.value as any })}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 >
                   <option value="field">Field Worker</option>
                   <option value="supervisor">Supervisor</option>
@@ -218,7 +218,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   type="date"
                   value={employment.hireDate}
                   onChange={e => setEmployment({ ...employment, hireDate: e.target.value })}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 />
               </div>
 
@@ -263,7 +263,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                       setEmployment({ ...employment, salary: value })
                     }
                   }}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 />
               </div>
             </div>
@@ -281,7 +281,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   value={emergency.name}
                   onChange={e => setEmergency({ ...emergency, name: e.target.value })}
                   placeholder="Full name"
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                 />
               </div>
               <div>
@@ -293,7 +293,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   value={emergency.relationship}
                   onChange={e => setEmergency({ ...emergency, relationship: e.target.value })}
                   placeholder="e.g., Spouse, Parent, Sibling"
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                 />
               </div>
               <div>
@@ -305,7 +305,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   value={emergency.phone}
                   onChange={e => setEmergency({ ...emergency, phone: e.target.value })}
                   placeholder="(604) 555-0000"
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                 />
               </div>
             </div>
@@ -327,7 +327,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                           setQualifications(newQuals)
                         }}
                         placeholder="Certification name"
-                        className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
+                        className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                       />
                     </div>
                     <button
@@ -348,19 +348,19 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                         newQuals[i].expiryDate = e.target.value
                         setQualifications(newQuals)
                       }}
-                      className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                      className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                     />
                   </div>
                 </div>
               ))}
 
-              <div className="p-4 bg-blue-600/5 border border-blue-600/20 rounded-lg space-y-3">
+              <div className="p-4 bg-green-600/5 border border-blue-600/20 rounded-lg space-y-3">
                 <input
                   type="text"
                   value={newQual.name}
                   onChange={e => setNewQual({ ...newQual, name: e.target.value })}
                   placeholder="Add new certification"
-                  className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
                 />
                 <div>
                   <label className="text-slate-500 text-xs mb-1 block">Expiry Date</label>
@@ -368,7 +368,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                     type="date"
                     value={newQual.expiryDate}
                     onChange={e => setNewQual({ ...newQual, expiryDate: e.target.value })}
-                    className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                    className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                   />
                 </div>
                 <button
@@ -379,7 +379,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                       setNewQual({ name: '', expiryDate: '' })
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-amber-500 text-slate-900 rounded-lg px-4 py-2 font-medium text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-amber-500 text-slate-900 rounded-lg px-4 py-2 font-medium text-sm transition-colors"
                 >
                   <Plus size={14} /> Add Certification
                 </button>
@@ -413,7 +413,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   min="0"
                   value={leave.annualAllowance}
                   onChange={e => setLeave({ ...leave, annualAllowance: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 />
               </div>
               <div>
@@ -425,7 +425,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   min="0"
                   value={leave.used}
                   onChange={e => setLeave({ ...leave, used: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 />
               </div>
               <div>
@@ -437,7 +437,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   min="0"
                   value={leave.approved}
                   onChange={e => setLeave({ ...leave, approved: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 />
               </div>
               <div>
@@ -449,7 +449,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                   min="0"
                   value={leave.pending}
                   onChange={e => setLeave({ ...leave, pending: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                 />
               </div>
             </div>
@@ -466,7 +466,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-green-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
             >
               {loading && <Loader size={16} className="animate-spin" />}
               Save Changes

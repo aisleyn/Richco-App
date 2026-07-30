@@ -95,7 +95,7 @@ export function ShiftRosterScreen() {
               key={project.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-bg-surface dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+              className="bg-bg-surface dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-md"
             >
               <button
                 onClick={() => toggleProject(project.id)}

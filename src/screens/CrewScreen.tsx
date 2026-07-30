@@ -45,7 +45,7 @@ const statusConfig: Record<string, { label: string; color: string; text: string 
   online:    { label: 'Online',    color: 'bg-emerald-400', text: 'text-emerald-400' },
   onsite:    { label: 'On Site',   color: 'bg-emerald-400', text: 'text-emerald-400' },
   enroute:   { label: 'En Route',  color: 'bg-amber-400',   text: 'text-amber-400' },
-  available: { label: 'Available', color: 'bg-blue-400',    text: 'text-blue-400' },
+  available: { label: 'Available', color: 'bg-green-400',    text: 'text-green-400' },
   off:       { label: 'Off Today', color: 'bg-slate-500',   text: 'text-slate-500' },
 }
 
@@ -218,7 +218,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
           <div className="flex flex-col h-[calc(100vh-5rem)] -mx-4">
             {/* Thread header */}
             <div className="flex items-center gap-3 px-4 pb-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
-              <button onClick={() => setActiveThreadId(null)} className="text-blue-600">
+              <button onClick={() => setActiveThreadId(null)} className="text-green-600">
                 <ChevronLeft size={22} />
               </button>
               <Avatar name={otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : 'User'} size={36} />
@@ -239,7 +239,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     {!isMe && <Avatar name={msg.senderName} size={28} />}
                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                       {!isMe && <p className="text-slate-500 dark:text-slate-400 text-[10px] px-1">{msg.senderName}</p>}
-                      <div className={`px-4 py-2.5 rounded-2xl ${isMe ? 'bg-blue-600 text-slate-900 rounded-br-md' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-800 dark:text-slate-100 rounded-bl-md'}`}>
+                      <div className={`px-4 py-2.5 rounded-2xl shadow-md ${isMe ? 'bg-green-600 text-slate-900 rounded-br-md' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-800 dark:text-slate-100 rounded-bl-md'}`}>
                         <p className="text-sm">{msg.body}</p>
                       </div>
                       <p className="text-slate-600 dark:text-slate-500 text-[10px] px-1">{formatDistanceToNow(msg.timestamp, { addSuffix: true })}</p>
@@ -262,7 +262,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                 <button
                   onClick={sendMessage}
                   disabled={!messageInput.trim()}
-                  className="w-8 h-8 rounded-full bg-blue-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity"
+                  className="w-8 h-8 rounded-full bg-green-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity"
                 >
                   <Send size={14} className="text-slate-900" />
                 </button>
@@ -277,7 +277,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                 {isAdmin && (
                   <button
                     onClick={() => setShowAddCrew(true)}
-                    className="bg-blue-600 hover:bg-amber-500 text-slate-900 rounded-lg px-3 py-2 flex items-center gap-2 text-xs font-semibold transition-colors"
+                    className="bg-green-600 hover:bg-green-700 text-slate-900 rounded-lg px-3 py-2 flex items-center gap-2 text-xs font-semibold transition-colors"
                   >
                     <Plus size={14} /> Add
                   </button>
@@ -287,7 +287,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     <button
                       key={t}
                       onClick={() => setTab(t)}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-blue-600 text-slate-900' : 'text-slate-400 dark:text-slate-500'}`}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-green-600 text-slate-900' : 'text-slate-400 dark:text-slate-500'}`}
                     >
                       {t}
                     </button>
@@ -316,7 +316,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                     <button
                       key={f}
                       onClick={() => setRoleFilter(f)}
-                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${roleFilter === f ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
+                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${roleFilter === f ? 'bg-green-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
                     >
                       {f}
                     </button>
@@ -334,7 +334,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
                         onClick={() => isAdmin && setViewingProfile(member)}
-                        className={`bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3 group ${isAdmin ? 'cursor-pointer hover:border-blue-600/50 transition-colors' : ''}`}
+                        className={`bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3 group shadow-md ${isAdmin ? 'cursor-pointer hover:border-green-600/50 transition-colors' : ''}`}
                       >
                         <div className="relative">
                           <Avatar name={`${member.firstName} ${member.lastName}`} size={42} />
@@ -352,7 +352,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                               e.stopPropagation()
                               startConversation(member)
                             }}
-                            className="p-1.5 rounded-lg bg-blue-600/10 text-blue-600 hover:bg-blue-600/20 transition-colors"
+                            className="p-1.5 rounded-lg bg-green-600/10 text-green-600 hover:bg-green-600/20 transition-colors"
                             title="Message"
                           >
                             <MessageCircle size={14} />
@@ -391,7 +391,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                         const threadId = getThreadId(String(currentUserMember?.id ?? 'user'), String(conv.member.id))
                         setActiveThreadId(threadId)
                       }}
-                      className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors"
+                      className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors shadow-md"
                     >
                       <Avatar name={`${conv.member.firstName} ${conv.member.lastName}`} size={44} />
                       <div className="flex-1 min-w-0">

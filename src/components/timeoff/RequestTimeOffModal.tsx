@@ -102,7 +102,7 @@ export function RequestTimeOffModal({ onClose, onRequestSubmitted }: Props) {
                   key={type.value}
                   className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                     formData.leaveType === type.value
-                      ? 'border-blue-600 bg-blue-600/10'
+                      ? 'border-blue-600 bg-green-600/10'
                       : 'border-slate-200 bg-bg-surface hover:bg-slate-50'
                   }`}
                 >
@@ -133,7 +133,7 @@ export function RequestTimeOffModal({ onClose, onRequestSubmitted }: Props) {
                 type="date"
                 value={formData.startDate}
                 onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
               />
             </div>
             <div>
@@ -144,16 +144,16 @@ export function RequestTimeOffModal({ onClose, onRequestSubmitted }: Props) {
                 type="date"
                 value={formData.endDate}
                 onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
               />
             </div>
           </div>
 
           {/* Total Days */}
           {totalDays > 0 && (
-            <div className="bg-blue-600/10 border border-blue-600/30 rounded-lg p-4">
+            <div className="bg-green-600/10 border border-blue-600/30 rounded-lg p-4">
               <p className="text-slate-600 text-sm font-medium">Total Days</p>
-              <p className="text-3xl font-bold text-blue-600 mt-1">{totalDays}</p>
+              <p className="text-3xl font-bold text-green-600 mt-1">{totalDays}</p>
             </div>
           )}
 
@@ -167,7 +167,7 @@ export function RequestTimeOffModal({ onClose, onRequestSubmitted }: Props) {
               onChange={e => setFormData({ ...formData, reason: e.target.value })}
               placeholder="Please provide a reason for your time-off request..."
               rows={4}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600 resize-none"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600 resize-none"
             />
           </div>
 
@@ -182,7 +182,7 @@ export function RequestTimeOffModal({ onClose, onRequestSubmitted }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-green-600 hover:bg-amber-500 disabled:opacity-50 rounded-lg px-4 py-2.5 text-slate-900 font-medium text-sm transition-colors flex items-center justify-center gap-2"
             >
               {loading && <Loader size={16} className="animate-spin" />}
               Submit Request

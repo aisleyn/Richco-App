@@ -64,8 +64,8 @@ export function SetPasswordModal({ email, onComplete }: Props) {
         {!success ? (
           <div className="bg-bg-base rounded-2xl p-8 shadow-2xl border border-slate-200">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
-                <Lock size={32} className="text-blue-600" />
+              <div className="w-16 h-16 rounded-2xl bg-green-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
+                <Lock size={32} className="text-green-600" />
               </div>
               <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Your Password</h1>
               <p className="text-slate-600">Set a secure password for your account</p>
@@ -94,7 +94,7 @@ export function SetPasswordModal({ email, onComplete }: Props) {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                   minLength={8}
                 />
                 <p className="text-xs text-slate-500 mt-1">At least 8 characters</p>
@@ -108,7 +108,7 @@ export function SetPasswordModal({ email, onComplete }: Props) {
                   onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                   minLength={8}
                 />
               </div>
@@ -116,7 +116,7 @@ export function SetPasswordModal({ email, onComplete }: Props) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-6 bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="w-full mt-6 bg-green-600 text-white py-2.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

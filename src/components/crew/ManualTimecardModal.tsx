@@ -142,7 +142,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
             <select
               value={formData.employeeEmail}
               onChange={e => setFormData({ ...formData, employeeEmail: e.target.value })}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
             >
               <option value="">Select an employee...</option>
               {crew.map(member => (
@@ -161,7 +161,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
               type="date"
               value={formData.date}
               onChange={e => setFormData({ ...formData, date: e.target.value })}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
             />
           </div>
 
@@ -174,7 +174,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
                 type="time"
                 value={formData.clockInTime}
                 onChange={e => setFormData({ ...formData, clockInTime: e.target.value })}
-                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
               />
             </div>
             <div>
@@ -185,7 +185,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
                 type="time"
                 value={formData.clockOutTime}
                 onChange={e => setFormData({ ...formData, clockOutTime: e.target.value })}
-                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+                className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
               />
             </div>
           </div>
@@ -200,7 +200,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
               max="480"
               value={formData.breakMinutes}
               onChange={e => setFormData({ ...formData, breakMinutes: parseInt(e.target.value) || 0 })}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
             />
           </div>
 
@@ -211,7 +211,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
             <select
               value={formData.siteName}
               onChange={e => setFormData({ ...formData, siteName: e.target.value })}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
             >
               <option value="">Select a site...</option>
               {jobSites.filter(site => site.status === 'active').map(site => (
@@ -227,7 +227,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
             <select
               value={formData.vehicleUsed}
               onChange={e => setFormData({ ...formData, vehicleUsed: e.target.value })}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
             >
               <option value="">Select a vehicle...</option>
               <option value="No Company Vehicle">No Company Vehicle</option>
@@ -250,7 +250,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
               onChange={e => setFormData({ ...formData, shiftSummary: e.target.value })}
               placeholder="What was accomplished..."
               rows={2}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600 resize-none"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600 resize-none"
             />
           </div>
 
@@ -263,7 +263,7 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
               onChange={e => setFormData({ ...formData, concerns: e.target.value })}
               placeholder="Any safety or other concerns..."
               rows={2}
-              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-blue-600 resize-none"
+              className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600 resize-none"
             />
           </div>
 

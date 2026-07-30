@@ -184,7 +184,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
         >
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-colors"
           >
             <Plus size={16} /> Add Crew Member
           </button>
@@ -231,7 +231,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="crew@example.com"
                   disabled={submitting}
-                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
                 />
               </div>
 
@@ -245,7 +245,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="John Doe"
                   disabled={submitting}
-                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                  className="w-full px-3 py-2 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
                 />
               </div>
 
@@ -253,7 +253,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                  className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
                 >
                   {submitting ? 'Creating...' : 'Create & Send Invite'}
                 </button>
@@ -304,7 +304,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                   <div className="flex gap-2">
                     <button
                       onClick={() => openPasswordModal(crew)}
-                      className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 bg-blue-500/10 hover:bg-green-500/20 text-blue-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
                     >
                       <Lock size={12} /> Set Password
                     </button>
@@ -349,7 +349,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter password"
                       disabled={settingPassword}
-                      className="w-full px-3 py-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
                       autoFocus
                     />
                   </div>
@@ -358,7 +358,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                     <button
                       type="submit"
                       disabled={settingPassword || !newPassword}
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                      className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
                     >
                       {settingPassword ? 'Setting...' : 'Set Password'}
                     </button>

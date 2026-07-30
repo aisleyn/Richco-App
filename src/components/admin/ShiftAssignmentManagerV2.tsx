@@ -178,7 +178,7 @@ export function ShiftAssignmentManagerV2() {
                         {Array.from(selectedForThisShift).map(crewId => {
                           const crew = crews.find(c => c.id === crewId)
                           return crew ? (
-                            <span key={crewId} className="bg-blue-600 text-white text-xs px-2 py-1 rounded font-semibold">
+                            <span key={crewId} className="bg-green-600 text-white text-xs px-2 py-1 rounded font-semibold">
                               {crew.firstName} {crew.lastName}
                             </span>
                           ) : null
@@ -215,7 +215,7 @@ export function ShiftAssignmentManagerV2() {
                       {selectedForThisShift.size > 0 && (
                         <button
                           onClick={() => handleAssignCrew(shiftId)}
-                          className="mt-2 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold transition-colors flex items-center justify-center gap-1"
+                          className="mt-2 w-full px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-semibold transition-colors flex items-center justify-center gap-1"
                         >
                           <Plus size={14} /> Assign Selected
                         </button>

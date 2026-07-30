@@ -202,7 +202,7 @@ function NestedReplyComponent({ comment, currentUserName, currentUserEmail, dept
 
         <button
           onClick={() => setShowReplyForm(!showReplyForm)}
-          className="ml-auto text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-medium"
+          className="ml-auto text-green-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-medium"
         >
           Reply
         </button>
@@ -223,7 +223,7 @@ function NestedReplyComponent({ comment, currentUserName, currentUserEmail, dept
               placeholder="Write a reply..."
               rows={2}
               disabled={submitting}
-              className="w-full px-3 py-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none text-sm disabled:opacity-50"
+              className="w-full px-3 py-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 resize-none text-sm disabled:opacity-50"
             />
             <div className="flex justify-end gap-2">
               <button
@@ -236,7 +236,7 @@ function NestedReplyComponent({ comment, currentUserName, currentUserEmail, dept
               <button
                 onClick={handleSubmitReply}
                 disabled={!replyText.trim() || submitting}
-                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-xs font-medium transition-colors"
               >
                 <Send size={12} />
                 {submitting ? 'Posting...' : 'Reply'}

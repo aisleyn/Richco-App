@@ -141,14 +141,14 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {unreadAlertCount > 0 && (
-              <button onClick={markAllAlertsRead} className="text-blue-600 text-xs font-medium">
+              <button onClick={markAllAlertsRead} className="text-green-600 text-xs font-medium">
                 Mark All Read
               </button>
             )}
             {isSupervisor && (
               <button
                 onClick={() => setShowCompose(true)}
-                className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center"
+                className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center"
               >
                 <Plus size={18} className="text-slate-900" />
               </button>
@@ -177,7 +177,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden`}
+                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden shadow-md`}
                   >
                     <button
                       onClick={() => {
@@ -246,7 +246,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden`}
+                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden shadow-md`}
                   >
                     <button
                       onClick={() => handleExpand(alert)}
@@ -328,7 +328,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                       <button
                         key={t}
                         onClick={() => setPostType(t)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-blue-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${postType === t ? 'bg-green-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
                       >
                         {t}
                       </button>
@@ -349,7 +349,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                 <button
                   onClick={handlePost}
                   disabled={!postTitle.trim() || !postBody.trim()}
-                  className="w-full py-4 bg-blue-600 disabled:opacity-40 rounded-xl text-slate-900 font-bold"
+                  className="w-full py-4 bg-green-600 disabled:opacity-40 rounded-xl text-slate-900 font-bold"
                 >
                   Post to All Crew
                 </button>

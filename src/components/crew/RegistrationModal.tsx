@@ -87,7 +87,7 @@ export function RegistrationModal({ email, displayName, onComplete }: Props) {
               value={formData.firstName}
               onChange={e => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
               placeholder="First name"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               disabled={loading}
             />
           </div>
@@ -99,7 +99,7 @@ export function RegistrationModal({ email, displayName, onComplete }: Props) {
               value={formData.lastName}
               onChange={e => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
               placeholder="Last name"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               disabled={loading}
             />
           </div>
@@ -111,7 +111,7 @@ export function RegistrationModal({ email, displayName, onComplete }: Props) {
               value={formData.phone}
               onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               placeholder="(555) 000-0000"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               disabled={loading}
             />
           </div>
@@ -119,7 +119,7 @@ export function RegistrationModal({ email, displayName, onComplete }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-6 bg-green-600 text-white py-2.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

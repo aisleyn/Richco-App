@@ -103,7 +103,7 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm mb-6"
+            className="flex items-center gap-2 text-green-600 hover:text-blue-700 font-medium text-sm mb-6"
           >
             <ArrowLeft size={16} /> Back to Updates
           </button>
@@ -209,13 +209,13 @@ export function NotificationDetailScreen({ notification, onBack }: Props) {
               placeholder="Share your thoughts..."
               rows={3}
               disabled={submitting}
-              className="w-full px-4 py-3 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none disabled:opacity-50"
+              className="w-full px-4 py-3 bg-bg-base dark:bg-bg-base-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 resize-none disabled:opacity-50"
             />
             <div className="flex justify-end mt-2">
               <button
                 onClick={handleSubmitComment}
                 disabled={submitting || !newComment.trim()}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
               >
                 <Send size={14} />
                 {submitting ? 'Posting...' : 'Comment'}

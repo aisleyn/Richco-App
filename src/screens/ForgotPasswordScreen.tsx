@@ -47,7 +47,7 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
             <button
               onClick={onBackToLogin}
               disabled={loading}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium mb-6 disabled:opacity-50"
+              className="flex items-center gap-2 text-green-600 hover:text-blue-700 text-sm font-medium mb-6 disabled:opacity-50"
             >
               <ArrowLeft size={16} />
               Back to Login
@@ -55,8 +55,8 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
 
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
-                <Mail size={32} className="text-blue-600" />
+              <div className="w-16 h-16 rounded-2xl bg-green-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
+                <Mail size={32} className="text-green-600" />
               </div>
               <h1 className="text-slate-800 dark:text-slate-100 text-3xl font-bold">Reset Password</h1>
               <p className="text-slate-500 text-sm mt-2">Enter your email to receive a password reset link</p>
@@ -88,7 +88,7 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     disabled={loading}
-                    className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                    className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -96,7 +96,7 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-all rounded-lg text-white font-semibold text-base"
+                className="w-full py-2.5 bg-green-600 hover:bg-green-700 active:bg-blue-800 disabled:opacity-50 transition-all rounded-lg text-white font-semibold text-base"
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
@@ -130,7 +130,7 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
             <p className="text-slate-500 text-xs mb-6">Click the link in the email to set a new password.</p>
             <button
               onClick={onBackToLogin}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm"
+              className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm"
             >
               Back to Login
             </button>

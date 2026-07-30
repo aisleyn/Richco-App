@@ -22,8 +22,8 @@ const suggestedQuestions = [
 function TypingIndicator({ message }: { message: string }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-600/30 flex items-center justify-center shrink-0">
-        <Bot size={14} className="text-blue-600" />
+      <div className="w-8 h-8 rounded-full bg-green-600/20 border border-green-600/30 flex items-center justify-center shrink-0">
+        <Bot size={14} className="text-green-600" />
       </div>
       <div className="bg-bg-elevated dark:bg-bg-elevated-dark rounded-2xl rounded-bl-md px-4 py-3 max-w-[80%]">
         <p className="text-slate-400 dark:text-slate-500 text-xs italic mb-2">{message}</p>
@@ -131,7 +131,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
           <button
             key={t}
             onClick={() => setActiveTab(t)}
-            className={`px-5 py-2 rounded-full text-sm font-semibold capitalize transition-colors ${activeTab === t ? 'bg-blue-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
+            className={`px-5 py-2 rounded-full text-sm font-semibold capitalize transition-colors ${activeTab === t ? 'bg-green-600 text-slate-900' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
           >
             {t === 'docs' ? 'Documents' : 'Chat'}
           </button>
@@ -144,8 +144,8 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
             {chatMessages.length === 0 && (
               <div className="flex flex-col items-center text-center pt-6 pb-4">
-                <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/20 flex items-center justify-center mb-4">
-                  <Bot size={28} className="text-blue-600" />
+                <div className="w-16 h-16 rounded-2xl bg-green-600/15 border border-green-600/20 flex items-center justify-center mb-4">
+                  <Bot size={28} className="text-green-600" />
                 </div>
                 <p className="text-slate-800 dark:text-slate-100 font-semibold mb-1">Richco AI Assistant</p>
                 <p className="text-slate-400 dark:text-slate-500 text-sm max-w-xs">Ask me anything about safety procedures, OSHA regulations, or company policies.</p>
@@ -158,10 +158,10 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08 }}
                       onClick={() => handleSend(q)}
-                      className="w-full text-left bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 flex items-center justify-between group active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors"
+                      className="w-full text-left bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 flex items-center justify-between group active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors shadow-md"
                     >
                       <span className="text-slate-700 dark:text-slate-300 text-sm">{q}</span>
-                      <ChevronRight size={14} className="text-slate-600 dark:text-slate-500 group-active:text-blue-600 transition-colors shrink-0 ml-2" />
+                      <ChevronRight size={14} className="text-slate-600 dark:text-slate-500 group-active:text-green-600 transition-colors shrink-0 ml-2" />
                     </motion.button>
                   ))}
                 </div>
@@ -172,7 +172,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
               if (msg.role === 'user') {
                 return (
                   <div key={msg.id} className="flex justify-end">
-                    <div className="bg-blue-600 text-slate-900 rounded-2xl rounded-br-md px-4 py-3 max-w-[80%]">
+                    <div className="bg-green-600 text-slate-900 rounded-2xl rounded-br-md px-4 py-3 max-w-[80%] shadow-md">
                       <p className="text-sm font-medium">{msg.content}</p>
                     </div>
                   </div>
@@ -180,11 +180,11 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
               }
               return (
                 <div key={msg.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-600/30 flex items-center justify-center shrink-0">
-                    <Bot size={14} className="text-blue-600" />
+                  <div className="w-8 h-8 rounded-full bg-green-600/20 border border-green-600/30 flex items-center justify-center shrink-0">
+                    <Bot size={14} className="text-green-600" />
                   </div>
                   <div className="flex-1 space-y-2">
-                    <div className="bg-bg-elevated dark:bg-bg-elevated-dark rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="bg-green-50 dark:bg-green-950/20 rounded-2xl rounded-bl-md px-4 py-3 shadow-md">
                       <p className="text-slate-900 dark:text-slate-100 text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
                     </div>
                     {/* Sources */}
@@ -197,7 +197,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
             key={i}
             onClick={() => doc && window.open(doc.filePath, '_blank')}
             disabled={!doc}
-            className="w-full text-left flex items-center gap-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-bg-elevated dark:hover:bg-bg-elevated-dark disabled:opacity-50 transition-colors cursor-pointer"
+            className="w-full text-left flex items-center gap-2 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 hover:bg-bg-elevated dark:hover:bg-bg-elevated-dark disabled:opacity-50 transition-colors cursor-pointer shadow-md"
           >
             <FileText size={11} className="text-slate-500 dark:text-slate-500 shrink-0" />
             <span className="text-slate-400 dark:text-slate-500 text-xs">{s}</span>
@@ -220,7 +220,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                           <p className="text-slate-800 dark:text-slate-100 text-xs font-medium truncate">{msg.videoCard.title}</p>
                           <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">{msg.videoCard.duration} · Training Video</p>
                         </div>
-                        <Play size={16} className="text-blue-600 shrink-0" />
+                        <Play size={16} className="text-green-600 shrink-0" />
                       </div>
                     )}
                   </div>
@@ -248,7 +248,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim()}
-                className="w-8 h-8 rounded-full bg-blue-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity"
+                className="w-8 h-8 rounded-full bg-green-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity"
               >
                 <Send size={13} className="text-slate-900" />
               </button>
@@ -281,10 +281,10 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="w-full text-left bg-bg-surface border border-slate-200 rounded-xl p-4 flex items-center gap-3 hover:bg-bg-elevated active:bg-bg-elevated transition-colors"
+                      className="w-full text-left bg-bg-surface border border-slate-200 rounded-xl p-4 flex items-center gap-3 hover:bg-bg-elevated active:bg-bg-elevated transition-colors shadow-md"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-blue-600/15 flex items-center justify-center shrink-0">
-                        <FileText size={16} className="text-blue-600" />
+                      <div className="w-9 h-9 rounded-xl bg-green-600/15 flex items-center justify-center shrink-0">
+                        <FileText size={16} className="text-green-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-slate-800 text-sm font-medium">{d.title}</p>

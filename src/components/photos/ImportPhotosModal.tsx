@@ -138,7 +138,7 @@ export function ImportPhotosModal({ siteId, userEmail, siteName, onClose, onPhot
             onDragOver={handleDrag}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-              dragActive ? 'border-blue-600 bg-blue-600/5' : 'border-slate-200'
+              dragActive ? 'border-blue-600 bg-green-600/5' : 'border-slate-200'
             }`}
           >
             <Upload size={32} className="mx-auto text-slate-400 mb-3" />
@@ -146,7 +146,7 @@ export function ImportPhotosModal({ siteId, userEmail, siteName, onClose, onPhot
             <p className="text-slate-500 text-sm mb-4">Or click to select photos</p>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="bg-green-600 hover:bg-amber-500 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               Select Photos
             </button>

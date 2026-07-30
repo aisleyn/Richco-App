@@ -36,16 +36,16 @@ export function TimeOffCard() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="mt-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl border border-blue-500/20 p-4"
+        className="mt-6 bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-2xl border border-green-500/20 p-4 shadow-md"
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-blue-500" />
+            <Calendar size={18} className="text-green-500" />
             <h3 className="text-slate-900 font-semibold">Time Off</h3>
           </div>
           <button
             onClick={() => setShowRequestModal(true)}
-            className="text-blue-500 hover:text-blue-600 flex items-center gap-1 text-xs font-semibold transition-colors"
+            className="text-green-500 hover:text-green-600 flex items-center gap-1 text-xs font-semibold transition-colors"
           >
             <Plus size={14} /> Request
           </button>
@@ -88,7 +88,7 @@ export function TimeOffCard() {
 
         {/* Summary */}
         {requests.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-blue-500/10 flex gap-3 text-xs">
+          <div className="mt-3 pt-3 border-t border-green-500/10 flex gap-3 text-xs">
             <div>
               <p className="text-slate-500">Pending</p>
               <p className="text-amber-500 font-bold">{pendingCount}</p>

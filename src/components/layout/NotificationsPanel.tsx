@@ -70,13 +70,13 @@ export function NotificationsPanel({ onNotificationClick }: Props) {
   }
 
   return (
-    <div className="hidden md:flex flex-col w-80 bg-bg-surface dark:bg-bg-surface-dark border-r border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div className="hidden md:flex flex-col w-80 bg-white border-r border-slate-200 overflow-hidden fixed left-0 top-0 h-screen">
       {/* Header */}
-      <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-600/10 to-blue-600/5">
-        <Bell size={20} className="text-blue-600" />
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Updates</h2>
+      <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-200/40 to-white">
+        <Bell size={20} className="text-green-600" />
+        <h2 className="font-semibold text-slate-900">Updates</h2>
         {notifications.length > 0 && (
-          <span className="ml-auto text-xs bg-blue-600 text-white rounded-full px-2 py-1">
+          <span className="ml-auto text-xs bg-green-600 text-white rounded-full px-2 py-1">
             {notifications.length}
           </span>
         )}

@@ -162,25 +162,25 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           transition={{ delay: 0.1 }}
           className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3"
         >
-          <div className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+          <div className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-md">
             <div className="flex items-center gap-2 mb-2">
-              <Clock size={14} className="text-blue-600" />
+              <Clock size={14} className="text-green-600" />
               <span className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider">Today</span>
             </div>
             <p className="text-slate-800 dark:text-slate-100 text-xl md:text-2xl font-bold">{todayHours.toFixed(2)}<span className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-normal">h</span></p>
             {clockedIn && <p className="text-emerald-400 text-xs mt-1">Currently clocked in</p>}
           </div>
 
-          <div className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+          <div className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-md">
             <div className="flex items-center gap-2 mb-2">
-              <Calendar size={14} className="text-blue-400" />
+              <Calendar size={14} className="text-green-400" />
               <span className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider">This Week</span>
             </div>
             <p className="text-slate-800 dark:text-slate-100 text-xl md:text-2xl font-bold">{(weekStats.week + hours).toFixed(2)}<span className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-normal">h</span></p>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">{Math.max(0, 40 - (weekStats.week + hours)).toFixed(2)}h remaining</p>
           </div>
 
-          <div className={`bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border ${weekStats.overtimeWeek > 0 ? 'border-amber-500/20' : 'border-slate-200 dark:border-slate-700'}`}>
+          <div className={`bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border shadow-md ${weekStats.overtimeWeek > 0 ? 'border-amber-500/20' : 'border-slate-200 dark:border-slate-700'}`}>
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp size={14} className="text-amber-400" />
               <span className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider">Overtime</span>
@@ -191,7 +191,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">This week</p>
           </div>
 
-          <div className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+          <div className="bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-md">
             <div className="flex items-center gap-2 mb-2">
               <Calendar size={14} className="text-purple-400" />
               <span className="text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider">This Month</span>
@@ -205,7 +205,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-3 bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700"
+          className="mt-3 bg-bg-surface dark:bg-bg-surface-dark rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-md"
         >
           <div className="flex items-center justify-between mb-2.5">
             <span className="text-slate-400 dark:text-slate-500 text-xs font-medium">Weekly Progress</span>
@@ -216,7 +216,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, ((weekStats.week + hours) / 40) * 100)}%` }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-amber-400"
+              className="h-full rounded-full bg-gradient-to-r from-green-600 to-amber-400"
             />
           </div>
           {weekStats.overtimeWeek > 0 && (
@@ -273,7 +273,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
           {isAdmin && (
             <button
               onClick={() => setShowManualTimecard(true)}
-              className="text-blue-600 hover:text-amber-500 flex items-center gap-1 text-xs font-semibold transition-colors"
+              className="text-green-600 hover:text-green-700 flex items-center gap-1 text-xs font-semibold transition-colors"
             >
               <Plus size={12} /> Manual Entry
             </button>

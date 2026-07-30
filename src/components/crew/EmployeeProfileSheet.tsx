@@ -77,7 +77,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
                 onClick={() => setActiveTab('profile')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'profile'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -87,7 +87,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
                 onClick={() => setActiveTab('timesheets')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                   activeTab === 'timesheets'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -158,7 +158,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone size={14} className="text-slate-500" />
-                  <a href={`tel:${member.emergencyContact.phone}`} className="text-slate-800 hover:text-blue-600 transition-colors">
+                  <a href={`tel:${member.emergencyContact.phone}`} className="text-slate-800 hover:text-green-600 transition-colors">
                     {member.emergencyContact.phone}
                   </a>
                 </div>
@@ -193,7 +193,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
                     href={member.identification.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-600/30 rounded-lg text-blue-600 text-sm font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600/10 hover:bg-green-600/20 border border-blue-600/30 rounded-lg text-green-600 text-sm font-medium transition-colors"
                   >
                     <ImageIcon size={14} /> View Document
                   </a>
@@ -284,7 +284,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl border border-blue-500/20 p-5 mb-6"
+            className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl border border-green-500/20 p-5 mb-6"
           >
             <div className="flex items-center gap-2 mb-5">
               <Calendar size={18} className="text-blue-500" />
@@ -292,7 +292,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
             </div>
 
             {/* Annual Allowance */}
-            <div className="mb-6 pb-6 border-b border-blue-500/10">
+            <div className="mb-6 pb-6 border-b border-green-500/10">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-slate-600 text-sm font-medium">Annual Allowance</p>
                 <p className="text-slate-900 font-bold text-lg">{leaveData.annualAllowance} days</p>
@@ -347,7 +347,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
               </div>
 
               {/* Remaining */}
-              <div className="pt-2 border-t border-blue-500/10">
+              <div className="pt-2 border-t border-green-500/10">
                 <div className="flex items-center justify-between">
                   <p className="text-slate-600 text-sm font-semibold">Remaining</p>
                   <p className={`font-bold text-lg ${remaining > 5 ? 'text-emerald-500' : remaining > 0 ? 'text-amber-500' : 'text-red-500'}`}>
@@ -384,7 +384,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
                       <div className={`px-3 py-1 rounded-lg text-sm font-semibold ${
                         entry.status === 'approved' ? 'bg-emerald-500/10 text-emerald-600' :
                         entry.status === 'flagged' ? 'bg-red-500/10 text-red-600' :
-                        entry.status === 'complete' ? 'bg-blue-500/10 text-blue-600' :
+                        entry.status === 'complete' ? 'bg-blue-500/10 text-green-600' :
                         'bg-amber-500/10 text-amber-600'
                       }`}>
                         {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}

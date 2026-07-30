@@ -50,8 +50,8 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
-            <div className="text-3xl font-bold text-blue-600">RC</div>
+          <div className="w-16 h-16 rounded-2xl bg-green-600/15 border border-blue-600/30 flex items-center justify-center mx-auto mb-4">
+            <div className="text-3xl font-bold text-green-600">RC</div>
           </div>
           <h1 className="text-slate-800 dark:text-slate-100 text-3xl font-bold">Richco Construction</h1>
           <p className="text-slate-400 text-sm mt-2">Field Operations App</p>
@@ -84,7 +84,7 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
               />
             </div>
           </div>
@@ -102,7 +102,7 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 disabled={loading}
-                className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+                className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-all rounded-lg text-white font-semibold text-base"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-700 active:bg-blue-800 disabled:opacity-50 transition-all rounded-lg text-white font-semibold text-base"
           >
             <LogIn size={18} />
             {loading ? 'Signing in...' : 'Sign In'}
@@ -122,7 +122,7 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
             type="button"
             onClick={onForgotPassword}
             disabled={loading}
-            className="w-full mt-3 text-blue-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 transition-colors"
+            className="w-full mt-3 text-green-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 transition-colors"
           >
             Forgot password?
           </button>

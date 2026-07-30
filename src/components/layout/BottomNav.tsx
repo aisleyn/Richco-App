@@ -28,7 +28,7 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
   const tabs = isAdmin ? [...baseTabs, ...adminTabs] : baseTabs
 
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 md:bottom-auto md:right-0 md:left-auto md:top-0 md:w-20 md:h-screen z-50 bg-bg-surface/95 dark:bg-bg-surface-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-700 md:border-t-0 md:border-l safe-bottom md:safe-left ${isModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
+    <nav className={`fixed bottom-0 left-0 right-0 md:bottom-auto md:right-auto md:left-0 md:top-0 md:w-80 md:h-screen z-50 bg-white/95 dark:bg-white/95 backdrop-blur-lg border-t border-slate-200 md:border-t-0 md:border-r safe-bottom ${isModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
       <div className="flex items-stretch max-w-lg mx-auto md:flex-col md:h-full md:max-w-none">
         {tabs.map(({ id, label, Icon }) => {
           const isActive = active === id
@@ -43,7 +43,7 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
                 <Icon
                   size={22}
                   strokeWidth={isActive ? 2.5 : 1.8}
-                  className={isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400 group-active:text-slate-300 dark:group-active:text-slate-500 transition-colors'}
+                  className={isActive ? 'text-green-600' : 'text-slate-500 dark:text-slate-400 group-active:text-slate-300 dark:group-active:text-slate-500 transition-colors'}
                 />
                 {badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
@@ -51,7 +51,7 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
                   </span>
                 )}
               </div>
-              <span className={`text-sm font-medium ${isActive ? 'text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}>
+              <span className={`text-sm font-medium ${isActive ? 'text-green-600' : 'text-slate-500 dark:text-slate-400'}`}>
                 {label}
               </span>
             </button>

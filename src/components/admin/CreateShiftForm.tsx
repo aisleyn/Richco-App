@@ -230,7 +230,7 @@ export function CreateShiftForm({ isOpen, onClose, onSuccess }: Props) {
               <button
                 type="button"
                 onClick={handleAddLocation}
-                className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded flex items-center gap-1"
+                className="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded flex items-center gap-1"
               >
                 <Plus size={16} /> Add Location
               </button>
@@ -299,7 +299,7 @@ export function CreateShiftForm({ isOpen, onClose, onSuccess }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
             >
               {loading ? 'Creating...' : 'Create Shift'}
             </button>

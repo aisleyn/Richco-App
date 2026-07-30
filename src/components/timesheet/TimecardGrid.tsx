@@ -81,7 +81,7 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard }: TimecardGridPr
         </h3>
         <button
           onClick={() => setShowFullMonth(!showFullMonth)}
-          className="flex items-center gap-1 text-blue-600 hover:text-blue-500 text-xs font-semibold transition-colors"
+          className="flex items-center gap-1 text-green-600 hover:text-green-500 text-xs font-semibold transition-colors"
         >
           {showFullMonth ? (
             <>
@@ -113,9 +113,9 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard }: TimecardGridPr
               className="cursor-pointer"
             >
               <motion.div
-                className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border p-3 transition-all ${
+                className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border p-3 transition-all shadow-md ${
                   expandedId === tc.id
-                    ? 'border-blue-500 ring-2 ring-blue-500/20'
+                    ? 'border-green-500 ring-2 ring-green-500/20'
                     : tc.overtimeHours && tc.overtimeHours > 0
                       ? 'border-amber-500/20 hover:border-amber-500/40'
                       : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
