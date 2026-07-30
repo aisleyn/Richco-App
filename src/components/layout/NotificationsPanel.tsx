@@ -70,7 +70,7 @@ export function NotificationsPanel({ onNotificationClick }: Props) {
   }
 
   return (
-    <div className="hidden md:flex flex-col w-80 bg-white border-r border-slate-200 overflow-hidden fixed left-0 top-0 h-screen">
+    <div className="hidden md:flex flex-col w-80 bg-white border-r border-slate-200 overflow-hidden fixed left-0 top-0 h-screen z-40">
       {/* Header */}
       <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-green-200/40 to-white">
         <Bell size={20} className="text-green-600" />
