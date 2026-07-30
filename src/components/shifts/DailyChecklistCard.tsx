@@ -116,7 +116,7 @@ export function DailyChecklistCard({ crewMemberId, isLoading = false }: Props) {
     }
   }
 
-  if (loading) return <div className="card p-4 text-slate-500">Loading checklist...</div>
+  if (loading) return <div className="card p-4 text-muted">Loading checklist...</div>
 
   if (!checklist || !items || items.length === 0) {
     return null
@@ -126,15 +126,15 @@ export function DailyChecklistCard({ crewMemberId, isLoading = false }: Props) {
   const completedCount = submissions.filter(s => s.is_complete).length
 
   return (
-    <div className="card bg-gradient-to-br from-emerald-50 to-emerald-50 dark:from-slate-800 dark:to-slate-800 border border-emerald-200 dark:border-slate-700">
+    <div className="card bg-gradient-to-br from-success-light to-success-light border border-success-lighter">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Daily Checklist</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <h3 className="font-bold text-lg text-primary">Daily Checklist</h3>
+          <p className="text-sm text-secondary mt-1">
             {completedCount} of {itemsSorted.length} complete
           </p>
         </div>
-        <CheckCircle2 size={24} className="text-emerald-600 dark:text-emerald-400" />
+        <CheckCircle2 size={24} className="text-success-base" />
       </div>
 
       <div className="space-y-2">
@@ -149,10 +149,10 @@ export function DailyChecklistCard({ crewMemberId, isLoading = false }: Props) {
               key={item.id}
               className={`border rounded-lg p-3 transition-all ${
                 isComplete
-                  ? 'bg-emerald-100 dark:bg-emerald-900 border-emerald-300 dark:border-emerald-700'
+                  ? 'bg-success-light border-success-lighter'
                   : isExpanded
-                    ? 'bg-red-50 dark:bg-red-900 border-red-300 dark:border-red-700'
-                    : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600'
+                    ? 'bg-error-light border-error-lighter'
+                    : 'bg-surface border-border-light'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -164,22 +164,22 @@ export function DailyChecklistCard({ crewMemberId, isLoading = false }: Props) {
                   className="mt-1 w-5 h-5 cursor-pointer disabled:opacity-50"
                 />
                 <div className="flex-1">
-                  <div className={`font-semibold text-slate-800 dark:text-slate-100 ${isComplete ? 'line-through text-slate-500 dark:text-slate-400' : ''}`}>
+                  <div className={`font-semibold text-primary ${isComplete ? 'line-through text-muted' : ''}`}>
                     {item.title}
                   </div>
                   {item.description && (
-                    <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{item.description}</div>
+                    <div className="text-sm text-secondary mt-1">{item.description}</div>
                   )}
 
                   {/* Reason field for incomplete items */}
                   {isExpanded && !isComplete && (
-                    <div className="mt-3 pt-3 border-t border-red-300 dark:border-red-600">
-                      <label className="text-sm font-semibold block mb-2 text-slate-700 dark:text-slate-200 flex items-start gap-2">
-                        <AlertCircle size={16} className="text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+                    <div className="mt-3 pt-3 border-t border-error-lighter">
+                      <label className="text-sm font-semibold block mb-2 text-primary flex items-start gap-2">
+                        <AlertCircle size={16} className="text-error-base mt-0.5 shrink-0" />
                         Reason for non-completion:
                       </label>
                       <textarea
-                        className="w-full p-2 border border-red-300 dark:border-red-600 rounded text-sm bg-white dark:bg-slate-600 text-slate-900 dark:text-slate-100 disabled:opacity-50"
+                        className="w-full p-2 border border-error-lighter rounded text-sm bg-surface text-primary disabled:opacity-50"
                         placeholder="Enter reason..."
                         value={submission?.reason_text || ''}
                         onChange={(e) => item.id && handleReasonChange(item.id, e.target.value)}

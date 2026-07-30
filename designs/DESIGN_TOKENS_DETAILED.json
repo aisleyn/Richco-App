@@ -1,0 +1,365 @@
+﻿{
+    "spacing_complete":  {
+                             "gap":  [
+                                         "10px",
+                                         "12px",
+                                         "14px",
+                                         "16px",
+                                         "20px",
+                                         "3px",
+                                         "4px",
+                                         "5px",
+                                         "6px",
+                                         "8px"
+                                     ],
+                             "margin":  [
+                                            "0",
+                                            "0 0 10px",
+                                            "0 0 12px",
+                                            "0 0 16px",
+                                            "0 0 20px",
+                                            "0 0 4px",
+                                            "0 0 6px",
+                                            "0 0 8px",
+                                            "0 auto 10px",
+                                            "0 auto 16px",
+                                            "14px 0 10px",
+                                            "16px 0 10px",
+                                            "2px 0 0",
+                                            "3px 0 0",
+                                            "4px 0 0",
+                                            "6px 0 0",
+                                            "8px 0 0"
+                                        ],
+                             "padding":  [
+                                             "{{ contentPadding }}",
+                                             "0",
+                                             "0 0 16px",
+                                             "0 2px",
+                                             "10px 0 8px",
+                                             "10px 12px",
+                                             "10px 16px",
+                                             "11px",
+                                             "11px 14px 11px 40px",
+                                             "11px 16px",
+                                             "12px",
+                                             "12px 14px",
+                                             "12px 16px",
+                                             "12px 4px",
+                                             "13px",
+                                             "13px 14px",
+                                             "13px 16px",
+                                             "14px",
+                                             "14px 16px",
+                                             "16px",
+                                             "16px 0",
+                                             "16px 4px",
+                                             "18px 18px 14px",
+                                             "20px",
+                                             "20px 24px",
+                                             "22px",
+                                             "24px",
+                                             "24px 0 8px",
+                                             "2px 6px",
+                                             "3px 10px",
+                                             "3px 9px",
+                                             "40px 20px",
+                                             "4px",
+                                             "4px 12px",
+                                             "4px 16px 18px",
+                                             "6px 12px",
+                                             "7px 14px",
+                                             "8px 12px",
+                                             "8px 14px",
+                                             "8px 20px",
+                                             "8px 8px 8px 16px",
+                                             "8px 8px 8px 18px",
+                                             "9px 14px",
+                                             "9px 16px"
+                                         ]
+                         },
+    "layout_complete":  {
+                            "position":  [
+                                             "absolute",
+                                             "fixed",
+                                             "relative",
+                                             "sticky"
+                                         ],
+                            "dimensions":  {
+                                               "widths":  [
+                                                              "{{ d.rangePct }}%",
+                                                              "{{ weekProgressPct }}%",
+                                                              "100%",
+                                                              "105px",
+                                                              "10px",
+                                                              "12px",
+                                                              "16px",
+                                                              "1px",
+                                                              "28px",
+                                                              "300px",
+                                                              "30px",
+                                                              "32px",
+                                                              "34px",
+                                                              "36px",
+                                                              "38px",
+                                                              "42px",
+                                                              "44px",
+                                                              "56px",
+                                                              "5px",
+                                                              "60px",
+                                                              "6px",
+                                                              "76px",
+                                                              "8px",
+                                                              "9px"
+                                                          ],
+                                               "minWidth":  null,
+                                               "maxHeight":  "75vh",
+                                               "minHeight":  null,
+                                               "maxWidth":  [
+                                                                "280px",
+                                                                "380px",
+                                                                "420px",
+                                                                "600px",
+                                                                "75%",
+                                                                "80%"
+                                                            ],
+                                               "heights":  [
+                                                               "100%",
+                                                               "100vh",
+                                                               "10px",
+                                                               "110px",
+                                                               "12px",
+                                                               "15px",
+                                                               "16px",
+                                                               "180px",
+                                                               "30px",
+                                                               "32px",
+                                                               "34px",
+                                                               "36px",
+                                                               "38px",
+                                                               "42px",
+                                                               "44px",
+                                                               "5px",
+                                                               "60px",
+                                                               "6px",
+                                                               "8px",
+                                                               "9px",
+                                                               "calc(100vh - 40px)"
+                                                           ]
+                                           },
+                            "gridLayout":  {
+                                               "columns":  [
+                                                               "1fr 1fr",
+                                                               "repeat(4,1fr)"
+                                                           ]
+                                           },
+                            "display":  [
+                                            "block",
+                                            "flex",
+                                            "grid",
+                                            "inline-block"
+                                        ],
+                            "flexLayout":  {
+                                               "wrap":  "wrap",
+                                               "direction":  "column",
+                                               "flex":  "1"
+                                           }
+                        },
+    "effects_complete":  {
+                             "animations":  [
+                                                "rc-pulse 0.9s infinite",
+                                                "rc-pulse 0.9s infinite 0.15s",
+                                                "rc-pulse 0.9s infinite 0.3s",
+                                                "rc-pulse 2s infinite"
+                                            ],
+                             "shadows":  [
+                                             "0 0 24px rgba(16,185,129,0.18)",
+                                             "0 2px 12px rgba(0,0,0,0.05)",
+                                             "0 2px 12px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.05)",
+                                             "0px 4px 12px 0px #00000026",
+                                             "0px 4px 12px 0px #0000002E",
+                                             "0px 4px 12px 0px rgba(0, 0, 0, 0.15)"
+                                         ],
+                             "transitions":  [
+                                                 "opacity 180ms ease",
+                                                 "transform 0.2s",
+                                                 "width 0.6s"
+                                             ]
+                         },
+    "borders_complete":  {
+                             "radius":  [
+                                            "10px",
+                                            "12px",
+                                            "14px",
+                                            "16px",
+                                            "18px",
+                                            "18px 18px 4px 18px",
+                                            "20px",
+                                            "24px 24px 0 0",
+                                            "4px 18px 18px 18px",
+                                            "50%",
+                                            "5px",
+                                            "9999px"
+                                        ],
+                             "width":  [
+                                           "0px",
+                                           "1px"
+                                       ],
+                             "styles":  [
+                                            "1px solid #A7F3D0",
+                                            "1px solid #E2E8F0",
+                                            "1px solid {{ overtimeBorderColor }}",
+                                            "1px solid {{ pt.active ? \u0027transparent\u0027 : \u0027#E2E8F0\u0027 }}",
+                                            "1px solid {{ rf.active ? \u0027transparent\u0027 : \u0027#E2E8F0\u0027 }}",
+                                            "1px solid {{ sc-camel-ai-tab===\u0027chat\u0027 ? \u0027transparent\u0027 : \u0027#E2E8F0\u0027 }}",
+                                            "1px solid {{ sc-camel-ai-tab===\u0027docs\u0027 ? \u0027transparent\u0027 : \u0027#E2E8F0\u0027 }}",
+                                            "1px solid {{ site.selected ? \u0027#10B981\u0027 : \u0027#E2E8F0\u0027 }}",
+                                            "1px solid {{ tc.borderColor }}",
+                                            "1px solid rgba(16,185,129,0.35)",
+                                            "1px solid rgba(239,68,68,0.3)",
+                                            "1px solid rgba(37,99,235,0.2)",
+                                            "1px solid rgba(37,99,235,0.25)",
+                                            "1px solid rgba(37,99,235,0.3)",
+                                            "2px dashed #CBD5E1",
+                                            "2px solid #FFFFFF",
+                                            "none"
+                                        ],
+                             "colors":  [
+                                            "#0000004D",
+                                            "#00510140",
+                                            "#4D4D4D",
+                                            "#8C8C8C",
+                                            "#A6A6A6",
+                                            "#C5C5C5"
+                                        ]
+                         },
+    "raw_colors":  {
+                       "hex":  [
+                                   "#10B981",
+                                   "#2563EB",
+                                   "#34D399",
+                                   "#94A3B8",
+                                   "#E2E8F0",
+                                   "#ECFDF5",
+                                   "#EF4444",
+                                   "#F0F1F4",
+                                   "#F7F8FA",
+                                   "#F8FAFC",
+                                   "#FBBF24",
+                                   "#FFFFFF"
+                               ],
+                       "rgb_rgba":  [
+                                        "linear-gradient(90deg, #12561314, rgba(37,99,235,0.02))",
+                                        "linear-gradient(to top,rgba(0,0,0,0.45),rgba(0,0,0,0.05) 60%)",
+                                        "rgba(0,0,0,0.35)",
+                                        "rgba(0,0,0,0.5)",
+                                        "rgba(0,0,0,0.6)",
+                                        "rgba(239,68,68,0.1)",
+                                        "rgba(251,191,36,0.15)",
+                                        "rgba(255,255,255,0.08)",
+                                        "rgba(255,255,255,0.6)",
+                                        "rgba(255,255,255,0.97)",
+                                        "rgba(37,99,235,0.1)",
+                                        "rgba(37,99,235,0.12)",
+                                        "rgba(37,99,235,0.15)",
+                                        "rgba(52,211,153,0.15)"
+                                    ]
+                   },
+    "aliases":  {
+                    "font":  {
+                                 "font_md":  "14px",
+                                 "font_base":  "12px",
+                                 "font_lg":  "16px"
+                             },
+                    "description":  "Recommended token aliases for consistent naming",
+                    "shadow":  {
+                                   "shadow_md":  "0px 4px 12px 0px #00000026",
+                                   "shadow_sm":  "0 2px 12px rgba(0,0,0,0.05)",
+                                   "shadow_lg":  "0px 4px 12px 0px rgba(0, 0, 0, 0.15)"
+                               },
+                    "radius":  {
+                                   "radius_full":  "50%",
+                                   "radius_sm":  "4px",
+                                   "radius_xl":  "16px",
+                                   "radius_lg":  "12px",
+                                   "radius_md":  "8px"
+                               },
+                    "semantic":  {
+                                     "color_interactive_warning":  "#FBBF24",
+                                     "color_bg_primary":  "#FFFFFF",
+                                     "color_interactive_primary":  "#2563EB",
+                                     "color_bg_secondary":  "#F8FAFC",
+                                     "color_interactive_error":  "#EF4444",
+                                     "color_text_primary":  "#1E293B",
+                                     "color_border":  "#E2E8F0",
+                                     "color_text_secondary":  "#64748B",
+                                     "color_text_muted":  "#94A3B8",
+                                     "color_interactive_success":  "#10B981",
+                                     "color_bg_tertiary":  "#F0F1F4"
+                                 },
+                    "spacing":  {
+                                    "space_md":  "8px",
+                                    "space_2xl":  "20px",
+                                    "space_xl":  "16px",
+                                    "space_xs":  "2px",
+                                    "space_sm":  "4px",
+                                    "space_lg":  "12px",
+                                    "space_0":  "0",
+                                    "space_3xl":  "24px"
+                                }
+                },
+    "typography_complete":  {
+                                "lineHeights":  [
+                                                    "1",
+                                                    "1.4",
+                                                    "1.5",
+                                                    "1.6",
+                                                    "1.7"
+                                                ],
+                                "weights":  [
+                                                "300",
+                                                "400",
+                                                "500",
+                                                "600",
+                                                "700",
+                                                "800"
+                                            ],
+                                "families":  [
+                                                 "Helvetica",
+                                                 "monospace",
+                                                 "\u0027Source Sans 3\u0027,sans-serif"
+                                             ],
+                                "sizes":  [
+                                              "10.5px",
+                                              "10px",
+                                              "11.5px",
+                                              "11px",
+                                              "12.5px",
+                                              "12px",
+                                              "13.5px",
+                                              "13px",
+                                              "14.5px",
+                                              "14px",
+                                              "15px",
+                                              "16px",
+                                              "17px",
+                                              "18px",
+                                              "19px",
+                                              "22px",
+                                              "24px",
+                                              "26px",
+                                              "28px",
+                                              "52px",
+                                              "9px"
+                                          ],
+                                "letterSpacing":  [
+                                                      "0.05em",
+                                                      "0.06em"
+                                                  ]
+                            },
+    "metadata":  {
+                     "extractedAt":  "2026-07-30T11:25:52.6033690-04:00",
+                     "description":  "Complete design tokens extracted from HTML prototype - technical reference",
+                     "source":  "richco-app-design.html (Figma/Penpot export)"
+                 }
+}

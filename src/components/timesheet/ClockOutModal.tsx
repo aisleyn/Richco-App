@@ -127,10 +127,10 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
           >
-            <CheckCircle size={72} className="text-emerald-400" />
+            <CheckCircle size={72} className="text-success-base" />
           </motion.div>
-          <p className="text-slate-800 text-xl font-semibold">Clocked Out</p>
-          <p className="text-slate-400 text-sm">{paidHours.toFixed(2)} hours recorded</p>
+          <p className="text-primary text-xl font-semibold">Clocked Out</p>
+          <p className="text-secondary text-sm">{paidHours.toFixed(2)} hours recorded</p>
         </motion.div>
       </div>
     )
@@ -144,37 +144,37 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="bg-bg-base w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
+          className="bg-surface w-full max-w-md md:max-w-sm max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:pointer-events-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">
             <div>
-              <h2 className="text-slate-800 font-bold text-base">Clock Out</h2>
-              <p className="text-slate-400 text-xs">Complete before clocking out</p>
+              <h2 className="text-primary font-bold text-base">Clock Out</h2>
+              <p className="text-secondary text-xs">Complete before clocking out</p>
             </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center flex-shrink-0">
-              <X size={16} className="text-slate-400" />
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center flex-shrink-0">
+              <X size={16} className="text-muted" />
             </button>
           </div>
 
           {/* Time summary banner */}
-          <div className="mx-4 mt-3 bg-bg-surface rounded-lg p-3 space-y-2 shrink-0">
+          <div className="mx-4 mt-3 bg-elevated rounded-lg p-3 space-y-2 shrink-0">
             <div className="grid grid-cols-3 gap-2">
               <div className="text-center">
-                <p className="text-slate-800 font-mono text-xl font-bold">{formatElapsed(elapsed)}</p>
-                <p className="text-slate-500 text-xs mt-0.5">Work Time</p>
+                <p className="text-primary font-mono text-xl font-bold">{formatElapsed(elapsed)}</p>
+                <p className="text-secondary text-xs mt-0.5">Work Time</p>
               </div>
-              <div className="text-center border-x border-slate-200">
-                <p className="text-emerald-400 font-semibold text-xl font-bold">{regularHours.toFixed(2)}h</p>
-                <p className="text-slate-500 text-xs mt-0.5">Regular</p>
+              <div className="text-center border-x border-border-light">
+                <p className="text-success-base font-semibold text-xl font-bold">{regularHours.toFixed(2)}h</p>
+                <p className="text-secondary text-xs mt-0.5">Regular</p>
               </div>
               <div className="text-center">
-                <p className={`font-bold text-xl ${overtimeHours > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{overtimeHours.toFixed(2)}h</p>
-                <p className="text-slate-500 text-xs mt-0.5">Overtime</p>
+                <p className={`font-bold text-xl ${overtimeHours > 0 ? 'text-warning-base' : 'text-secondary'}`}>{overtimeHours.toFixed(2)}h</p>
+                <p className="text-secondary text-xs mt-0.5">Overtime</p>
               </div>
             </div>
-            <div className="text-center text-xs border-t border-slate-200 pt-1.5">
-              <p className="text-slate-700 dark:text-slate-300 font-medium">Raw: {rawHours.toFixed(2)}h | Breaks: {breakHours.toFixed(2)}h | Mandatory: -{mandatoryBreakHours.toFixed(1)}h ({currentShiftIsOvernight ? 'Overnight' : 'Day shift'})</p>
+            <div className="text-center text-xs border-t border-border-light pt-1.5">
+              <p className="text-primary font-medium">Raw: {rawHours.toFixed(2)}h | Breaks: {breakHours.toFixed(2)}h | Mandatory: -{mandatoryBreakHours.toFixed(1)}h ({currentShiftIsOvernight ? 'Overnight' : 'Day shift'})</p>
             </div>
           </div>
 
@@ -183,29 +183,29 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
             {/* Site selector */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Site Worked</label>
+              <label className="text-primary text-xs font-bold uppercase tracking-wider block mb-1.5">Site Worked</label>
               <div className="relative">
                 <select
                   value={siteId}
                   onChange={e => { setSiteId(e.target.value); setErrors(p => ({ ...p, site: '' })) }}
-                  className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 appearance-none text-sm"
+                  className="w-full bg-elevated border border-white/10 rounded-xl px-4 py-3 text-primary appearance-none text-sm"
                 >
                   {jobSites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
-                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               </div>
-              {errors.site && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.site}</p>}
+              {errors.site && <p className="text-error-base text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.site}</p>}
             </div>
 
             {/* Vehicle */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Company Vehicle Used?</label>
+              <label className="text-primary text-xs font-bold uppercase tracking-wider block mb-1.5">Company Vehicle Used?</label>
               <div className="flex gap-2 mb-1.5 w-fit">
                 {(['no', 'yes'] as const).map(v => (
                   <button
                     key={v}
                     onClick={() => setVehicleUsed(v)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-blue-600 text-slate-900' : 'bg-bg-surface text-slate-400'}`}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${vehicleUsed === v ? 'bg-primary-base text-white' : 'bg-elevated text-muted'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
@@ -216,64 +216,64 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                   <select
                     value={vehicleId}
                     onChange={e => { setVehicleId(e.target.value); setErrors(p => ({ ...p, vehicle: '' })) }}
-                    className="w-full bg-bg-surface border border-white/10 rounded-xl px-4 py-3 text-slate-800 appearance-none text-sm"
+                    className="w-full bg-elevated border border-white/10 rounded-xl px-4 py-3 text-primary appearance-none text-sm"
                   >
                     <option value="">Select vehicle...</option>
                     {mockVehicles.map(v => <option key={v.id} value={v.id}>{v.name} – {v.plate}</option>)}
                   </select>
-                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                 </div>
               )}
-              {errors.vehicle && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.vehicle}</p>}
+              {errors.vehicle && <p className="text-error-base text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.vehicle}</p>}
             </div>
 
             {/* Break taken */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Mandatory Break Taken?</label>
+              <label className="text-primary text-xs font-bold uppercase tracking-wider block mb-1.5">Mandatory Break Taken?</label>
               <div className="flex gap-2 w-fit">
                 {(['yes', 'no'] as const).map(v => (
                   <button
                     key={v}
                     onClick={() => { setBreakTaken(v); setErrors(p => ({ ...p, break: '' })) }}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${breakTaken === v ? (v === 'yes' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-red-500/20 text-red-400 border border-red-500/40') : 'bg-bg-surface text-slate-400 border border-transparent'}`}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${breakTaken === v ? (v === 'yes' ? 'bg-success-base/20 text-success-base border border-success-base/40' : 'bg-error-base/20 text-error-base border border-error-base/40') : 'bg-elevated text-muted border border-transparent'}`}
                   >
                     {v.charAt(0).toUpperCase() + v.slice(1)}
                   </button>
                 ))}
               </div>
-              {errors.break && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.break}</p>}
+              {errors.break && <p className="text-error-base text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.break}</p>}
             </div>
 
             {/* Issues */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Issues or Concerns <span className="text-slate-600 font-normal">(Optional)</span></label>
+              <label className="text-primary text-xs font-bold uppercase tracking-wider block mb-1.5">Issues or Concerns <span className="text-muted font-normal">(Optional)</span></label>
               <textarea
                 value={concerns}
                 onChange={e => setConcerns(e.target.value)}
                 placeholder="Any safety issues, equipment problems, or incidents to report..."
                 rows={2}
-                className="w-full bg-bg-surface border border-white/10 rounded-lg px-3 py-2 text-slate-800 text-sm resize-none placeholder:text-slate-600"
+                className="w-full bg-elevated border border-white/10 rounded-lg px-3 py-2 text-primary text-sm resize-none placeholder:text-muted"
               />
             </div>
 
             {/* Summary */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">Shift Summary <span className="text-red-400">*</span></label>
+              <label className="text-primary text-xs font-bold uppercase tracking-wider block mb-1.5">Shift Summary <span className="text-error-base">*</span></label>
               <textarea
                 value={summary}
                 onChange={e => { setSummary(e.target.value); setErrors(p => ({ ...p, summary: '' })) }}
                 placeholder="Describe work completed today..."
                 rows={3}
-                className={`w-full bg-bg-surface border rounded-lg px-3 py-2 text-slate-800 text-sm resize-none placeholder:text-slate-600 ${errors.summary ? 'border-red-500/50' : 'border-white/10'}`}
+                className={`w-full bg-elevated border rounded-lg px-3 py-2 text-primary text-sm resize-none placeholder:text-muted ${errors.summary ? 'border-error-base/50' : 'border-white/10'}`}
               />
-              {errors.summary && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.summary}</p>}
+              {errors.summary && <p className="text-error-base text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.summary}</p>}
             </div>
 
             {/* Photos */}
             <div>
-              <label className="text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider block mb-1.5">
-                Site Photos <span className="text-red-400">*</span>
-                <span className="text-slate-600 font-normal ml-2">Min. 1 required</span>
+              <label className="text-primary text-xs font-bold uppercase tracking-wider block mb-1.5">
+                Site Photos <span className="text-error-base">*</span>
+                <span className="text-muted font-normal ml-2">Min. 1 required</span>
               </label>
               <input ref={fileRef} type="file" accept="image/*" multiple capture="environment" onChange={handlePhoto} className="hidden" />
 
@@ -286,7 +286,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                         onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
                         className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 flex items-center justify-center"
                       >
-                        <X size={9} className="text-slate-800" />
+                        <X size={9} className="text-primary" />
                       </button>
                     </div>
                   ))}
@@ -295,29 +295,29 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
               <button
                 onClick={() => fileRef.current?.click()}
-                className={`w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed rounded-lg text-sm font-medium transition-colors ${errors.photos ? 'border-red-500/50 text-red-400' : 'border-white/10 text-slate-400 active:border-blue-600/50 active:text-blue-600'}`}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed rounded-lg text-sm font-medium transition-colors ${errors.photos ? 'border-error-base/50 text-error-base' : 'border-white/10 text-muted active:border-primary-base/50 active:text-primary-base'}`}
               >
                 <Camera size={14} />
                 {photos.length === 0 ? 'Add Photo' : 'Add Another Photo'}
               </button>
-              {errors.photos && <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.photos}</p>}
+              {errors.photos && <p className="text-error-base text-xs mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.photos}</p>}
             </div>
 
             <div className="h-1" />
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-slate-200 shrink-0">
+          <div className="px-4 py-3 border-t border-border-light shrink-0">
             {clockOutGps && isGeoLoading && (
-              <div className="mb-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2">
-                <MapPin size={12} className="text-blue-400 animate-pulse" />
-                <p className="text-blue-400 text-xs">Capturing location...</p>
+              <div className="mb-2 p-2 bg-primary-base/10 border border-primary-base/30 rounded-lg flex items-center gap-2">
+                <MapPin size={12} className="text-primary-base animate-pulse" />
+                <p className="text-primary-base text-xs">Capturing location...</p>
               </div>
             )}
             <button
               onClick={handleSubmit}
               disabled={isGeoLoading}
-              className="w-full py-3 bg-red-500 active:bg-red-600 rounded-lg text-slate-800 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-error-base active:bg-error-dark rounded-lg text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGeoLoading && clockOutGps ? 'Getting Location...' : 'Finalize Clock Out'}
             </button>

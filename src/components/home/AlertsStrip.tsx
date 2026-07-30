@@ -28,8 +28,8 @@ export function AlertsStrip({ onSeeAll, onTapAlert }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Recent Alerts</h3>
-        <button onClick={onSeeAll} className="text-blue-600 text-xs font-medium">See All</button>
+        <h3 className="text-muted text-xs font-semibold uppercase tracking-wider">Recent Alerts</h3>
+        <button onClick={onSeeAll} className="text-primary-base text-xs font-medium">See All</button>
       </div>
       <div className="space-y-2">
         {recent.map((alert, i) => {
@@ -42,13 +42,13 @@ export function AlertsStrip({ onSeeAll, onTapAlert }: Props) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
               onClick={() => { markAlertRead(alert.id); onTapAlert(alert) }}
-              className={`w-full text-left bg-bg-surface rounded-xl border-l-2 ${cfg.color} p-3.5 pr-3 flex items-start gap-3 active:bg-bg-elevated transition-colors`}
+              className={`w-full text-left bg-surface rounded-xl border-l-2 ${cfg.color} p-3.5 pr-3 flex items-start gap-3 active:bg-elevated transition-colors`}
             >
               <Icon size={14} className={`${cfg.iconColor} mt-0.5 shrink-0`} />
               <div className="flex-1 min-w-0">
-                <p className="text-slate-800 text-sm font-medium truncate">{alert.title}</p>
-                <p className="text-slate-400 text-xs truncate mt-0.5">{alert.body}</p>
-                <p className="text-slate-600 text-[10px] mt-1">
+                <p className="text-primary text-sm font-medium truncate">{alert.title}</p>
+                <p className="text-secondary text-xs truncate mt-0.5">{alert.body}</p>
+                <p className="text-muted text-[10px] mt-1">
                   {formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true })}
                 </p>
               </div>

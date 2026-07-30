@@ -1,0 +1,237 @@
+﻿{
+    "typography":  {
+                       "letterSpacing":  {
+                                             "tight":  "0.05em",
+                                             "normal":  "0.06em"
+                                         },
+                       "lineHeight":  {
+                                          "tight":  "1",
+                                          "loose":  "1.7",
+                                          "snug":  "1.4",
+                                          "relaxed":  "1.6",
+                                          "normal":  "1.5"
+                                      },
+                       "fontFamily":  {
+                                          "primary":  "\u0027Source Sans 3\u0027, sans-serif",
+                                          "mono":  "monospace"
+                                      },
+                       "fontWeight":  {
+                                          "semibold":  "600",
+                                          "extrabold":  "800",
+                                          "medium":  "500",
+                                          "bold":  "700",
+                                          "light":  "300",
+                                          "normal":  "400"
+                                      },
+                       "fontSize":  {
+                                        "display":  "52px",
+                                        "2xl":  "18px",
+                                        "base":  "12px",
+                                        "6xl":  "28px",
+                                        "4xl":  "24px",
+                                        "sm":  "10px",
+                                        "5xl":  "26px",
+                                        "md":  "13px",
+                                        "xs":  "9px",
+                                        "smMid":  "11px",
+                                        "lg":  "14px",
+                                        "xl":  "16px",
+                                        "3xl":  "22px"
+                                    }
+                   },
+    "metadata":  {
+                     "extractedAt":  "2026-07-30T11:25:14.2364698-04:00",
+                     "description":  "Design tokens extracted from Richco App design prototype",
+                     "source":  "richco-app-design.html"
+                 },
+    "borders":  {
+                    "radius":  {
+                                   "pill":  "9999px",
+                                   "full":  "50%",
+                                   "md":  "10px",
+                                   "xs":  "4px",
+                                   "xxl":  "16px",
+                                   "lg":  "12px",
+                                   "xl":  "14px",
+                                   "sm":  "5px"
+                               },
+                    "width":  {
+                                  "thin":  "1px",
+                                  "thick":  "2px"
+                              },
+                    "styles":  {
+                                   "success_faded":  "1px solid rgba(16,185,129,0.35)",
+                                   "dashed":  "2px dashed #CBD5E1",
+                                   "info_medium":  "1px solid rgba(37,99,235,0.25)",
+                                   "info_dark":  "1px solid rgba(37,99,235,0.3)",
+                                   "success":  "1px solid #A7F3D0",
+                                   "error":  "1px solid rgba(239,68,68,0.3)",
+                                   "info_light":  "1px solid rgba(37,99,235,0.2)",
+                                   "light":  "1px solid #E2E8F0"
+                               }
+                },
+    "effects":  {
+                    "backdrop":  "blur(8px)",
+                    "transitions":  {
+                                        "transform":  "transform 0.2s",
+                                        "width":  "width 0.6s",
+                                        "fade":  "opacity 180ms ease"
+                                    },
+                    "opacity":  {
+                                    "medium":  "0.5",
+                                    "disabled":  "0.4"
+                                },
+                    "animations":  {
+                                       "pulse_delayed_2":  "rc-pulse 0.9s infinite 0.3s",
+                                       "pulse_normal":  "rc-pulse 0.9s infinite",
+                                       "pulse_delayed_1":  "rc-pulse 0.9s infinite 0.15s",
+                                       "pulse_slow":  "rc-pulse 2s infinite"
+                                   }
+                },
+    "alerts":  {
+                   "error":  {
+                                 "color":  "#B91C1C",
+                                 "background":  "rgba(239,68,68,0.1)",
+                                 "border":  "1px solid rgba(239,68,68,0.3)"
+                             },
+                   "warning":  {
+                                   "color":  "#B45309",
+                                   "background":  "rgba(251,191,36,0.15)",
+                                   "border":  "1px solid rgba(251,191,36,0.3)"
+                               },
+                   "success":  {
+                                   "color":  "#047857",
+                                   "background":  "#ECFDF5",
+                                   "border":  "1px solid #A7F3D0"
+                               }
+               },
+    "buttons":  {
+                    "danger":  {
+                                   "background":  "#EF4444",
+                                   "color":  "#FFFFFF"
+                               },
+                    "description":  "Inferred button styles from design tokens",
+                    "primary":  {
+                                    "color":  "#FFFFFF",
+                                    "background":  "#2563EB",
+                                    "active":  [
+                                                   "background: transparent",
+                                                   "border: 1px solid #E2E8F0"
+                                               ],
+                                    "hover":  "#1D4ED8"
+                                },
+                    "success":  {
+                                    "color":  "#FFFFFF",
+                                    "background":  "#10B981",
+                                    "border":  "1px solid #A7F3D0"
+                                }
+                },
+    "colors":  {
+                   "accent":  {
+                                  "description":  "Accent colors",
+                                  "values":  {
+                                                 "cyan":  "#14B8A6",
+                                                 "blue":  "#4A9FFF",
+                                                 "bright_blue":  "#3BACF6",
+                                                 "teal":  "#34D399"
+                                             }
+                              },
+                   "neutral":  {
+                                   "description":  "Neutral colors for text, backgrounds, borders",
+                                   "values":  {
+                                                  "lighter":  "#F7F8FA",
+                                                  "text_secondary":  "#64748B",
+                                                  "light":  "#F0F1F4",
+                                                  "black":  "#000000",
+                                                  "border":  "#E2E8F0",
+                                                  "text_dark":  "#1E293B",
+                                                  "placeholder":  "#94A3B8",
+                                                  "lightest":  "#F8FAFC",
+                                                  "text_primary":  "#334155",
+                                                  "text_muted":  "#5C6771",
+                                                  "white":  "#FFFFFF"
+                                              }
+                               },
+                   "error":  {
+                                 "description":  "Error/negative states",
+                                 "values":  {
+                                                "dark":  "#B91C1C",
+                                                "light":  "rgba(239,68,68,0.1)",
+                                                "base":  "#EF4444"
+                                            }
+                             },
+                   "warning":  {
+                                   "description":  "Warning/attention states",
+                                   "values":  {
+                                                  "darker":  "#B45309",
+                                                  "light":  "rgba(251,191,36,0.15)",
+                                                  "base":  "#FBBF24"
+                                              }
+                               },
+                   "success":  {
+                                   "description":  "Success/positive states",
+                                   "values":  {
+                                                  "dark":  "#047857",
+                                                  "lighter":  "#A7F3D0",
+                                                  "base":  "#10B981",
+                                                  "medium":  "#059669",
+                                                  "light":  "#ECFDF5",
+                                                  "darker":  "#06621C"
+                                              }
+                               },
+                   "primary":  {
+                                   "description":  "Primary brand colors",
+                                   "values":  {
+                                                  "base":  "#2563EB",
+                                                  "dark":  "#1D4ED8"
+                                              }
+                               }
+               },
+    "shadows":  {
+                    "md":  "0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.05)",
+                    "lg":  "0px 4px 12px 0px #00000026",
+                    "xxl":  "0px 4px 12px 0px rgba(0, 0, 0, 0.15)",
+                    "xl":  "0px 4px 12px 0px #0000002E",
+                    "sm":  "0 2px 12px rgba(0,0,0,0.05)",
+                    "success_glow":  "0 0 24px rgba(16,185,129,0.18)"
+                },
+    "gradients":  {
+                      "accent_gradient_1":  "linear-gradient(90deg, #12561314, rgba(37,99,235,0.02))",
+                      "primary_gradient":  "linear-gradient(135deg, #60A5FA, #94A3B8)",
+                      "light_gradient":  "linear-gradient(160deg, #F7F8FA 0%, #FFFFFFEB)",
+                      "accent_gradient_2":  "linear-gradient(90deg, #3BACF688, #F59E0B)",
+                      "dark_gradient":  "linear-gradient(160deg,#0d3b2d,#0F1419)",
+                      "blue_gradient":  "linear-gradient(160deg,#5A8DEE 0%,#7FA6F0 45%,#B9CDF2 100%)",
+                      "accent_gradient_3":  "linear-gradient(90deg, #EBE825, #22870A)"
+                  },
+    "spacing":  {
+                    "values":  [
+                                   "0",
+                                   "2px",
+                                   "3px",
+                                   "4px",
+                                   "5px",
+                                   "6px",
+                                   "8px",
+                                   "10px",
+                                   "12px",
+                                   "14px",
+                                   "16px",
+                                   "18px",
+                                   "20px",
+                                   "22px",
+                                   "24px",
+                                   "32px",
+                                   "40px"
+                               ],
+                    "description":  "Padding, margin, and gap values",
+                    "commonly_used":  {
+                                          "md":  "12px",
+                                          "lg":  "16px",
+                                          "xs":  "4px",
+                                          "2xl":  "24px",
+                                          "xl":  "20px",
+                                          "sm":  "8px"
+                                      }
+                }
+}

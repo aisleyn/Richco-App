@@ -60,7 +60,7 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
   if (timecards.length === 0) {
     return (
       <div>
-        <p className="text-slate-500 text-sm">No timecards yet. Clock out to create your first entry.</p>
+        <p className="text-secondary text-sm">No timecards yet. Clock out to create your first entry.</p>
       </div>
     )
   }
@@ -74,45 +74,45 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-amber-500/20' : 'border-slate-200 dark:border-slate-700'} group`}
+            className={`bg-surface rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-warning-base/20' : 'border-border-light'} group`}
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
-                <p className="text-slate-800 dark:text-slate-100 text-sm font-medium">
+                <p className="text-primary text-sm font-medium">
                   {new Date(tc.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
-                <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">{tc.siteName}</p>
+                <p className="text-secondary text-xs mt-0.5">{tc.siteName}</p>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-warning-base' : 'text-primary'}`}>
                   {tc.totalHours?.toFixed(2)}h
                 </p>
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-success-base/15 text-success-base">
                   Complete
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mb-3">
+            <div className="flex items-center gap-4 text-xs text-secondary mb-3">
               <span>{fmt(tc.clockInTime)} – {tc.clockOutTime ? fmt(tc.clockOutTime) : '--'}</span>
               {tc.breakTaken
-                ? <span className="text-emerald-500/60">Break ✓ {tc.breakMinutes}m</span>
-                : <span className="text-red-400">No Break</span>
+                ? <span className="text-success-base/60">Break ✓ {tc.breakMinutes}m</span>
+                : <span className="text-error-base">No Break</span>
               }
               {tc.overtimeHours && tc.overtimeHours > 0 && (
-                <span className="text-amber-400">+{tc.overtimeHours.toFixed(2)}h OT</span>
+                <span className="text-warning-base">+{tc.overtimeHours.toFixed(2)}h OT</span>
               )}
             </div>
             {isAdmin && (
               <div className="flex gap-2">
                 <button
                   onClick={() => onEditTimecard?.(tc)}
-                  className="flex-1 px-2 py-1.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 px-2 py-1.5 bg-primary-base/10 hover:bg-primary-base/20 text-primary-base text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
                 >
                   <Edit2 size={12} /> Edit
                 </button>
                 <button
                   onClick={() => deleteTimecard(tc.id)}
-                  className="flex-1 px-2 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 px-2 py-1.5 bg-error-base/10 hover:bg-error-base/20 text-error-base text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
                 >
                   <Trash2 size={12} /> Delete
                 </button>

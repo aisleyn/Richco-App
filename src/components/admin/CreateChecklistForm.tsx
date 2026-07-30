@@ -71,35 +71,35 @@ export function CreateChecklistForm({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Daily Checklist</h2>
+            <h2 className="text-xl font-bold text-primary">Create Daily Checklist</h2>
             <button
               type="button"
               onClick={onClose}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+              className="p-1 hover:bg-elevated rounded"
             >
               <X size={24} />
             </button>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded text-red-800 dark:text-red-200">
+            <div className="p-3 bg-error-light border border-error-lighter rounded text-error-dark">
               {error}
             </div>
           )}
 
           {/* Date */}
           <div>
-            <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200">
+            <label className="block font-semibold mb-2 text-primary">
               Checklist Date *
             </label>
             <input
               type="date"
               value={checklistDate}
               onChange={(e) => setChecklistDate(e.target.value)}
-              className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               required
             />
           </div>
@@ -107,38 +107,38 @@ export function CreateChecklistForm({ isOpen, onClose, onSuccess }: Props) {
           {/* Items */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="font-semibold text-slate-700 dark:text-slate-200">Checklist Items</label>
+              <label className="font-semibold text-primary">Checklist Items</label>
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded flex items-center gap-1"
+                className="text-sm bg-primary-base hover:bg-primary-dark text-white px-3 py-1 rounded flex items-center gap-1"
               >
                 <Plus size={16} /> Add Item
               </button>
             </div>
 
             {items.map((item, idx) => (
-              <div key={item._temp_id} className="border border-slate-300 dark:border-slate-600 rounded p-3 mb-2 space-y-2">
+              <div key={item._temp_id} className="border border-border-light rounded p-3 mb-2 space-y-2">
                 <input
                   type="text"
                   placeholder="Item title *"
                   value={item.title}
                   onChange={(e) => handleItemChange(idx, 'title', e.target.value)}
-                  className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 font-semibold bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                  className="w-full border border-border-light rounded p-2 font-semibold bg-surface text-primary"
                   required
                 />
                 <textarea
                   placeholder="Description (optional)"
                   value={item.description || ''}
                   onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
-                  className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                  className="w-full border border-border-light rounded p-2 bg-surface text-primary"
                   rows={2}
                 />
                 {items.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(idx)}
-                    className="text-sm bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                    className="text-sm bg-error-base hover:bg-error-dark text-white px-2 py-1 rounded flex items-center gap-1"
                   >
                     <Trash2 size={14} /> Remove Item
                   </button>
@@ -148,18 +148,18 @@ export function CreateChecklistForm({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-600">
+          <div className="flex gap-2 pt-4 border-t border-border-light">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-primary-base hover:bg-primary-dark disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
             >
               {loading ? 'Creating...' : 'Create Checklist'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-elevated hover:bg-base text-primary px-4 py-2 rounded font-semibold"
             >
               Cancel
             </button>

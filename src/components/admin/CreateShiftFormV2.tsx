@@ -160,21 +160,21 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-surface rounded-t-2xl sm:rounded-2xl w-full sm:max-w-3xl max-h-[95vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create Shift</h2>
+            <h2 className="text-xl font-bold text-primary">Create Shift</h2>
             <button
               type="button"
               onClick={onClose}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+              className="p-1 hover:bg-elevated rounded"
             >
               <X size={24} />
             </button>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded text-red-800 dark:text-red-200 text-sm">
+            <div className="p-3 bg-error-light border border-error-lighter rounded text-error-dark text-sm">
               {error}
             </div>
           )}
@@ -182,21 +182,21 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
           <div className="grid grid-cols-2 gap-4">
             {/* Scheduled Date */}
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Scheduled Date *
               </label>
               <input
                 type="date"
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
                 required
               />
             </div>
 
             {/* Shift Type */}
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Shift Type
               </label>
               <div className="flex gap-4 mt-2">
@@ -208,7 +208,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                     onChange={(e) => setShiftType(e.target.value as 'day' | 'night')}
                     className="w-4 h-4"
                   />
-                  <span className="text-slate-700 dark:text-slate-200">Day</span>
+                  <span className="text-primary">Day</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -218,7 +218,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                     onChange={(e) => setShiftType(e.target.value as 'day' | 'night')}
                     className="w-4 h-4"
                   />
-                  <span className="text-slate-700 dark:text-slate-200">Night</span>
+                  <span className="text-primary">Night</span>
                 </label>
               </div>
             </div>
@@ -226,7 +226,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
           <div className="grid grid-cols-4 gap-2">
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Start Hour
               </label>
               <input
@@ -235,11 +235,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={startHour}
                 onChange={(e) => setStartHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Start Minute
               </label>
               <input
@@ -248,11 +248,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={startMinute}
                 onChange={(e) => setStartMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 End Hour
               </label>
               <input
@@ -261,11 +261,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={endHour}
                 onChange={(e) => setEndHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 End Minute
               </label>
               <input
@@ -274,20 +274,20 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={endMinute}
                 onChange={(e) => setEndMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
           </div>
 
           {/* Project */}
           <div>
-            <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+            <label className="block font-semibold mb-2 text-primary text-sm">
               Project
             </label>
             <select
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+              className="w-full border border-border-light rounded p-2 bg-surface text-primary"
             >
               <option value="">Select project...</option>
               {projects.map(p => (
@@ -298,7 +298,7 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
           <div className="grid grid-cols-4 gap-2">
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Park Open Hour
               </label>
               <input
@@ -307,11 +307,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={parkOpenHour}
                 onChange={(e) => setParkOpenHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Open Minute
               </label>
               <input
@@ -320,11 +320,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={parkOpenMinute}
                 onChange={(e) => setParkOpenMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Park Close Hour
               </label>
               <input
@@ -333,11 +333,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="23"
                 value={parkCloseHour}
                 onChange={(e) => setParkCloseHour(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
             <div>
-              <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+              <label className="block font-semibold mb-2 text-primary text-sm">
                 Close Minute
               </label>
               <input
@@ -346,14 +346,14 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 max="59"
                 value={parkCloseMinute}
                 onChange={(e) => setParkCloseMinute(e.target.value.padStart(2, '0'))}
-                className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                className="w-full border border-border-light rounded p-2 bg-surface text-primary"
               />
             </div>
           </div>
 
           {/* Locations */}
           <div>
-            <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+            <label className="block font-semibold mb-2 text-primary text-sm">
               Locations
             </label>
             <div className="flex gap-2 mb-2">
@@ -363,26 +363,26 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                 value={locationInput}
                 onChange={(e) => setLocationInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLocation())}
-                className="flex-1 border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm"
+                className="flex-1 border border-border-light rounded p-2 bg-surface text-primary text-sm"
               />
               <button
                 type="button"
                 onClick={handleAddLocation}
-                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold"
+                className="px-3 py-2 bg-primary-base hover:bg-primary-dark text-white rounded text-sm font-semibold"
               >
                 <Plus size={16} />
               </button>
             </div>
 
             {locations.map((loc, idx) => (
-              <div key={loc._temp_id} className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-700 rounded mb-1">
+              <div key={loc._temp_id} className="flex items-center justify-between p-2 bg-base rounded mb-1">
                 <div>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{idx + 1}. {loc.location_name}</p>
+                  <p className="text-sm font-semibold text-primary">{idx + 1}. {loc.location_name}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleRemoveLocation(idx)}
-                  className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
+                  className="p-1 text-error-base hover:bg-error-light rounded"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -392,26 +392,26 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
           {/* Crew Selection */}
           <div>
-            <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+            <label className="block font-semibold mb-2 text-primary text-sm">
               Assign Crew Members *
             </label>
 
             {/* Selected Crew Preview */}
             {selectedCrews.size > 0 && (
-              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
-                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">
+              <div className="mb-3 p-3 bg-primary-base/10 rounded border border-primary-base/30">
+                <p className="text-xs font-semibold text-primary-base mb-2">
                   Selected: {selectedCrews.size}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {Array.from(selectedCrews).map(crewId => {
                     const crew = crews.find(c => c.id === crewId)
                     return crew ? (
-                      <div key={crewId} className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold flex items-center gap-1">
+                      <div key={crewId} className="bg-primary-base text-white px-2 py-1 rounded text-xs font-semibold flex items-center gap-1">
                         {crew.firstName} {crew.lastName}
                         <button
                           type="button"
                           onClick={() => toggleCrewSelection(crewId)}
-                          className="ml-1 hover:bg-blue-700 rounded"
+                          className="ml-1 hover:bg-primary-dark rounded"
                         >
                           <X size={12} />
                         </button>
@@ -423,11 +423,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             )}
 
             {/* Checkbox List */}
-            <div className="border border-slate-300 dark:border-slate-600 rounded max-h-48 overflow-y-auto">
+            <div className="border border-border-light rounded max-h-48 overflow-y-auto">
               {crews.map(crew => (
                 <label
                   key={crew.id}
-                  className="flex items-center gap-3 p-3 border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 border-b border-border-light last:border-b-0 hover:bg-elevated cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -435,11 +435,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
                     onChange={() => toggleCrewSelection(crew.id as number)}
                     className="w-4 h-4 rounded"
                   />
-                  <span className="flex-1 text-slate-800 dark:text-slate-200">
+                  <span className="flex-1 text-primary">
                     {crew.firstName} {crew.lastName}
                   </span>
                   {selectedCrews.has(crew.id as number) && (
-                    <Check size={16} className="text-blue-600" />
+                    <Check size={16} className="text-primary-base" />
                   )}
                 </label>
               ))}
@@ -448,31 +448,31 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
           {/* Notes */}
           <div>
-            <label className="block font-semibold mb-2 text-slate-700 dark:text-slate-200 text-sm">
+            <label className="block font-semibold mb-2 text-primary text-sm">
               Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes"
-              className="w-full border border-slate-300 dark:border-slate-600 rounded p-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm"
+              className="w-full border border-border-light rounded p-2 bg-surface text-primary text-sm"
               rows={2}
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-600">
+          <div className="flex gap-2 pt-4 border-t border-border-light">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-primary-base hover:bg-primary-dark disabled:opacity-50 text-white px-4 py-2 rounded font-semibold"
             >
               {loading ? 'Creating...' : 'Create Shift'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded font-semibold"
+              className="flex-1 bg-elevated hover:bg-base text-primary px-4 py-2 rounded font-semibold"
             >
               Cancel
             </button>
