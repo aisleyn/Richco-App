@@ -58,7 +58,8 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="gradient-success rounded-2xl border border-success-base/30 shadow-success-glow overflow-hidden"
+        className="rounded-2xl border border-success-base/35 shadow-success-glow overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #0d3b2d, #0F1419)' }}
       >
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
@@ -66,27 +67,27 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               <motion.div
                 animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="w-2.5 h-2.5 rounded-full bg-success-base"
+                className="w-2.5 h-2.5 rounded-full bg-accent-cyan"
               />
-              <span className="text-success-base text-sm font-semibold">Clocked In</span>
+              <span className="text-accent-cyan text-sm font-bold">Clocked In</span>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-primary text-lg md:text-2xl font-mono font-light tracking-widest">
+              <p className="text-white text-2xl md:text-3xl font-light font-mono tracking-widest">
                 {formatElapsed(elapsed)}
               </p>
               {breakActive && (
-                <p className="text-warning-base text-xs mt-0.5 flex items-center gap-1">
+                <p className="text-warning-base text-xs mt-1 flex items-center gap-1">
                   <Pause size={10} /> On Break
                 </p>
               )}
             </div>
             <div className="text-right">
-              <p className="text-primary text-sm font-medium">{selectedLocation?.location_name ?? 'Shift'}</p>
+              <p className="text-white text-sm font-semibold">{selectedLocation?.location_name ?? 'Shift'}</p>
               {selectedLocation?.address && (
-                <p className="text-secondary text-xs flex items-center gap-1 justify-end">
+                <p className="text-white/70 text-xs flex items-center gap-1 justify-end">
                   <MapPin size={10} /> {selectedLocation.address}
                 </p>
               )}
@@ -229,7 +230,8 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
 
       <button
         onClick={handleClockIn}
-        className="w-full flex items-center justify-center gap-2 py-4 bg-success-base active:bg-success-dark transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-4 active:opacity-90 transition-opacity"
+        style={{ backgroundColor: '#0D8A60' }}
       >
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}

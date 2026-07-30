@@ -14,22 +14,21 @@ export function SiteCards() {
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: i * 0.07 }}
-      className="bg-bg-surface dark:bg-bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 flex items-center gap-3 active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors"
+      className="bg-surface border border-border-light rounded-lg p-3.5 flex items-center gap-3 active:bg-elevated transition-colors"
     >
-      <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${site.status === 'active' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+      <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${site.status === 'active' ? 'bg-success-base' : 'bg-warning-base'}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-slate-800 dark:text-slate-100 text-sm font-medium truncate">{site.name}</p>
-        <div className="flex items-center gap-3 mt-0.5">
-          <span className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1 truncate">
-            <MapPin size={10} />{site.zone ?? site.address}
-          </span>
+        <p className="text-primary font-semibold truncate text-sm">{site.name}</p>
+        <div className="flex items-center gap-1.5 mt-1">
+          <MapPin size={10} className="text-secondary shrink-0" />
+          <span className="text-secondary text-xs truncate">{site.zone ?? site.address}</span>
         </div>
       </div>
-      <div className="text-right shrink-0">
-        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+      <div className="flex-shrink-0 ml-3">
+        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
           site.status === 'active'
-            ? 'bg-emerald-500/15 text-emerald-400'
-            : 'bg-amber-500/15 text-amber-400'
+            ? 'bg-success-base/15 text-success-medium'
+            : 'bg-warning-base/15 text-warning-darker'
         }`}>
           {site.status === 'active' ? 'Active' : 'Upcoming'}
         </span>
@@ -40,8 +39,8 @@ export function SiteCards() {
   return (
     <div>
       {/* Active Sites Header */}
-      <h3 className="text-slate-800 dark:text-slate-100 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-emerald-400" />
+      <h3 className="text-primary text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-success-base" />
         Active Sites
       </h3>
 
@@ -61,12 +60,12 @@ export function SiteCards() {
         <motion.div>
           <button
             onClick={() => setShowUpcoming(!showUpcoming)}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg mb-3 text-slate-600 dark:text-slate-400 hover:bg-bg-elevated dark:hover:bg-bg-elevated-dark transition-colors group"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg mb-3 text-secondary hover:bg-elevated transition-colors group"
           >
             <motion.div animate={{ rotate: showUpcoming ? 90 : 0 }} transition={{ duration: 0.2 }}>
-              <Plus size={16} className="text-slate-400 dark:text-slate-500 group-hover:text-slate-300 dark:group-hover:text-slate-400" />
+              <Plus size={16} className="text-secondary group-hover:text-primary" />
             </motion.div>
-            <span className="text-xs font-semibold uppercase tracking-wider">
+            <span className="text-xs font-bold uppercase tracking-widest">
               Show Upcoming Sites ({upcomingSites.length})
             </span>
           </button>
