@@ -23,7 +23,7 @@ export interface JobSite {
   lat: number
   lng: number
   geofenceRadius: number // meters
-  status: 'active' | 'upcoming' | 'completed'
+  status: 'active' | 'upcoming' | 'completed' | 'archived' | 'inactive'
   zone?: string
 }
 
@@ -34,7 +34,7 @@ export interface Shift {
   date: string
   startTime: string
   endTime: string
-  status: 'scheduled' | 'active' | 'completed'
+  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled'
 }
 
 export interface TimesheetEntry {

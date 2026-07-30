@@ -11,6 +11,8 @@ import {
   type ShiftRosterRow,
   type ShiftRosterColumn,
 } from '../../services/supabase'
+import { ShiftStatusEditor } from './ShiftStatusEditor'
+import type { Shift } from '../../types'
 
 interface Props {
   projectId: string
@@ -93,6 +95,17 @@ export function ShiftRosterTable({ projectId, projectName, isAdmin }: Props) {
     }
   }
 
+  async function handleShiftStatusChange(rowId: string, newStatus: Shift['status']) {
+    const success = await updateShiftRosterRow(rowId, { custom_data: { ...rows.find(r => r.id === rowId)?.custom_data, status: newStatus } })
+    if (success) {
+      setRows(rows.map(r =>
+        r.id === rowId
+          ? { ...r, custom_data: { ...r.custom_data, status: newStatus } }
+          : r
+      ))
+    }
+  }
+
   async function handleGeolocationChange(rowId: string) {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -160,7 +173,7 @@ export function ShiftRosterTable({ projectId, projectName, isAdmin }: Props) {
               key={row.id}
               className="bg-bg-elevated dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 p-4"
             >
-              {/* Row header with shift type and delete */}
+              {/* Row header with shift type, status, and delete */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <select
@@ -171,6 +184,21 @@ export function ShiftRosterTable({ projectId, projectName, isAdmin }: Props) {
                     <option value="day">Day Shift</option>
                     <option value="night">Night Shift</option>
                   </select>
+                  <div>
+                    <ShiftStatusEditor
+                      shift={{
+                        id: row.id!,
+                        siteId: '',
+                        siteName: '',
+                        date: '',
+                        startTime: '',
+                        endTime: '',
+                        status: (row.custom_data?.status as Shift['status']) || 'scheduled',
+                      }}
+                      onStatusChange={(newStatus) => handleShiftStatusChange(row.id!, newStatus)}
+                      inline={true}
+                    />
+                  </div>
                   <button
                     onClick={() => setExpandedRow(row.id && expandedRow === row.id ? null : row.id || null)}
                     className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"

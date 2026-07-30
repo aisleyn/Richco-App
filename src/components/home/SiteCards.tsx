@@ -1,14 +1,36 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, ChevronDown, Plus } from 'lucide-react'
+import { MapPin, ChevronDown, Plus, Settings } from 'lucide-react'
 import { jobSites } from '../../data/mockData'
+import { EditSitesModal } from './EditSitesModal'
+import type { JobSite } from '../../types'
 
 export function SiteCards() {
   const [showUpcoming, setShowUpcoming] = useState(false)
-  const activeSites = jobSites.filter(s => s.status === 'active')
-  const upcomingSites = jobSites.filter(s => s.status === 'upcoming')
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [sites, setSites] = useState<JobSite[]>(jobSites)
 
-  const SiteItem = ({ site, i }: { site: typeof jobSites[0], i: number }) => (
+  const activeSites = sites.filter(s => s.status === 'active')
+  const upcomingSites = sites.filter(s => s.status === 'upcoming')
+
+  const handleAddSite = (newSite: Omit<JobSite, 'id'>) => {
+    const id = `site-${Date.now()}`
+    setSites([...sites, { ...newSite, id }])
+  }
+
+  const handleEditSite = (id: string, updates: Partial<JobSite>) => {
+    setSites(sites.map(s => s.id === id ? { ...s, ...updates } : s))
+  }
+
+  const handleDeleteSite = (id: string) => {
+    setSites(sites.filter(s => s.id !== id))
+  }
+
+  const handleArchiveSite = (id: string) => {
+    setSites(sites.map(s => s.id === id ? { ...s, status: 'archived' } : s))
+  }
+
+  const SiteItem = ({ site, i }: { site: JobSite, i: number }) => (
     <motion.div
       key={site.id}
       initial={{ opacity: 0, x: -12 }}
@@ -38,11 +60,20 @@ export function SiteCards() {
 
   return (
     <div>
-      {/* Active Sites Header */}
-      <h3 className="text-primary text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-success-base" />
-        Active Sites
-      </h3>
+      {/* Active Sites Header with Edit Button */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-success-base" />
+          Active Sites
+        </h3>
+        <button
+          onClick={() => setShowEditModal(true)}
+          className="px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-lg hover:bg-slate-900 dark:hover:bg-slate-100 transition-colors flex items-center gap-1.5 active:scale-95"
+        >
+          <Settings size={12} />
+          Edit Sites
+        </button>
+      </div>
 
       {/* Active Sites */}
       <div className="space-y-2 mb-4">
@@ -87,6 +118,17 @@ export function SiteCards() {
           </AnimatePresence>
         </motion.div>
       )}
+
+      {/* Edit Sites Modal */}
+      <EditSitesModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        sites={sites}
+        onAddSite={handleAddSite}
+        onEditSite={handleEditSite}
+        onDeleteSite={handleDeleteSite}
+        onArchiveSite={handleArchiveSite}
+      />
     </div>
   )
 }
