@@ -7,7 +7,7 @@ const baseTabs = [
   { id: 'time', label: 'Time', Icon: Clock },
   { id: 'photos', label: 'Photos', Icon: Camera },
   { id: 'alerts', label: 'Alerts', Icon: Bell },
-  { id: 'crew', label: 'Crew', Icon: Users },
+  { id: 'crew', label: 'Employee Hub', Icon: Users },
   { id: 'ai', label: 'AI Help', Icon: Bot },
 ]
 

@@ -11,9 +11,44 @@ import type { Message } from '../types'
 import type { StoredCrewMember } from '../services/crew'
 
 const CREW_MESSAGES_KEY = 'richco-crew-messages'
+const EMPLOYEE_COMMUNICATIONS_KEY = 'richco-employee-communications'
+
+interface EmployeeCommunication {
+  id: string
+  employeeId: number
+  message: string
+  author: string
+  timestamp: number
+  attachmentUrl?: string
+  attachmentName?: string
+}
 
 function getThreadId(userId1: string, userId2: string): string {
   return [userId1, userId2].sort().join('-')
+}
+
+function getEmployeeCommunications(employeeId: number): EmployeeCommunication[] {
+  try {
+    const stored = localStorage.getItem(EMPLOYEE_COMMUNICATIONS_KEY)
+    const allComms = stored ? JSON.parse(stored) : {}
+    return (allComms[employeeId] ?? []).sort((a: EmployeeCommunication, b: EmployeeCommunication) => b.timestamp - a.timestamp)
+  } catch {
+    return []
+  }
+}
+
+function saveEmployeeCommunication(employeeId: number, communication: EmployeeCommunication) {
+  try {
+    const stored = localStorage.getItem(EMPLOYEE_COMMUNICATIONS_KEY)
+    const allComms = stored ? JSON.parse(stored) : {}
+    if (!allComms[employeeId]) {
+      allComms[employeeId] = []
+    }
+    allComms[employeeId].push(communication)
+    localStorage.setItem(EMPLOYEE_COMMUNICATIONS_KEY, JSON.stringify(allComms))
+  } catch (err) {
+    console.error('[Employee Communications] Failed to save:', err)
+  }
 }
 
 function getThreadMessages(threadId: string): Message[] {
@@ -71,12 +106,14 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const [tab, setTab] = useState<'directory' | 'messages'>('directory')
   const [search, setSearch] = useState('')
   const [messageInput, setMessageInput] = useState('')
+  const [employeeCommunicationInput, setEmployeeCommunicationInput] = useState('')
   const [crew, setCrew] = useState<StoredCrewMember[]>([])
   const [showAddCrew, setShowAddCrew] = useState(false)
   const [editingMember, setEditingMember] = useState<StoredCrewMember | null>(null)
   const [viewingProfile, setViewingProfile] = useState<StoredCrewMember | null>(null)
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
   const [refresh, setRefresh] = useState(0)
+  const [commRefresh, setCommRefresh] = useState(0)
   const { currentUserEmail, setUnreadMessageCount } = useAppStore()
 
   // Calculate unread message count
@@ -329,11 +366,17 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
 
                 {/* Profile display on main page */}
                 {viewingProfile ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                  <div className="space-y-6">
+                    {/* Header with name and actions */}
+                    <div className="flex items-start justify-between">
                       <div>
-                        <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold">{viewingProfile.firstName} {viewingProfile.lastName}</h2>
-                        <p className="text-slate-500 text-sm">{viewingProfile.email}</p>
+                        <h2 className="text-slate-900 dark:text-slate-100 text-2xl font-bold">{viewingProfile.firstName} {viewingProfile.lastName}</h2>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">{viewingProfile.roleLabel}</span>
+                          {viewingProfile.paymentType && (
+                            <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">{viewingProfile.paymentType === 'hourly' ? 'Hourly' : 'Salary'}</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -355,40 +398,226 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                       </div>
                     </div>
 
-                    {/* Profile details */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-gradient-to-br from-blue-600/10 to-amber-500/5 rounded-2xl border border-blue-600/20 p-5"
-                    >
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Role</p>
-                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">{viewingProfile.roleLabel}</p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pay Type</p>
-                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1 capitalize">
-                            {viewingProfile.paymentType === 'hourly' ? 'Hourly' : 'Salary'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">
-                            {viewingProfile.paymentType === 'hourly' ? 'Rate' : 'Salary'}
-                          </p>
-                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">
-                            ${viewingProfile.hourlyRate || viewingProfile.salary || 'N/A'}
-                            {viewingProfile.paymentType === 'hourly' && '/hr'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Hire Date</p>
-                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">
-                            {viewingProfile.hireDate ? new Date(viewingProfile.hireDate).toLocaleDateString() : 'N/A'}
-                          </p>
-                        </div>
+                    {/* Two column layout: Info on left, Communication on right */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Left column: Basic info */}
+                      <div className="lg:col-span-1 space-y-4">
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-gradient-to-br from-blue-600/10 to-amber-500/5 rounded-2xl border border-blue-600/20 p-5"
+                        >
+                          <div className="space-y-4">
+                            <div>
+                              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Position</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">{viewingProfile.roleLabel}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Hire Date</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">
+                                {viewingProfile.hireDate ? new Date(viewingProfile.hireDate).toLocaleDateString() : 'N/A'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pay Type</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1 capitalize">
+                                {viewingProfile.paymentType === 'hourly' ? 'Hourly' : 'Salary'}
+                              </p>
+                            </div>
+                            {viewingProfile.hourlyRate && (
+                              <div>
+                                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Rate</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">${viewingProfile.hourlyRate}/hr</p>
+                              </div>
+                            )}
+                            {viewingProfile.salary && (
+                              <div>
+                                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Salary</p>
+                                <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">${viewingProfile.salary}</p>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+
+                        {/* Emergency Contact */}
+                        {viewingProfile.emergencyContact && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-200 dark:border-red-800 p-5"
+                          >
+                            <h3 className="text-red-700 dark:text-red-400 font-bold text-sm mb-3">Emergency Contact</h3>
+                            <div className="space-y-2">
+                              <p className="text-slate-900 dark:text-slate-100 font-medium">{viewingProfile.emergencyContact.name}</p>
+                              <p className="text-slate-600 dark:text-slate-400 text-sm">{viewingProfile.emergencyContact.relationship}</p>
+                              <a href={`tel:${viewingProfile.emergencyContact.phone}`} className="text-red-600 dark:text-red-400 hover:underline text-sm font-medium">
+                                {viewingProfile.emergencyContact.phone}
+                              </a>
+                            </div>
+                          </motion.div>
+                        )}
                       </div>
-                    </motion.div>
+
+                      {/* Right column: Communication History */}
+                      <div className="lg:col-span-2">
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col h-full"
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg flex items-center gap-2">
+                              <MessageCircle size={20} className="text-blue-600" />
+                              Communication History
+                            </h3>
+                            <button className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                              <X size={18} />
+                            </button>
+                          </div>
+
+                          {/* Communication input */}
+                          <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                            <textarea
+                              value={employeeCommunicationInput}
+                              onChange={e => setEmployeeCommunicationInput(e.target.value)}
+                              placeholder="Share a detailed update..."
+                              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              rows={3}
+                            />
+                            <div className="flex gap-2 mt-3">
+                              <button className="flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                                📎 Attach File
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (employeeCommunicationInput.trim() && viewingProfile.id) {
+                                    const comm: EmployeeCommunication = {
+                                      id: `comm-${Date.now()}`,
+                                      employeeId: viewingProfile.id,
+                                      message: employeeCommunicationInput.trim(),
+                                      author: currentUserEmail.split('@')[0],
+                                      timestamp: Date.now(),
+                                    }
+                                    saveEmployeeCommunication(viewingProfile.id, comm)
+                                    setEmployeeCommunicationInput('')
+                                    setCommRefresh(prev => prev + 1)
+                                  }
+                                }}
+                                disabled={!employeeCommunicationInput.trim()}
+                                className="ml-auto flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <Send size={16} /> Post to Timeline
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Communication history */}
+                          <div className="flex-1 overflow-y-auto space-y-4" key={`comms-${viewingProfile.id}-${commRefresh}`}>
+                            {getEmployeeCommunications(viewingProfile.id).length > 0 ? (
+                              getEmployeeCommunications(viewingProfile.id).map(comm => (
+                                <motion.div
+                                  key={comm.id}
+                                  initial={{ opacity: 0, y: 8 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="flex gap-3 pb-4 border-b border-slate-200 dark:border-slate-700 last:border-b-0"
+                                >
+                                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                    {comm.author.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">{comm.author}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{formatDistanceToNow(comm.timestamp, { addSuffix: true })}</p>
+                                    <p className="text-slate-700 dark:text-slate-300 text-sm mt-2">{comm.message}</p>
+                                  </div>
+                                </motion.div>
+                              ))
+                            ) : (
+                              <p className="text-slate-500 dark:text-slate-400 text-center py-8 text-sm">No communication history yet.</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    {/* Document cards at bottom */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Identification */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center"
+                      >
+                        <div className="text-3xl mb-3">🪪</div>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1">Identification</h4>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+                          {viewingProfile.identification
+                            ? `${viewingProfile.identification.type.replace('_', ' ')}`
+                            : "Passport, Driver's License, etc."}
+                        </p>
+                        {viewingProfile.identification ? (
+                          <a
+                            href={viewingProfile.identification.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
+                          >
+                            View Document
+                          </a>
+                        ) : (
+                          <p className="text-slate-500 text-sm font-medium">No files</p>
+                        )}
+                      </motion.div>
+
+                      {/* Qualifications */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center"
+                      >
+                        <div className="text-3xl mb-3">📜</div>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1">Qualifications</h4>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Certificates and Degrees</p>
+                        {viewingProfile.qualifications && viewingProfile.qualifications.length > 0 ? (
+                          <div className="space-y-2">
+                            {viewingProfile.qualifications.map((q, i) => (
+                              <div key={i} className="text-xs text-slate-700 dark:text-slate-300">
+                                {q.name}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-slate-500 text-sm font-medium">No files</p>
+                        )}
+                      </motion.div>
+
+                      {/* Employment Files */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center"
+                      >
+                        <div className="text-3xl mb-3">📄</div>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1">Employment Files</h4>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Contracts and Official Letters</p>
+                        {viewingProfile.employmentFiles && viewingProfile.employmentFiles.length > 0 ? (
+                          <div className="space-y-2">
+                            {viewingProfile.employmentFiles.map((f, i) => (
+                              <a
+                                key={i}
+                                href={f.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
+                              >
+                                {f.name}
+                              </a>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-slate-500 text-sm font-medium">No files</p>
+                        )}
+                      </motion.div>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
