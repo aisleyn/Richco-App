@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle } from 'lucide-react'
+import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle, Download, Trash2, Calendar } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -22,6 +22,21 @@ interface EmployeeCommunication {
   attachmentUrl?: string
   attachmentName?: string
 }
+
+interface PPEItem {
+  id: string
+  employeeId: number
+  equipmentName: string
+  status: 'pending' | 'checked_out'
+  issueDate: string
+  expectedReturnDate?: string
+  quantity: number
+  checkedOutBy?: string
+  checkedOutDate?: number
+  returnedDate?: number
+}
+
+const PPE_ITEMS_KEY = 'richco-ppe-items'
 
 function getThreadId(userId1: string, userId2: string): string {
   return [userId1, userId2].sort().join('-')
@@ -48,6 +63,52 @@ function saveEmployeeCommunication(employeeId: number, communication: EmployeeCo
     localStorage.setItem(EMPLOYEE_COMMUNICATIONS_KEY, JSON.stringify(allComms))
   } catch (err) {
     console.error('[Employee Communications] Failed to save:', err)
+  }
+}
+
+function getPPEItems(employeeId: number): PPEItem[] {
+  try {
+    const stored = localStorage.getItem(PPE_ITEMS_KEY)
+    const allItems = stored ? JSON.parse(stored) : {}
+    return (allItems[employeeId] ?? []).sort((a: PPEItem, b: PPEItem) => {
+      const aDate = a.checkedOutDate || a.issueDate
+      const bDate = b.checkedOutDate || b.issueDate
+      return new Date(bDate).getTime() - new Date(aDate).getTime()
+    })
+  } catch {
+    return []
+  }
+}
+
+function savePPEItem(employeeId: number, item: PPEItem) {
+  try {
+    const stored = localStorage.getItem(PPE_ITEMS_KEY)
+    const allItems = stored ? JSON.parse(stored) : {}
+    if (!allItems[employeeId]) {
+      allItems[employeeId] = []
+    }
+    const index = allItems[employeeId].findIndex((i: PPEItem) => i.id === item.id)
+    if (index >= 0) {
+      allItems[employeeId][index] = item
+    } else {
+      allItems[employeeId].push(item)
+    }
+    localStorage.setItem(PPE_ITEMS_KEY, JSON.stringify(allItems))
+  } catch (err) {
+    console.error('[PPE Items] Failed to save:', err)
+  }
+}
+
+function deletePPEItem(employeeId: number, itemId: string) {
+  try {
+    const stored = localStorage.getItem(PPE_ITEMS_KEY)
+    const allItems = stored ? JSON.parse(stored) : {}
+    if (allItems[employeeId]) {
+      allItems[employeeId] = allItems[employeeId].filter((i: PPEItem) => i.id !== itemId)
+      localStorage.setItem(PPE_ITEMS_KEY, JSON.stringify(allItems))
+    }
+  } catch (err) {
+    console.error('[PPE Items] Failed to delete:', err)
   }
 }
 
@@ -114,6 +175,16 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
   const [refresh, setRefresh] = useState(0)
   const [commRefresh, setCommRefresh] = useState(0)
+  const [ppeRefresh, setPpeRefresh] = useState(0)
+  const [showAddPPE, setShowAddPPE] = useState(false)
+  const [ppeFormData, setPpeFormData] = useState<{ name: string; status: 'pending' | 'checked_out'; issueDate: string; quantity: number }>({
+    name: '',
+    status: 'pending',
+    issueDate: '',
+    quantity: 1
+  })
+  const [attachedFile, setAttachedFile] = useState<{ name: string; url: string; type: string } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { currentUserEmail, setUnreadMessageCount } = useAppStore()
 
   // Calculate unread message count
@@ -484,26 +555,67 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                               rows={3}
                             />
+
+                            {/* Attached file preview */}
+                            {attachedFile && (
+                              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center gap-2 border border-blue-200 dark:border-blue-800">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs text-slate-600 dark:text-slate-400">Attached: {attachedFile.name}</p>
+                                </div>
+                                <button
+                                  onClick={() => setAttachedFile(null)}
+                                  className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
+                                >
+                                  <X size={16} className="text-blue-600" />
+                                </button>
+                              </div>
+                            )}
+
                             <div className="flex gap-2 mt-3">
-                              <button className="flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                              <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                              >
                                 📎 Attach File
                               </button>
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (file) {
+                                    const reader = new FileReader()
+                                    reader.onload = (event) => {
+                                      setAttachedFile({
+                                        name: file.name,
+                                        url: event.target?.result as string,
+                                        type: file.type,
+                                      })
+                                    }
+                                    reader.readAsDataURL(file)
+                                  }
+                                }}
+                              />
                               <button
                                 onClick={() => {
-                                  if (employeeCommunicationInput.trim() && viewingProfile.id) {
+                                  if ((employeeCommunicationInput.trim() || attachedFile) && viewingProfile.id) {
                                     const comm: EmployeeCommunication = {
                                       id: `comm-${Date.now()}`,
                                       employeeId: viewingProfile.id,
                                       message: employeeCommunicationInput.trim(),
                                       author: currentUserEmail.split('@')[0],
                                       timestamp: Date.now(),
+                                      attachmentUrl: attachedFile?.url,
+                                      attachmentName: attachedFile?.name,
                                     }
                                     saveEmployeeCommunication(viewingProfile.id, comm)
                                     setEmployeeCommunicationInput('')
+                                    setAttachedFile(null)
                                     setCommRefresh(prev => prev + 1)
                                   }
                                 }}
-                                disabled={!employeeCommunicationInput.trim()}
+                                disabled={!employeeCommunicationInput.trim() && !attachedFile}
                                 className="ml-auto flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                               >
                                 <Send size={16} /> Post to Timeline
@@ -514,23 +626,57 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                           {/* Communication history */}
                           <div className="flex-1 overflow-y-auto space-y-4" key={`comms-${viewingProfile.id}-${commRefresh}`}>
                             {getEmployeeCommunications(viewingProfile.id).length > 0 ? (
-                              getEmployeeCommunications(viewingProfile.id).map(comm => (
-                                <motion.div
-                                  key={comm.id}
-                                  initial={{ opacity: 0, y: 8 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  className="flex gap-3 pb-4 border-b border-slate-200 dark:border-slate-700 last:border-b-0"
-                                >
-                                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                                    {comm.author.charAt(0).toUpperCase()}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">{comm.author}</p>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{formatDistanceToNow(comm.timestamp, { addSuffix: true })}</p>
-                                    <p className="text-slate-700 dark:text-slate-300 text-sm mt-2">{comm.message}</p>
-                                  </div>
-                                </motion.div>
-                              ))
+                              getEmployeeCommunications(viewingProfile.id).map(comm => {
+                                const isImage = comm.attachmentName && /\.(jpg|jpeg|png|gif|webp)$/i.test(comm.attachmentName)
+                                const isPDF = comm.attachmentName && /\.pdf$/i.test(comm.attachmentName)
+                                return (
+                                  <motion.div
+                                    key={comm.id}
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex gap-3 pb-4 border-b border-slate-200 dark:border-slate-700 last:border-b-0"
+                                  >
+                                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                      {comm.author.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">{comm.author}</p>
+                                      <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{formatDistanceToNow(comm.timestamp, { addSuffix: true })}</p>
+                                      {comm.message && <p className="text-slate-700 dark:text-slate-300 text-sm mt-2">{comm.message}</p>}
+
+                                      {/* Attachment display */}
+                                      {comm.attachmentUrl && (
+                                        <div className="mt-3">
+                                          {isImage ? (
+                                            <div className="space-y-2">
+                                              <img
+                                                src={comm.attachmentUrl}
+                                                alt={comm.attachmentName}
+                                                className="max-w-[200px] rounded-lg border border-slate-200 dark:border-slate-700"
+                                              />
+                                              <a
+                                                href={comm.attachmentUrl}
+                                                download={comm.attachmentName}
+                                                className="inline-flex items-center gap-2 px-3 py-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                              >
+                                                <Download size={14} /> Download
+                                              </a>
+                                            </div>
+                                          ) : (
+                                            <a
+                                              href={comm.attachmentUrl}
+                                              download={comm.attachmentName}
+                                              className="inline-flex items-center gap-2 px-3 py-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                            >
+                                              <Download size={14} /> {comm.attachmentName}
+                                            </a>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                )
+                              })
                             ) : (
                               <p className="text-slate-500 dark:text-slate-400 text-center py-8 text-sm">No communication history yet.</p>
                             )}
@@ -618,6 +764,187 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                         )}
                       </motion.div>
                     </div>
+
+                    {/* Leave Balance Card */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-gradient-to-br from-emerald-600/10 to-emerald-500/5 rounded-2xl border border-emerald-200 dark:border-emerald-800 p-6"
+                    >
+                      <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg mb-4">Leave Balance & Timeline</h3>
+                      {viewingProfile.leaveData ? (
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Annual Allowance</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-bold">{viewingProfile.leaveData.annualAllowance} days</p>
+                            </div>
+                            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 rounded-full w-full" />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <p className="text-slate-500 text-xs font-semibold uppercase">Used</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-bold text-lg mt-1">{viewingProfile.leaveData.used}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 text-xs font-semibold uppercase">Approved</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-bold text-lg mt-1">{viewingProfile.leaveData.approved}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-500 text-xs font-semibold uppercase">Pending</p>
+                              <p className="text-slate-900 dark:text-slate-100 font-bold text-lg mt-1">{viewingProfile.leaveData.pending}</p>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-emerald-200 dark:border-emerald-800">
+                            <div className="flex items-center justify-between">
+                              <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Remaining</p>
+                              <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">
+                                {viewingProfile.leaveData.annualAllowance - viewingProfile.leaveData.used} days
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-slate-500 text-sm">No leave data available</p>
+                      )}
+                    </motion.div>
+
+                    {/* PPE & Safety Equipment Section */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg">PPE & Safety Equipment</h3>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setShowAddPPE(!showAddPPE)}
+                            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors"
+                          >
+                            <Plus size={14} /> Add Item
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Add PPE Form */}
+                      {showAddPPE && isAdmin && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 mb-4 space-y-3 border border-slate-200 dark:border-slate-700"
+                        >
+                          <input
+                            type="text"
+                            placeholder="Equipment name"
+                            value={ppeFormData.name}
+                            onChange={e => setPpeFormData({ ...ppeFormData, name: e.target.value })}
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
+                          />
+                          <select
+                            value={ppeFormData.status}
+                            onChange={e => setPpeFormData({ ...ppeFormData, status: e.target.value as 'pending' | 'checked_out' })}
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="checked_out">Checked Out</option>
+                          </select>
+                          <input
+                            type="date"
+                            value={ppeFormData.issueDate}
+                            onChange={e => setPpeFormData({ ...ppeFormData, issueDate: e.target.value })}
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Quantity"
+                            min="1"
+                            value={ppeFormData.quantity}
+                            onChange={e => setPpeFormData({ ...ppeFormData, quantity: parseInt(e.target.value) || 1 })}
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                if (ppeFormData.name && ppeFormData.issueDate && viewingProfile.id) {
+                                  const item: PPEItem = {
+                                    id: `ppe-${Date.now()}`,
+                                    employeeId: viewingProfile.id,
+                                    equipmentName: ppeFormData.name,
+                                    status: ppeFormData.status,
+                                    issueDate: ppeFormData.issueDate,
+                                    quantity: ppeFormData.quantity,
+                                    checkedOutBy: currentUserEmail.split('@')[0],
+                                    checkedOutDate: ppeFormData.status === 'checked_out' ? Date.now() : undefined,
+                                  }
+                                  savePPEItem(viewingProfile.id, item)
+                                  setPpeFormData({ name: '', status: 'pending', issueDate: '', quantity: 1 })
+                                  setShowAddPPE(false)
+                                  setPpeRefresh(prev => prev + 1)
+                                }
+                              }}
+                              className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors"
+                            >
+                              Add Item
+                            </button>
+                            <button
+                              onClick={() => setShowAddPPE(false)}
+                              className="flex-1 px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* PPE Items List */}
+                      <div className="space-y-2" key={`ppe-${viewingProfile.id}-${ppeRefresh}`}>
+                        {getPPEItems(viewingProfile.id).length > 0 ? (
+                          getPPEItems(viewingProfile.id).map(item => (
+                            <motion.div
+                              key={item.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm">{item.equipmentName}</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+                                  Qty: {item.quantity} • {item.issueDate}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                  item.status === 'checked_out'
+                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                                }`}>
+                                  {item.status === 'checked_out' ? 'Checked Out' : 'Pending'}
+                                </span>
+                                {isAdmin && (
+                                  <button
+                                    onClick={() => {
+                                      deletePPEItem(viewingProfile.id, item.id)
+                                      setPpeRefresh(prev => prev + 1)
+                                    }}
+                                    className="p-1.5 text-slate-500 hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors"
+                                    title="Delete item"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-4">No PPE items recorded</p>
+                        )}
+                      </div>
+                    </motion.div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
