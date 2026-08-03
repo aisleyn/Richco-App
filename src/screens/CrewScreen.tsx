@@ -7,7 +7,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
 import { AddCrewModal } from '../components/crew/AddCrewModal'
 import { EditCrewModal } from '../components/crew/EditCrewModal'
-import { EmployeeProfileSheet } from '../components/crew/EmployeeProfileSheet'
 import type { Message } from '../types'
 import type { StoredCrewMember } from '../services/crew'
 
@@ -56,16 +55,6 @@ function getOnlineStatus(member: StoredCrewMember): { label: string; color: stri
   return statusConfig[member.status] || statusConfig.available
 }
 
-const roleFilters = ['All', 'Site Employee', 'Office Staff', 'Leadership'] as const
-type RoleFilter = typeof roleFilters[number]
-
-function roleMatch(member: StoredCrewMember, filter: RoleFilter) {
-  if (filter === 'All') return true
-  if (filter === 'Site Employee') return member.role === 'site_employee'
-  if (filter === 'Office Staff') return member.role === 'office_staff'
-  if (filter === 'Leadership') return member.role === 'leadership'
-  return true
-}
 
 function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -81,7 +70,6 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
 export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const [tab, setTab] = useState<'directory' | 'messages'>('directory')
   const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>('All')
   const [messageInput, setMessageInput] = useState('')
   const [crew, setCrew] = useState<StoredCrewMember[]>([])
   const [showAddCrew, setShowAddCrew] = useState(false)
@@ -146,7 +134,6 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   const canViewTimesheets = isAdmin || currentUserMember?.role === 'leadership'
 
   const filtered = crew
-    .filter(m => roleMatch(m, roleFilter))
     .filter(m => search ? `${m.firstName} ${m.lastName}`.toLowerCase().includes(search.toLowerCase()) : true)
 
   function startConversation(member: StoredCrewMember) {
@@ -271,7 +258,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
-              <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold">Crew</h1>
+              <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold">Employee Hub</h1>
               <div className="flex gap-3 items-center">
                 {isAdmin && (
                   <button
@@ -298,81 +285,117 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             {tab === 'directory' ? (
               <>
                 {/* Search */}
-                <div className="relative mb-4">
+                <div className="relative mb-6">
                   <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500" />
                   <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder="Search crew..."
+                    placeholder="Search employees..."
                     className="w-full bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500"
                   />
                   {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={14} className="text-slate-500 dark:text-slate-500" /></button>}
                 </div>
 
-                {/* Role filters */}
-                <div className="flex gap-2 overflow-x-auto pb-1 mb-4 scrollbar-hide">
-                  {roleFilters.map(f => (
-                    <button
-                      key={f}
-                      onClick={() => setRoleFilter(f)}
-                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${roleFilter === f ? 'bg-green-600 text-slate-900' : 'bg-bg-surface text-slate-400 border border-white/10'}`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Crew list */}
-                <div className="space-y-2">
+                {/* Horizontal employee selection bar */}
+                <div className="flex gap-3 overflow-x-auto pb-4 mb-6 scrollbar-hide">
                   {filtered.map((member, i) => {
                     const sc = getOnlineStatus(member)
+                    const isSelected = viewingProfile?.id === member.id
                     return (
-                      <motion.div
+                      <motion.button
                         key={member.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
-                        onClick={() => isAdmin && setViewingProfile(member)}
-                        className={`bg-bg-surface rounded-xl border border-slate-200 p-3.5 flex items-center gap-3 group shadow-md ${isAdmin ? 'cursor-pointer hover:border-green-600/50 transition-colors' : ''}`}
+                        onClick={() => setViewingProfile(member)}
+                        className={`flex-col items-center gap-2 shrink-0 p-3 rounded-2xl transition-all ${
+                          isSelected
+                            ? 'bg-green-600 text-white shadow-lg scale-105'
+                            : 'bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 hover:border-green-600/50 text-slate-800 dark:text-slate-100'
+                        }`}
                       >
                         <div className="relative">
-                          <Avatar name={`${member.firstName} ${member.lastName}`} size={42} />
-                          <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${sc.color} border-2 border-bg-base`} />
+                          <Avatar name={`${member.firstName} ${member.lastName}`} size={48} />
+                          <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${sc.color} border-2 ${isSelected ? 'border-green-600' : 'border-bg-surface dark:border-bg-surface-dark'}`} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-slate-800 font-medium text-sm">{member.firstName} {member.lastName}</p>
-                          <p className="text-slate-500 text-xs">{member.roleLabel}</p>
-                          {member.currentSite && <p className="text-slate-600 text-[10px] truncate mt-0.5">{member.currentSite}</p>}
+                        <div className="text-center">
+                          <p className="text-xs font-semibold truncate max-w-[80px]">{member.firstName.split(' ')[0]}</p>
+                          <p className={`text-[10px] ${isSelected ? 'text-green-50' : 'text-slate-500 dark:text-slate-400'}`}>{sc.label}</p>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className={`text-[10px] font-semibold ${sc.text}`}>{sc.label}</span>
-                          <button
-                            onClick={e => {
-                              e.stopPropagation()
-                              startConversation(member)
-                            }}
-                            className="p-1.5 rounded-lg bg-green-600/10 text-green-600 hover:bg-green-600/20 transition-colors"
-                            title="Message"
-                          >
-                            <MessageCircle size={14} />
-                          </button>
-                          {isAdmin && (
-                            <button
-                              onClick={e => {
-                                e.stopPropagation()
-                                setEditingMember(member)
-                              }}
-                              className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 opacity-0 group-hover:opacity-100 transition-all"
-                              title="Edit crew member"
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
+                      </motion.button>
                     )
                   })}
                 </div>
+
+                {/* Profile display on main page */}
+                {viewingProfile ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold">{viewingProfile.firstName} {viewingProfile.lastName}</h2>
+                        <p className="text-slate-500 text-sm">{viewingProfile.email}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startConversation(viewingProfile)}
+                          className="p-2.5 rounded-lg bg-green-600 text-slate-900 hover:bg-green-700 transition-colors"
+                          title="Message"
+                        >
+                          <MessageCircle size={18} />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setEditingMember(viewingProfile)}
+                            className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            title="Edit employee"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Profile details */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-gradient-to-br from-blue-600/10 to-amber-500/5 rounded-2xl border border-blue-600/20 p-5"
+                    >
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Role</p>
+                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">{viewingProfile.roleLabel}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pay Type</p>
+                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1 capitalize">
+                            {viewingProfile.paymentType === 'hourly' ? 'Hourly' : 'Salary'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                            {viewingProfile.paymentType === 'hourly' ? 'Rate' : 'Salary'}
+                          </p>
+                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">
+                            ${viewingProfile.hourlyRate || viewingProfile.salary || 'N/A'}
+                            {viewingProfile.paymentType === 'hourly' && '/hr'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Hire Date</p>
+                          <p className="text-slate-900 dark:text-slate-100 font-semibold mt-1">
+                            {viewingProfile.hireDate ? new Date(viewingProfile.hireDate).toLocaleDateString() : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Users size={48} className="text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500 font-medium">Select an employee to view details</p>
+                  </div>
+                )}
               </>
             ) : (
               /* Messages tab */
@@ -432,20 +455,8 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
               const members = await getAllCrew()
               setCrew(members)
               setEditingMember(null)
-            }}
-          />
-        )}
-        {viewingProfile && (
-          <EmployeeProfileSheet
-            member={viewingProfile}
-            onClose={() => setViewingProfile(null)}
-            isAdmin={isAdmin}
-            canViewTimesheets={canViewTimesheets}
-            onUpdated={async () => {
-              const members = await getAllCrew()
-              setCrew(members)
-              // Find and update the viewing profile with new data
-              const updated = members.find(m => m.email === viewingProfile.email)
+              // Update the viewing profile if it was edited
+              const updated = members.find(m => m.email === editingMember.email)
               if (updated) {
                 setViewingProfile(updated)
               }
