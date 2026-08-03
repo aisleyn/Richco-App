@@ -50,8 +50,6 @@ export async function register(
       id: authData.user.id,
       email,
       name: `${firstName} ${lastName}`,
-      firstName,
-      lastName,
       role: 'crew',
     })
 
@@ -64,8 +62,6 @@ export async function register(
       id: authData.user.id,
       email,
       name: `${firstName} ${lastName}`,
-      firstName,
-      lastName,
       role: 'crew',
     }
 
@@ -340,5 +336,98 @@ export async function setPasswordDirect(userId: string, password: string): Promi
   } catch (err) {
     console.error('[Auth] Set password error:', err)
     return { success: false, message: 'Failed to set password' }
+  }
+}
+
+// Request password reset with text code
+export async function requestPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string }> {
+  try {
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
+
+    // Store code in database
+    const { error } = await supabase
+      .from('password_reset_codes')
+      .insert({
+        code,
+        email,
+        expires_at: expiresAt.toISOString(),
+      })
+
+    if (error) {
+      console.error('[Auth] Failed to create reset code:', error.message)
+      return { success: false, message: 'Failed to generate reset code' }
+    }
+
+    console.log('[Auth] ✅ Password reset code generated for:', email, '(code:', code, ')')
+    // In production, send this via email/SMS. For testing, return it.
+    return { success: true, message: `Reset code has been generated. Code expires in 15 minutes.`, code }
+  } catch (err) {
+    console.error('[Auth] Password reset code error:', err)
+    return { success: false, message: 'Failed to request password reset' }
+  }
+}
+
+// Verify password reset code and update password
+export async function verifyPasswordResetCode(code: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  try {
+    // Find the code
+    const { data: resetData, error: fetchError } = await supabase
+      .from('password_reset_codes')
+      .select('*')
+      .eq('code', code)
+      .single()
+
+    if (fetchError || !resetData) {
+      console.error('[Auth] Invalid or expired code')
+      return { success: false, message: 'Invalid or expired code' }
+    }
+
+    // Check if expired
+    if (new Date(resetData.expires_at) < new Date()) {
+      console.error('[Auth] Reset code expired')
+      return { success: false, message: 'Reset code has expired' }
+    }
+
+    // Check if already used
+    if (resetData.used) {
+      console.error('[Auth] Reset code already used')
+      return { success: false, message: 'This reset code has already been used' }
+    }
+
+    // Find user by email
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', resetData.email)
+      .single()
+
+    if (userError || !userData) {
+      console.error('[Auth] User not found')
+      return { success: false, message: 'User not found' }
+    }
+
+    // Update password in auth
+    const { error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
+      password: newPassword,
+    })
+
+    if (updateError) {
+      console.error('[Auth] Failed to update password:', updateError.message)
+      return { success: false, message: 'Failed to update password' }
+    }
+
+    // Mark code as used
+    await supabase
+      .from('password_reset_codes')
+      .update({ used: true })
+      .eq('id', resetData.id)
+
+    console.log('[Auth] ✅ Password reset successful for:', resetData.email)
+    return { success: true, message: 'Password has been reset successfully' }
+  } catch (err) {
+    console.error('[Auth] Verify reset code error:', err)
+    return { success: false, message: 'Failed to reset password' }
   }
 }
