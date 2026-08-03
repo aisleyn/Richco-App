@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { LogIn, AlertCircle, Mail, Lock } from 'lucide-react'
-import { login } from '../services/supabaseAuth'
+import { LogIn, AlertCircle, Mail, Lock, UserPlus } from 'lucide-react'
+import { login, register } from '../services/supabaseAuth'
 
 interface Props {
   onLoginSuccess: () => void
@@ -9,33 +9,71 @@ interface Props {
 }
 
 export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
+  const [isRegistering, setIsRegistering] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-
-    if (!email || !password) {
-      setError('Please enter email and password')
-      return
-    }
-
-    setLoading(true)
     setError(null)
+    setSuccess(null)
+    setLoading(true)
 
     try {
-      const user = await login(email, password)
-      if (user) {
-        console.log('[LoginScreen] Login successful:', user.email)
-        onLoginSuccess()
+      if (isRegistering) {
+        // Registration flow
+        if (!email || !password || !firstName || !lastName) {
+          setError('Please fill in all fields')
+          setLoading(false)
+          return
+        }
+
+        if (password.length < 6) {
+          setError('Password must be at least 6 characters')
+          setLoading(false)
+          return
+        }
+
+        const result = await register(email, password, firstName, lastName)
+        if (result.success) {
+          setSuccess(result.message)
+          // Reset form
+          setEmail('')
+          setPassword('')
+          setFirstName('')
+          setLastName('')
+          // Switch back to login after 2 seconds
+          setTimeout(() => {
+            setIsRegistering(false)
+            setSuccess(null)
+          }, 2000)
+        } else {
+          setError(result.message)
+        }
       } else {
-        setError('Invalid email or password')
+        // Login flow
+        if (!email || !password) {
+          setError('Please enter email and password')
+          setLoading(false)
+          return
+        }
+
+        const user = await login(email, password)
+        if (user) {
+          console.log('[LoginScreen] Login successful:', user.email)
+          onLoginSuccess()
+        } else {
+          setError('Invalid email or password')
+        }
       }
     } catch (err) {
-      setError('Login failed. Please try again.')
-      console.error('[LoginScreen] Login error:', err)
+      setError('Operation failed. Please try again.')
+      console.error('[LoginScreen] Error:', err)
     } finally {
       setLoading(false)
     }
@@ -69,8 +107,61 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
           </motion.div>
         )}
 
-        {/* Login form */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        {/* Success alert */}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-green-500/15 border border-green-500/30 rounded-xl p-4 mb-6 flex items-start gap-3"
+          >
+            <AlertCircle size={16} className="text-green-400 mt-0.5 shrink-0" />
+            <p className="text-green-200 text-sm">{success}</p>
+          </motion.div>
+        )}
+
+        {/* Form mode indicator */}
+        <div className="mb-6 text-center">
+          <p className="text-slate-600 dark:text-slate-400 text-sm">
+            {isRegistering ? 'Create your account' : 'Sign in to your account'}
+          </p>
+        </div>
+
+        {/* Login / Registration form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Registration fields */}
+          {isRegistering && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="John"
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Doe"
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Email input */}
           <div>
             <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
@@ -105,39 +196,71 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
                 className="w-full pl-10 pr-4 py-2.5 bg-bg-surface dark:bg-bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
               />
             </div>
+            {isRegistering && (
+              <p className="text-slate-500 text-xs mt-1">Minimum 6 characters</p>
+            )}
           </div>
 
-          {/* Login button */}
+          {/* Submit button */}
           <button
             type="submit"
             disabled={loading}
             className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-600 hover:bg-green-700 active:bg-blue-800 disabled:opacity-50 transition-all rounded-lg text-white font-semibold text-base"
           >
-            <LogIn size={18} />
-            {loading ? 'Signing in...' : 'Sign In'}
+            {isRegistering ? (
+              <>
+                <UserPlus size={18} />
+                {loading ? 'Creating account...' : 'Create Account'}
+              </>
+            ) : (
+              <>
+                <LogIn size={18} />
+                {loading ? 'Signing in...' : 'Sign In'}
+              </>
+            )}
           </button>
 
-          {/* Forgot password link */}
+          {/* Toggle between login and registration */}
           <button
             type="button"
-            onClick={onForgotPassword}
+            onClick={() => {
+              setIsRegistering(!isRegistering)
+              setError(null)
+              setSuccess(null)
+              setEmail('')
+              setPassword('')
+              setFirstName('')
+              setLastName('')
+            }}
             disabled={loading}
-            className="w-full mt-3 text-green-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 transition-colors"
+            className="w-full mt-2 text-green-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 transition-colors"
           >
-            Forgot password?
+            {isRegistering ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
           </button>
+
+          {/* Forgot password link - only show on login mode */}
+          {!isRegistering && (
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              disabled={loading}
+              className="w-full text-green-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50 transition-colors"
+            >
+              Forgot password?
+            </button>
+          )}
         </form>
 
         {/* Help text */}
         <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
           <p className="text-slate-600 dark:text-slate-400 text-xs">
-            <strong>Don't have an account?</strong> Contact your admin to be added to the system.
+            <strong>New user?</strong> Create an account above. An admin will assign your role and permissions.
           </p>
         </div>
 
         {/* Dev info */}
         <p className="text-slate-500 text-xs text-center mt-6">
-          Crew members are added by administrators only. Your email and profile are used to track timesheets and communications.
+          Your email and profile are used to track timesheets and communications.
         </p>
       </motion.div>
     </div>

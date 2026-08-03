@@ -13,7 +13,68 @@ export interface User {
   id: string
   email: string
   name: string
+  firstName?: string
+  lastName?: string
+  phone?: string
   role: 'admin' | 'crew'
+}
+
+// Register new user
+export async function register(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+): Promise<{ success: boolean; message: string; user?: User }> {
+  try {
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: import.meta.env.VITE_APP_URL || 'https://mango-rock-0fadbc31e.7.azurestaticapps.net',
+      },
+    })
+
+    if (authError) {
+      console.error('[Auth] Registration failed:', authError.message)
+      return { success: false, message: authError.message }
+    }
+
+    if (!authData.user) {
+      return { success: false, message: 'Failed to create user account' }
+    }
+
+    // Create user profile in users table with 'crew' role by default
+    const { error: profileError } = await supabase.from('users').insert({
+      id: authData.user.id,
+      email,
+      name: `${firstName} ${lastName}`,
+      firstName,
+      lastName,
+      role: 'crew',
+    })
+
+    if (profileError) {
+      console.error('[Auth] Failed to create user profile:', profileError.message)
+      return { success: false, message: `Profile error: ${profileError.message}` }
+    }
+
+    const user: User = {
+      id: authData.user.id,
+      email,
+      name: `${firstName} ${lastName}`,
+      firstName,
+      lastName,
+      role: 'crew',
+    }
+
+    console.log('[Auth] ✅ Registration successful:', email)
+    return { success: true, message: 'Account created successfully! You can now login.', user }
+  } catch (err) {
+    console.error('[Auth] Registration error:', err)
+    return { success: false, message: 'Failed to create account' }
+  }
 }
 
 // Login with email and password
@@ -102,6 +163,9 @@ export async function getUserProfile(userId: string): Promise<User | null> {
       id: data.id,
       email: data.email,
       name: data.name,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
       role: data.role,
     }
   } catch (err) {
@@ -170,6 +234,9 @@ export async function getAllCrewMembers(): Promise<User[]> {
       id: row.id,
       email: row.email,
       name: row.name,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      phone: row.phone,
       role: row.role,
     }))
   } catch (err) {
