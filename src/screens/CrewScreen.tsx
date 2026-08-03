@@ -184,7 +184,9 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
     quantity: 1
   })
   const [attachedFile, setAttachedFile] = useState<{ name: string; url: string; type: string } | null>(null)
+  const [messageAttachedFile, setMessageAttachedFile] = useState<{ name: string; url: string; type: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const messageFileInputRef = useRef<HTMLInputElement>(null)
   const { currentUserEmail, setUnreadMessageCount } = useAppStore()
 
   // Calculate unread message count
@@ -252,7 +254,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   }
 
   function sendMessage() {
-    if (!messageInput.trim() || !activeThreadId || !currentUserMember) return
+    if ((!messageInput.trim() && !messageAttachedFile) || !activeThreadId || !currentUserMember) return
     const msg: Message = {
       id: `msg-${Date.now()}`,
       threadId: activeThreadId,
@@ -261,9 +263,12 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
       body: messageInput.trim(),
       timestamp: Date.now(),
       read: true,
+      attachmentUrl: messageAttachedFile?.url,
+      attachmentName: messageAttachedFile?.name,
     }
     saveThreadMessage(activeThreadId, msg)
     setMessageInput('')
+    setMessageAttachedFile(null)
     setRefresh(prev => prev + 1)
     // Update unread count after sending
     setUnreadMessageCount(calculateUnreadCount())
@@ -328,13 +333,30 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" key={`messages-${activeThreadId}-${refresh}`}>
               {currentThreadMsgs.map(msg => {
                 const isMe = msg.senderId === String(currentUserMember?.id)
+                const isImage = msg.attachmentName && /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.attachmentName)
                 return (
                   <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? 'justify-end' : 'justify-start'} gap-2`}>
                     {!isMe && <Avatar name={msg.senderName} size={28} />}
                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                       {!isMe && <p className="text-slate-500 dark:text-slate-400 text-[10px] px-1">{msg.senderName}</p>}
                       <div className={`px-4 py-2.5 rounded-2xl shadow-md ${isMe ? 'bg-green-600 text-slate-900 rounded-br-md' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-800 dark:text-slate-100 rounded-bl-md'}`}>
-                        <p className="text-sm">{msg.body}</p>
+                        {msg.body && <p className="text-sm">{msg.body}</p>}
+                        {msg.attachmentUrl && isImage && (
+                          <img
+                            src={msg.attachmentUrl}
+                            alt={msg.attachmentName}
+                            className="max-w-[200px] rounded-lg mt-2"
+                          />
+                        )}
+                        {msg.attachmentUrl && !isImage && (
+                          <a
+                            href={msg.attachmentUrl}
+                            download={msg.attachmentName}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 mt-2 text-xs bg-white/20 hover:bg-white/30 rounded transition-colors"
+                          >
+                            <Download size={12} /> {msg.attachmentName}
+                          </a>
+                        )}
                       </div>
                       <p className="text-slate-600 dark:text-slate-500 text-[10px] px-1">{formatDistanceToNow(msg.timestamp, { addSuffix: true })}</p>
                     </div>
@@ -344,7 +366,18 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
             </div>
 
             {/* Input */}
-            <div className="px-4 pb-4 pt-2 border-t border-slate-200 dark:border-slate-700 shrink-0">
+            <div className="px-4 pb-4 pt-2 border-t border-slate-200 dark:border-slate-700 shrink-0 space-y-2">
+              {messageAttachedFile && (
+                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center gap-2 border border-blue-200 dark:border-blue-800">
+                  <span className="text-xs text-slate-600 dark:text-slate-400">📎 {messageAttachedFile.name}</span>
+                  <button
+                    onClick={() => setMessageAttachedFile(null)}
+                    className="ml-auto p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
+                  >
+                    <X size={14} className="text-blue-600" />
+                  </button>
+                </div>
+              )}
               <div className="flex items-center gap-2 bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-white/10 dark:border-white/5 px-4 py-2.5">
                 <input
                   value={messageInput}
@@ -354,8 +387,34 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
                   className="flex-1 bg-transparent text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500 outline-none"
                 />
                 <button
+                  onClick={() => messageFileInputRef.current?.click()}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300 transition-colors"
+                  title="Attach file"
+                >
+                  📎
+                </button>
+                <input
+                  ref={messageFileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onload = (event) => {
+                        setMessageAttachedFile({
+                          name: file.name,
+                          url: event.target?.result as string,
+                          type: file.type,
+                        })
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                />
+                <button
                   onClick={sendMessage}
-                  disabled={!messageInput.trim()}
+                  disabled={!messageInput.trim() && !messageAttachedFile}
                   className="w-8 h-8 rounded-full bg-green-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity"
                 >
                   <Send size={14} className="text-slate-900" />

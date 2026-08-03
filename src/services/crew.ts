@@ -16,12 +16,14 @@ export interface Qualification {
   name: string
   expiryDate?: string
   issueDate?: string
+  url?: string
+  id?: string
 }
 
 export interface EmploymentFile {
   id: string
   name: string
-  type: 'contract' | 'nda' | 'other'
+  type: 'contract' | 'offer_letter' | 'agreement' | 'nda' | 'other'
   uploadedDate: number
   url?: string
 }

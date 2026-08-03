@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { X, Loader, Plus, Trash2 } from 'lucide-react'
+import { X, Loader, Plus, Trash2, Upload, Download } from 'lucide-react'
 import { updateCrewMember } from '../../services/crew'
 import type { StoredCrewMember, EmergencyContact, Qualification, EmploymentFile, LeaveData } from '../../services/crew'
 
@@ -13,7 +13,9 @@ interface Props {
 export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'personal' | 'employment' | 'emergency' | 'qualifications' | 'files' | 'leave'>('personal')
+  const [activeTab, setActiveTab] = useState<'personal' | 'employment' | 'emergency' | 'identification' | 'qualifications' | 'files' | 'leave'>('personal')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const qualFileInputRef = useRef<HTMLInputElement>(null)
 
   const [personal, setPersonal] = useState({
     firstName: member.firstName,
@@ -33,10 +35,13 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
     member.emergencyContact || { name: '', relationship: '', phone: '' }
   )
 
+  const [identification, setIdentification] = useState<any>(member.identification || undefined)
+
   const [qualifications, setQualifications] = useState<Qualification[]>(member.qualifications || [])
-  const [newQual, setNewQual] = useState({ name: '', expiryDate: '' })
+  const [newQual, setNewQual] = useState({ name: '', expiryDate: '', url: '', id: '' })
 
   const [employmentFiles, setEmploymentFiles] = useState<EmploymentFile[]>(member.employmentFiles || [])
+  const [newFile, setNewFile] = useState<any>({ name: '', url: '', type: 'contract', uploadedDate: Date.now(), id: '' })
 
   const [leave, setLeave] = useState<LeaveData>(
     member.leaveData || { annualAllowance: 20, used: 0, approved: 0, pending: 0 }
@@ -68,6 +73,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
         salary: employment.paymentType === 'salary' ? employment.salary : undefined,
         hireDate: employment.hireDate,
         emergencyContact: emergency.name ? emergency : undefined,
+        identification: identification,
         qualifications: qualifications.length > 0 ? qualifications : undefined,
         employmentFiles: employmentFiles.length > 0 ? employmentFiles : undefined,
         leaveData: leave,
@@ -86,6 +92,7 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
     { id: 'personal', label: 'Personal' },
     { id: 'employment', label: 'Employment' },
     { id: 'emergency', label: 'Emergency' },
+    { id: 'identification', label: 'Identification' },
     { id: 'qualifications', label: 'Qualifications' },
     { id: 'files', label: 'Files' },
     { id: 'leave', label: 'Leave' },
@@ -309,6 +316,86 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
             </div>
           )}
 
+          {/* Identification Tab */}
+          {activeTab === 'identification' && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
+                  Identification Type
+                </label>
+                <select
+                  value={identification?.type || ''}
+                  onChange={e => setIdentification({ ...identification, type: e.target.value } as any)}
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                >
+                  <option value="">Select type</option>
+                  <option value="drivers_license">Driver's License</option>
+                  <option value="passport">Passport</option>
+                  <option value="national_id">National ID</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {identification?.url && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-slate-600 text-xs font-semibold mb-2">Current Document</p>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={identification.url}
+                      alt="ID"
+                      className="h-24 rounded border border-slate-300"
+                    />
+                    <div>
+                      <p className="text-slate-800 text-sm font-medium">
+                        {identification.type.replace('_', ' ')}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setIdentification(undefined)}
+                        className="mt-2 px-3 py-1.5 bg-red-500/10 text-red-600 rounded text-xs font-medium hover:bg-red-500/20 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
+                  Upload Document
+                </label>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-green-600 hover:text-green-600 transition-colors"
+                >
+                  <Upload size={18} /> Click to upload (JPG, PNG, PDF)
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onload = (event) => {
+                        setIdentification({
+                          type: identification?.type || 'drivers_license',
+                          url: event.target?.result as string,
+                          uploadedDate: Date.now(),
+                        } as any)
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Qualifications Tab */}
           {activeTab === 'qualifications' && (
             <div className="space-y-4">
@@ -349,6 +436,18 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                       className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                     />
                   </div>
+                  {qual.url && (
+                    <div className="pt-2 border-t border-slate-200">
+                      <p className="text-slate-500 text-xs mb-2">Supporting Document:</p>
+                      <a
+                        href={qual.url}
+                        download={`${qual.name}.pdf`}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
+                      >
+                        <Download size={14} /> View Document
+                      </a>
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -369,12 +468,38 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
                     className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-green-600"
                   />
                 </div>
+                <div>
+                  <label className="text-slate-500 text-xs mb-2 block">Supporting Document (Optional)</label>
+                  <button
+                    type="button"
+                    onClick={() => qualFileInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-green-600 text-sm transition-colors"
+                  >
+                    <Upload size={16} /> {newQual.url ? 'File selected' : 'Upload file'}
+                  </button>
+                  <input
+                    ref={qualFileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        const reader = new FileReader()
+                        reader.onload = (event) => {
+                          setNewQual({ ...newQual, url: event.target?.result as string })
+                        }
+                        reader.readAsDataURL(file)
+                      }
+                    }}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => {
                     if (newQual.name.trim()) {
-                      setQualifications([...qualifications, newQual])
-                      setNewQual({ name: '', expiryDate: '' })
+                      setQualifications([...qualifications, { ...newQual, id: `qual-${Date.now()}` }])
+                      setNewQual({ name: '', expiryDate: '', url: '', id: '' })
                     }
                   }}
                   className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-amber-500 text-slate-900 rounded-lg px-4 py-2 font-medium text-sm transition-colors"
@@ -388,14 +513,123 @@ export function EditEmployeeProfileModal({ member, onClose, onUpdated }: Props) 
           {/* Employment Files Tab */}
           {activeTab === 'files' && (
             <div className="space-y-4">
-              <p className="text-slate-600 text-sm">
-                Employment files management. File upload feature ready for implementation.
-              </p>
-              {employmentFiles.length === 0 && (
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
-                  <p className="text-slate-500 text-sm">No employment files added yet</p>
+              {employmentFiles.map((file, i) => (
+                <div key={i} className="p-4 bg-bg-surface rounded-lg border border-slate-200 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={file.name}
+                        onChange={e => {
+                          const newFiles = [...employmentFiles]
+                          newFiles[i].name = e.target.value
+                          setEmploymentFiles(newFiles)
+                        }}
+                        placeholder="File name"
+                        className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEmploymentFiles(employmentFiles.filter((_, idx) => idx !== i))}
+                      className="ml-2 p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-slate-500 text-xs mb-1 block">Document Type</label>
+                    <select
+                      value={file.type}
+                      onChange={e => {
+                        const newFiles = [...employmentFiles]
+                        newFiles[i].type = e.target.value as 'contract' | 'offer_letter' | 'agreement' | 'nda' | 'other'
+                        setEmploymentFiles(newFiles)
+                      }}
+                      className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                    >
+                      <option value="contract">Employment Contract</option>
+                      <option value="offer_letter">Offer Letter</option>
+                      <option value="agreement">Agreement</option>
+                      <option value="nda">NDA</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  {file.url && (
+                    <div className="pt-2 border-t border-slate-200">
+                      <a
+                        href={file.url}
+                        download={file.name}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
+                      >
+                        <Download size={14} /> View File
+                      </a>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
+
+              <div className="p-4 bg-green-600/5 border border-blue-600/20 rounded-lg space-y-3">
+                <input
+                  type="text"
+                  value={newFile.name}
+                  onChange={e => setNewFile({ ...newFile, name: e.target.value })}
+                  placeholder="Add new file name"
+                  className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
+                />
+                <div>
+                  <label className="text-slate-500 text-xs mb-1 block">Document Type</label>
+                  <select
+                    value={newFile.type}
+                    onChange={e => setNewFile({ ...newFile, type: e.target.value as 'contract' | 'offer_letter' | 'agreement' | 'nda' | 'other' })}
+                    className="w-full bg-bg-base border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                  >
+                    <option value="contract">Employment Contract</option>
+                    <option value="offer_letter">Offer Letter</option>
+                    <option value="agreement">Agreement</option>
+                    <option value="nda">NDA</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-slate-500 text-xs mb-2 block">Upload File</label>
+                  <input
+                    id="empFileInput"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        const reader = new FileReader()
+                        reader.onload = (event) => {
+                          setNewFile({ ...newFile, url: event.target?.result as string })
+                        }
+                        reader.readAsDataURL(file)
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="empFileInput"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-green-600 hover:text-green-600 cursor-pointer transition-colors"
+                  >
+                    <Upload size={18} /> {newFile.url ? 'File selected' : 'Click to upload'}
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newFile.name.trim() && newFile.url) {
+                      setEmploymentFiles([...employmentFiles, { ...newFile, id: `file-${Date.now()}`, uploadedDate: Date.now() }])
+                      setNewFile({ name: '', url: '', type: 'contract', uploadedDate: Date.now(), id: '' })
+                      ;(document.getElementById('empFileInput') as HTMLInputElement).value = ''
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-amber-500 text-slate-900 rounded-lg px-4 py-2 font-medium text-sm transition-colors"
+                >
+                  <Plus size={14} /> Add File
+                </button>
+              </div>
             </div>
           )}
 

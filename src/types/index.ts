@@ -130,6 +130,8 @@ export interface Message {
   timestamp: number
   read: boolean
   readBy?: string[]
+  attachmentUrl?: string
+  attachmentName?: string
 }
 
 export interface MessageThread {
