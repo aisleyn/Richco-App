@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Edit2, Trash2 } from 'lucide-react'
+import { useAppStore } from '../../store/appStore'
 import type { TimesheetEntry } from '../../types'
 
 function fmt(ts: number) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-function getLocalTimecards(): TimesheetEntry[] {
+function getLocalTimecards(userId: string): TimesheetEntry[] {
   try {
-    const stored = localStorage.getItem('richco-completed-timecards')
+    const storageKey = `richco-completed-timecards-${userId}`
+    const stored = localStorage.getItem(storageKey)
     return stored ? JSON.parse(stored) : []
   } catch {
     return []
   }
 }
 
-function saveTimecards(timecards: TimesheetEntry[]) {
+function saveTimecards(timecards: TimesheetEntry[], userId: string) {
   try {
-    localStorage.setItem('richco-completed-timecards', JSON.stringify(timecards))
+    const storageKey = `richco-completed-timecards-${userId}`
+    localStorage.setItem(storageKey, JSON.stringify(timecards))
   } catch (err) {
     console.error('[Timecard] Failed to save timecards:', err)
   }
@@ -31,29 +34,31 @@ interface TimecardListProps {
 }
 
 export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: TimecardListProps) {
+  const { currentUserId } = useAppStore()
   const [timecards, setTimecards] = useState<TimesheetEntry[]>([])
 
   useEffect(() => {
-    const cards = getLocalTimecards()
+    if (!currentUserId) return
+    const cards = getLocalTimecards(currentUserId)
     const now = new Date()
     const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     const recentCards = cards.filter(tc => tc.date >= cutoffDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     setTimecards(recentCards)
 
     const handleStorageChange = () => {
-      const updated = getLocalTimecards()
+      const updated = getLocalTimecards(currentUserId)
       const recentUpdated = updated.filter(tc => tc.date >= cutoffDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setTimecards(recentUpdated)
     }
 
     window.addEventListener('storage', handleStorageChange)
     return () => window.removeEventListener('storage', handleStorageChange)
-  }, [daysBack])
+  }, [daysBack, currentUserId])
 
   function deleteTimecard(id: string) {
     if (!window.confirm('Are you sure you want to delete this timecard?')) return
     const updated = timecards.filter(t => t.id !== id)
-    saveTimecards(updated)
+    saveTimecards(updated, currentUserId)
     setTimecards(updated)
   }
 

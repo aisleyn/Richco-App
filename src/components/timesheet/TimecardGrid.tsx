@@ -1,24 +1,27 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, ChevronUp, Edit2, Trash2 } from 'lucide-react'
+import { useAppStore } from '../../store/appStore'
 import type { TimesheetEntry } from '../../types'
 
 function fmt(ts: number) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
-function getLocalTimecards(): TimesheetEntry[] {
+function getLocalTimecards(userId: string): TimesheetEntry[] {
   try {
-    const stored = localStorage.getItem('richco-completed-timecards')
+    const storageKey = `richco-completed-timecards-${userId}`
+    const stored = localStorage.getItem(storageKey)
     return stored ? JSON.parse(stored) : []
   } catch {
     return []
   }
 }
 
-function saveTimecards(timecards: TimesheetEntry[]) {
+function saveTimecards(timecards: TimesheetEntry[], userId: string) {
   try {
-    localStorage.setItem('richco-completed-timecards', JSON.stringify(timecards))
+    const storageKey = `richco-completed-timecards-${userId}`
+    localStorage.setItem(storageKey, JSON.stringify(timecards))
   } catch (err) {
     console.error('[Timecard] Failed to save timecards:', err)
   }
@@ -30,22 +33,24 @@ interface TimecardGridProps {
 }
 
 export function TimecardGrid({ isAdmin = false, onEditTimecard }: TimecardGridProps) {
+  const { currentUserId } = useAppStore()
   const [allTimecards, setAllTimecards] = useState<TimesheetEntry[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showFullMonth, setShowFullMonth] = useState(false)
 
   useEffect(() => {
-    const cards = getLocalTimecards().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    if (!currentUserId) return
+    const cards = getLocalTimecards(currentUserId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     setAllTimecards(cards)
 
     const handleStorageChange = () => {
-      const updated = getLocalTimecards().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      const updated = getLocalTimecards(currentUserId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setAllTimecards(updated)
     }
 
     window.addEventListener('storage', handleStorageChange)
     return () => window.removeEventListener('storage', handleStorageChange)
-  }, [])
+  }, [currentUserId])
 
   const getCardsByDateRange = (daysBack: number) => {
     const now = new Date()
@@ -60,7 +65,7 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard }: TimecardGridPr
   function deleteTimecard(id: string) {
     if (!window.confirm('Are you sure you want to delete this timecard?')) return
     const updated = allTimecards.filter(t => t.id !== id)
-    saveTimecards(updated)
+    saveTimecards(updated, currentUserId)
     setAllTimecards(updated)
   }
 

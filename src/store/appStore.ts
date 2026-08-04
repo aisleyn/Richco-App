@@ -231,11 +231,12 @@ export const useAppStore = create<AppState>()(
         }
 
         try {
-          const existing = localStorage.getItem('richco-completed-timecards')
+          const storageKey = `richco-completed-timecards-${currentUserId}`
+          const existing = localStorage.getItem(storageKey)
           const timecards: TimesheetEntry[] = existing ? JSON.parse(existing) : []
           timecards.unshift(completedTimecard) // Add to front (most recent first)
-          localStorage.setItem('richco-completed-timecards', JSON.stringify(timecards.slice(0, 30))) // Keep last 30
-          console.log('[Store] Saved timecard to localStorage:', completedTimecard)
+          localStorage.setItem(storageKey, JSON.stringify(timecards.slice(0, 30))) // Keep last 30
+          console.log('[Store] Saved timecard to localStorage for user:', currentUserId)
         } catch (err) {
           console.error('[Store] Failed to save timecard to localStorage:', err)
         }

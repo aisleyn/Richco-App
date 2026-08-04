@@ -33,7 +33,7 @@ interface WeekStats {
 }
 
 export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
-  const { clockedIn, clockIn, clockInTime, currentUserEmail } = useAppStore()
+  const { clockedIn, clockIn, clockInTime, currentUserEmail, currentUserId } = useAppStore()
   const { requestLocation } = useGeolocation()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null)
   const [showClockOut, setShowClockOut] = useState(false)
@@ -75,7 +75,8 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
 
     try {
-      const stored = localStorage.getItem('richco-completed-timecards')
+      const storageKey = `richco-completed-timecards-${currentUserId}`
+      const stored = localStorage.getItem(storageKey)
       const timecards: TimesheetEntry[] = stored ? JSON.parse(stored) : []
 
       // Today's completed timecards
@@ -102,16 +103,17 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
     } catch (err) {
       console.error('[Timecard] Failed to read timecards:', err)
     }
-  }, [timecardRefresh])
+  }, [timecardRefresh, currentUserId])
 
   function handleSaveEditedTimecard(timecard: TimesheetEntry) {
     try {
-      const stored = localStorage.getItem('richco-completed-timecards')
+      const storageKey = `richco-completed-timecards-${currentUserId}`
+      const stored = localStorage.getItem(storageKey)
       const timecards = stored ? JSON.parse(stored) : []
       const idx = timecards.findIndex((t: TimesheetEntry) => t.id === timecard.id)
       if (idx >= 0) {
         timecards[idx] = timecard
-        localStorage.setItem('richco-completed-timecards', JSON.stringify(timecards))
+        localStorage.setItem(storageKey, JSON.stringify(timecards))
         setTimecardRefresh(prev => prev + 1)
       }
     } catch (err) {

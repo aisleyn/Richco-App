@@ -13,6 +13,7 @@ import { AdminCrewScreen } from './screens/AdminCrewScreen'
 import { AIHelpScreen } from './screens/AIHelpScreen'
 import { ShiftRosterScreen } from './screens/ShiftRosterScreen'
 import { NotificationDetailScreen } from './screens/NotificationDetailScreen'
+import { ProfileScreen } from './screens/ProfileScreen'
 import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supabaseAuth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -159,14 +160,15 @@ export default function App() {
 
   const renderScreen = () => {
     switch (active) {
-      case 'home':   return <HomeScreen onNavigate={setActive} />
-      case 'time':   return <TimesheetScreen onNavigate={setActive} />
-      case 'photos': return <PhotosScreen onNavigate={setActive} />
-      case 'alerts': return <AlertsScreen onNavigate={setActive} onAlertClick={handleAlertClick} />
-      case 'roster': return isAdmin ? <ShiftRosterScreen /> : <HomeScreen onNavigate={setActive} />
-      case 'crew':   return isAdmin ? <AdminCrewScreen onNavigate={setActive} /> : <CrewScreen onNavigate={setActive} />
-      case 'ai':     return <AIHelpScreen onNavigate={setActive} />
-      default:       return <HomeScreen onNavigate={setActive} />
+      case 'home':    return <HomeScreen onNavigate={setActive} />
+      case 'time':    return <TimesheetScreen onNavigate={setActive} />
+      case 'photos':  return <PhotosScreen onNavigate={setActive} />
+      case 'alerts':  return <AlertsScreen onNavigate={setActive} onAlertClick={handleAlertClick} />
+      case 'roster':  return isAdmin ? <ShiftRosterScreen /> : <HomeScreen onNavigate={setActive} />
+      case 'crew':    return isAdmin ? <AdminCrewScreen onNavigate={setActive} /> : <CrewScreen onNavigate={setActive} />
+      case 'profile': return <ProfileScreen onNavigate={setActive} />
+      case 'ai':      return <AIHelpScreen onNavigate={setActive} />
+      default:        return <HomeScreen onNavigate={setActive} />
     }
   }
 

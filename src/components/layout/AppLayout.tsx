@@ -8,9 +8,10 @@ interface Props {
   children: ReactNode
   noPad?: boolean
   onLogout?: () => void
+  onNavigate?: (screen: string) => void
 }
 
-export function AppLayout({ children, noPad, onLogout }: Props) {
+export function AppLayout({ children, noPad, onLogout, onNavigate }: Props) {
   const [showProfile, setShowProfile] = useState(false)
   const { currentUserName, currentUserEmail } = useAppStore()
 
@@ -71,7 +72,7 @@ export function AppLayout({ children, noPad, onLogout }: Props) {
                 <button
                   onClick={() => {
                     setShowProfile(false)
-                    // Could navigate to profile settings here
+                    onNavigate?.('profile')
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >

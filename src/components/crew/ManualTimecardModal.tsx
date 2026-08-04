@@ -82,19 +82,13 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
         concerns: formData.concerns,
       }
 
-      // Save to employee's localStorage key
+      // Save to employee's localStorage key (they'll see it when they log in)
+      // Note: Using email as identifier until we have userId from crew lookup
       const storageKey = `richco-timecards-${formData.employeeEmail}`
       const existing = localStorage.getItem(storageKey)
       const timecards: TimesheetEntry[] = existing ? JSON.parse(existing) : []
       timecards.unshift(timecard)
       localStorage.setItem(storageKey, JSON.stringify(timecards.slice(0, 30)))
-
-      // Also add to main timecards list for current user view
-      const mainKey = 'richco-completed-timecards'
-      const mainExisting = localStorage.getItem(mainKey)
-      const mainTimecards: TimesheetEntry[] = mainExisting ? JSON.parse(mainExisting) : []
-      mainTimecards.unshift({ ...timecard, id: `manual-${formData.employeeEmail}-${Date.now()}` })
-      localStorage.setItem(mainKey, JSON.stringify(mainTimecards.slice(0, 30)))
 
       console.log('[Manual Timecard] Created:', timecard)
       onTimecardCreated()
