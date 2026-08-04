@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { LogIn, AlertCircle, Mail, Lock, UserPlus } from 'lucide-react'
 import { login, register } from '../services/supabaseAuth'
+import { useAppStore } from '../store/appStore'
 
 interface Props {
   onLoginSuccess: () => void
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
+  const { initializeUser } = useAppStore()
   const [isRegistering, setIsRegistering] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -66,6 +68,7 @@ export function LoginScreen({ onLoginSuccess, onForgotPassword }: Props) {
         const user = await login(email, password)
         if (user) {
           console.log('[LoginScreen] Login successful:', user.email)
+          initializeUser(user.name, user.email, user.id)
           onLoginSuccess()
         } else {
           setError('Invalid email or password')
