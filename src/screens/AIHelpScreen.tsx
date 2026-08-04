@@ -43,7 +43,7 @@ function TypingIndicator({ message }: { message: string }) {
 }
 
 
-export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
+export function AIHelpScreen({ onNavigate }: { onNavigate?: (s: string) => void }) {
   const [activeTab, setActiveTab] = useState<'chat' | 'docs'>('chat')
   const { chatMessages, addChatMessage, clearChat } = useAppStore()
   const [input, setInput] = useState('')
@@ -111,7 +111,7 @@ export function AIHelpScreen(_props: { onNavigate?: (s: string) => void }) {
   }
 
   return (
-    <AppLayout noPad>
+    <AppLayout noPad onNavigate={onNavigate}>
       <div className="pt-14 px-4 flex items-center justify-between">
         <div>
           <h1 className="text-slate-800 dark:text-slate-100 text-xl md:text-2xl font-bold">AI Help</h1>

@@ -130,7 +130,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
   }
 
   return (
-    <AppLayout>
+    <AppLayout onNavigate={onNavigate}>
       <div className="pt-14">
         <div className="flex items-center justify-between mb-1">
           <div>

@@ -13,11 +13,11 @@ import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
 
-export function PhotosScreen(props: { onNavigate?: (s: string) => void; initialProjectId?: string }) {
+export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s: string) => void; initialProjectId?: string }) {
   const { currentUserEmail } = useAppStore()
   const [viewMode, setViewMode] = useState<'sites' | 'projects'>('sites')
-  const [activeSite, setActiveSite] = useState<string | null>(props.initialProjectId ? null : null)
-  const [activeProject, setActiveProject] = useState<string | null>(props.initialProjectId || null)
+  const [activeSite, setActiveSite] = useState<string | null>(initialProjectId ? null : null)
+  const [activeProject, setActiveProject] = useState<string | null>(initialProjectId || null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
@@ -107,7 +107,7 @@ export function PhotosScreen(props: { onNavigate?: (s: string) => void; initialP
   }
 
   return (
-    <AppLayout noPad>
+    <AppLayout noPad onNavigate={onNavigate}>
       <div className="pt-14 px-4">
         <div className="flex items-center justify-between mb-1">
           {(activeSite || activeProject) && (

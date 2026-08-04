@@ -163,7 +163,7 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   )
 }
 
-export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
+export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void }) {
   const [tab, setTab] = useState<'directory' | 'messages'>('directory')
   const [search, setSearch] = useState('')
   const [messageInput, setMessageInput] = useState('')
@@ -310,7 +310,7 @@ export function CrewScreen(_props: { onNavigate?: (s: string) => void }) {
   }
 
   return (
-    <AppLayout>
+    <AppLayout onNavigate={onNavigate}>
       <div className="pt-14">
         {activeThreadId ? (
           /* Message thread view */

@@ -32,7 +32,7 @@ interface WeekStats {
   month: number
 }
 
-export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
+export function TimesheetScreen({ onNavigate }: Props) {
   const { clockedIn, clockIn, clockInTime, currentUserEmail, currentUserId } = useAppStore()
   const { requestLocation } = useGeolocation()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null)
@@ -161,7 +161,7 @@ export function TimesheetScreen({ onNavigate: _onNavigate }: Props) {
   const todayHours = (clockedIn ? hours : 0) + completedTodayHours
 
   return (
-    <AppLayout>
+    <AppLayout onNavigate={onNavigate}>
       <div className="pt-14">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-slate-800 text-2xl font-bold">Timesheet</h1>

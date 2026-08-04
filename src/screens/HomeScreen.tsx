@@ -20,7 +20,7 @@ interface Props {
 
 export function HomeScreen({ onNavigate }: Props) {
   const { currentUserName, currentUserEmail } = useAppStore()
-  const firstName = currentUserName.split(' ')[0]
+  const firstName = currentUserName?.split(' ')[0] || 'there'
   const greeting = useGreeting(firstName)
   const { clockedIn, clockIn, unreadAlertCount, unreadMessageCount } = useAppStore()
   const { requestLocation, isLoading: isGeoLoading, error: geoError } = useGeolocation()
@@ -90,7 +90,7 @@ export function HomeScreen({ onNavigate }: Props) {
   const isSupervisor = isAdmin || isCEO
 
   return (
-    <AppLayout>
+    <AppLayout onNavigate={onNavigate}>
       {/* Header */}
       <div className="pt-6 pb-2 flex items-start justify-between">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
