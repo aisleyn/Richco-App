@@ -15,6 +15,9 @@ export function AppLayout({ children, noPad, onLogout, onNavigate }: Props) {
   const [showProfile, setShowProfile] = useState(false)
   const { currentUserName, currentUserEmail } = useAppStore()
 
+  // Debug logging
+  console.log('[AppLayout] Rendering with user:', { currentUserName, currentUserEmail })
+
   const handleLogout = async () => {
     await logout()
     onLogout?.()
