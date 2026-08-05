@@ -376,14 +376,27 @@ export async function setPasswordDirect(userId: string, password: string): Promi
 // Request password reset with text code
 export async function requestPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string }> {
   try {
+    // First, find the user by email
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single()
+
+    if (userError || !userData) {
+      console.error('[Auth] User not found for email:', email)
+      return { success: false, message: 'Email not found in our system' }
+    }
+
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString()
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
-    // Store code in database
+    // Store code in database with user_id
     const { error } = await supabase
       .from('password_reset_codes')
       .insert({
+        user_id: userData.id,
         code,
         email,
         expires_at: expiresAt.toISOString(),
