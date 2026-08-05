@@ -11,7 +11,13 @@ ADD COLUMN IF NOT EXISTS is_broadcast boolean DEFAULT false;
 -- 2. Drop the old open-read policy
 DROP POLICY IF EXISTS "Anyone can read notifications" ON public.notifications;
 
--- 3. Create new RLS policies for notifications
+-- 3. Drop old policies if they exist
+DROP POLICY IF EXISTS "Admins can insert notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can read notifications for them" ON public.notifications;
+DROP POLICY IF EXISTS "Admins can update notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Admins can delete notifications" ON public.notifications;
+
+-- 4. Create new RLS policies for notifications
 
 -- Policy: Admin can insert notifications
 CREATE POLICY "Admins can insert notifications"
@@ -74,7 +80,7 @@ CREATE POLICY "Admins can delete notifications"
     )
   );
 
--- 4. Create a function to send notifications to specific users
+-- 5. Create a function to send notifications to specific users
 CREATE OR REPLACE FUNCTION public.send_notification(
   p_title text,
   p_message text,
@@ -115,7 +121,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 5. Example usage:
+-- 6. Example usage:
 -- -- Send to specific user:
 -- SELECT send_notification('Hello', 'Message for John', 'update', recipient_id => 'john-uuid');
 --
