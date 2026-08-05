@@ -45,10 +45,19 @@ export async function register(
       return { success: false, message: 'Failed to create user account' }
     }
 
-    // NOTE: User profile is automatically created by the on_auth_user_created trigger
-    // No need to insert manually - the database trigger handles it
-    // Wait briefly to ensure trigger has completed (typically instant)
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Create user profile in users table with 'crew' role by default
+    // RLS policy allows users to insert their own profile (id = auth.uid())
+    const { error: profileError } = await supabase.from('users').insert({
+      id: authData.user.id,
+      email,
+      name: `${firstName} ${lastName}`,
+      role: 'crew',
+    })
+
+    if (profileError) {
+      console.error('[Auth] Failed to create user profile:', profileError.message)
+      return { success: false, message: `Profile error: ${profileError.message}` }
+    }
 
     const user: User = {
       id: authData.user.id,
@@ -183,8 +192,19 @@ export async function createCrewMember(email: string, name: string): Promise<{ s
       return { success: false, message: 'Failed to create user' }
     }
 
-    // NOTE: User profile is automatically created by the on_auth_user_created trigger
-    // The trigger fires when the auth user is created, even via the admin API
+    // Create user profile in users table
+    const { error: profileError } = await supabase.from('users').insert({
+      id: data.user.id,
+      email,
+      name,
+      role: 'crew',
+    })
+
+    if (profileError) {
+      console.error('[Auth] Failed to create user profile:', profileError.message)
+      return { success: false, message: `Profile error: ${profileError.message}` }
+    }
+
     console.log('[Auth] ✅ Created crew member:', email)
     return { success: true, message: `Crew member ${email} created. They'll receive an email to set their password.` }
   } catch (err) {

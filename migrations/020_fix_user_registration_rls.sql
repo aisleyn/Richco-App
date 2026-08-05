@@ -14,21 +14,13 @@ DROP POLICY IF EXISTS "Admin can update users" ON public.users;
 DROP POLICY IF EXISTS "Admin can delete users" ON public.users;
 
 -- 2. Create new policies for INSERT that work with signup flow
--- Allow inserting a record if the user_id matches their own auth ID (for self-registration)
--- This works after the auth user is created and the app calls the insert
-CREATE POLICY "Users can insert own profile during registration"
+-- SIMPLE APPROACH: Just allow users to insert their own profile
+-- We don't check for admin privileges here to avoid circular dependency
+-- Admins are set up manually via SQL or super admin account
+CREATE POLICY "Users can insert own profile"
   ON public.users
   FOR INSERT
-  WITH CHECK (
-    -- Allow user to insert their own profile
-    id = auth.uid()
-    OR
-    -- Allow admins to insert any user
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  WITH CHECK (id = auth.uid());
 
 -- 3. Create policy for SELECT (allow reading own record and all crew)
 CREATE POLICY "Users can read own profile"
@@ -50,27 +42,13 @@ CREATE POLICY "Users can update own profile"
   USING (id = auth.uid() OR role = 'admin')
   WITH CHECK (id = auth.uid() OR role = 'admin');
 
--- 5. Create automatic profile creation trigger
--- This automatically creates a profile when a new auth user is created
--- Uses SECURITY DEFINER to bypass RLS - this is the recommended Supabase pattern
-
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.users (id, email, name, role)
-  VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'name', new.email), 'crew')
-  ON CONFLICT (id) DO NOTHING;
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- IMPORTANT NOTES:
--- - This trigger automatically creates profiles for new signup users
--- - SECURITY DEFINER allows the trigger to bypass RLS
--- - The app no longer needs to INSERT into public.users during signup
--- - User profiles are guaranteed to exist after auth account creation
+-- 5. RLS Policy Summary
+-- INSERT: Users can insert their own profile (for self-registration)
+-- SELECT: Users can read all crew members + their own profile (for messaging/crew list)
+-- SELECT: Admins can read all users
+-- UPDATE: Users can update their own profile
+--
+-- IMPORTANT:
+-- - The RLS policy now allows self-registration without circular dependencies
+-- - The app INSERT call in supabaseAuth.ts will succeed with this policy
+-- - Admins are set up manually or via a super admin account
