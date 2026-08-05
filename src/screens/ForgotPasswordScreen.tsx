@@ -16,7 +16,6 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [displayCode, setDisplayCode] = useState<string | null>(null)
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -33,7 +32,6 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
     setLoading(false)
 
     if (result.success) {
-      setDisplayCode(result.code || null)
       setStage('code')
     } else {
       setError(result.message || 'Failed to generate reset code')
@@ -157,13 +155,10 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
             {/* Code Stage */}
             {stage === 'code' && (
               <form onSubmit={handleCodeSubmit} className="space-y-4">
-                {displayCode && (
-                  <div className="bg-green-500/15 border border-green-500/30 rounded-lg p-4 mb-4">
-                    <p className="text-green-700 dark:text-green-300 text-xs font-semibold mb-2">Your Reset Code:</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400 tracking-widest">{displayCode}</p>
-                    <p className="text-slate-500 text-xs mt-2">Code expires in 15 minutes</p>
-                  </div>
-                )}
+                <div className="bg-blue-500/15 border border-blue-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-blue-700 dark:text-blue-300 text-sm font-semibold mb-1">Check your email</p>
+                  <p className="text-blue-600 dark:text-blue-400 text-xs">We've sent a 6-digit reset code to <strong>{email}</strong>. It expires in 15 minutes.</p>
+                </div>
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-200 text-sm font-medium mb-2">
@@ -224,7 +219,6 @@ export function ForgotPasswordScreen({ onBackToLogin }: Props) {
                     setCode('')
                     setNewPassword('')
                     setConfirmPassword('')
-                    setDisplayCode(null)
                     setError(null)
                   }}
                   disabled={loading}
