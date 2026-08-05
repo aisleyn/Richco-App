@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion'
-import { Home, Clock, Calendar, Camera, Bell, Users, Bot } from 'lucide-react'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Home, Clock, Calendar, Camera, Bell, Users, Bot, LogOut, User } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 
 const baseTabs = [
@@ -22,8 +23,9 @@ interface Props {
   isAdmin?: boolean
 }
 
-export function BottomNav({ active, onChange, isAdmin = false }: Props) {
-  const { unreadAlertCount, unreadMessageCount, isModalOpen } = useAppStore()
+export function BottomNav({ active, onChange, onLogout, isAdmin = false }: Props) {
+  const { unreadAlertCount, unreadMessageCount, isModalOpen, currentUserName } = useAppStore()
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
 
   const tabs = isAdmin ? [...baseTabs, ...adminTabs] : baseTabs
 
@@ -59,6 +61,54 @@ export function BottomNav({ active, onChange, isAdmin = false }: Props) {
             </button>
           )
         })}
+
+        {/* Profile Button - Desktop only */}
+        <div className="hidden md:block md:mt-auto md:pt-3 md:border-t md:border-slate-200 relative">
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+              {currentUserName?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <span className="flex-1 text-left text-sm font-medium text-slate-900 truncate">
+              {currentUserName || 'User'}
+            </span>
+          </button>
+
+          {/* Profile Dropdown */}
+          <AnimatePresence>
+            {showProfileMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                className="absolute bottom-full mb-2 right-0 left-0 bg-white rounded-lg border border-slate-200 shadow-xl overflow-hidden"
+              >
+                <button
+                  onClick={() => {
+                    onChange('profile')
+                    setShowProfileMenu(false)
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  <User size={16} />
+                  View Profile
+                </button>
+                <button
+                  onClick={() => {
+                    onLogout?.()
+                    setShowProfileMenu(false)
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-slate-200"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </nav>
   )

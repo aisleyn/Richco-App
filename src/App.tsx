@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AppLayout } from './components/layout/AppLayout'
 import { BottomNav } from './components/layout/BottomNav'
 import { NotificationsPanel } from './components/layout/NotificationsPanel'
 import { LoginScreen } from './screens/LoginScreen'
@@ -205,46 +204,42 @@ export default function App() {
   // If a notification is selected, show its detail screen
   if (selectedNotification) {
     return (
-      <AppLayout onLogout={handleLogout} onNavigate={handleNavChange}>
-        <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
-          <NotificationsPanel onNotificationClick={setSelectedNotification} />
-          <div className="flex-1 flex flex-col md:pr-20">
-            <NotificationDetailScreen
-              notification={selectedNotification}
-              onBack={() => setSelectedNotification(null)}
-            />
-            <BottomNav active={active} onChange={handleNavChange} isAdmin={isAdmin} />
-          </div>
+      <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
+        <NotificationsPanel onNotificationClick={setSelectedNotification} />
+        <div className="flex-1 flex flex-col md:pr-20">
+          <NotificationDetailScreen
+            notification={selectedNotification}
+            onBack={() => setSelectedNotification(null)}
+          />
+          <BottomNav active={active} onChange={handleNavChange} onLogout={handleLogout} isAdmin={isAdmin} />
         </div>
-      </AppLayout>
+      </div>
     )
   }
 
   return (
-    <AppLayout onLogout={handleLogout} onNavigate={handleNavChange}>
-      <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
-        {/* Notifications Panel - Desktop only */}
-        <NotificationsPanel onNotificationClick={setSelectedNotification} />
+    <div className="relative min-h-screen w-full bg-bg-base dark:bg-bg-base-dark flex flex-col md:flex-row">
+      {/* Notifications Panel - Desktop only */}
+      <NotificationsPanel onNotificationClick={setSelectedNotification} />
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col md:pr-20">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={active}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
-              className="flex-1"
-            >
-              {renderScreen()}
-            </motion.div>
-          </AnimatePresence>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col md:pr-20">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="flex-1"
+          >
+            {renderScreen()}
+          </motion.div>
+        </AnimatePresence>
 
-          {/* Right Navigation - Desktop only */}
-          <BottomNav active={active} onChange={setActive} isAdmin={isAdmin} />
-        </div>
+        {/* Right Navigation - Desktop only */}
+        <BottomNav active={active} onChange={setActive} onLogout={handleLogout} isAdmin={isAdmin} />
       </div>
-    </AppLayout>
+    </div>
   )
 }
