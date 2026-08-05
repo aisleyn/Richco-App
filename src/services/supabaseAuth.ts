@@ -171,6 +171,39 @@ export async function getUserProfile(userId: string): Promise<User | null> {
   }
 }
 
+// Update user profile
+export async function updateUserProfile(userId: string, updates: Partial<User>): Promise<{ success: boolean; message: string; user?: User }> {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        ...(updates.name && { name: updates.name }),
+        ...(updates.firstName && { firstName: updates.firstName }),
+        ...(updates.lastName && { lastName: updates.lastName }),
+        ...(updates.phone && { phone: updates.phone }),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+
+    if (error) {
+      console.error('[Auth] Failed to update profile:', error.message)
+      return { success: false, message: `Failed to update profile: ${error.message}` }
+    }
+
+    // Fetch updated profile
+    const user = await getUserProfile(userId)
+    if (user) {
+      console.log('[Auth] ✅ Profile updated:', userId)
+      return { success: true, message: 'Profile updated successfully', user }
+    } else {
+      return { success: false, message: 'Profile updated but could not fetch updated data' }
+    }
+  } catch (err) {
+    console.error('[Auth] Update profile error:', err)
+    return { success: false, message: 'Failed to update profile' }
+  }
+}
+
 // Create new crew member (admin only)
 export async function createCrewMember(email: string, name: string): Promise<{ success: boolean; message: string }> {
   try {

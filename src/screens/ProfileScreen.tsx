@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, User, Mail, Shield, Edit2, Check, X } from 'lucide-react'
+import { ArrowLeft, User, Mail, Shield, Edit2, Check, X, LogOut } from 'lucide-react'
 import { useAppStore } from '../store/appStore'
-import { updatePassword } from '../services/supabaseAuth'
+import { updatePassword, updateUserProfile, logout } from '../services/supabaseAuth'
 
 interface Props {
   onNavigate: (screen: string) => void
 }
 
 export function ProfileScreen({ onNavigate }: Props) {
-  const { currentUserName, currentUserEmail, currentUserId } = useAppStore()
+  const { currentUserName, currentUserEmail, currentUserId, initializeUser, clearUser } = useAppStore()
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(currentUserName)
   const [showPasswordForm, setShowPasswordForm] = useState(false)
@@ -25,10 +25,27 @@ export function ProfileScreen({ onNavigate }: Props) {
       setError('Name cannot be empty')
       return
     }
-    // TODO: Save to database when API is ready
-    setSuccess('Profile updated successfully')
-    setIsEditing(false)
-    setTimeout(() => setSuccess(null), 3000)
+
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const result = await updateUserProfile(currentUserId, { name: editName })
+      if (result.success && result.user) {
+        // Update app store with new name
+        initializeUser(result.user.name, result.user.email, currentUserId)
+        setSuccess('Profile updated successfully')
+        setIsEditing(false)
+        setTimeout(() => setSuccess(null), 3000)
+      } else {
+        setError(result.message || 'Failed to update profile')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -69,6 +86,15 @@ export function ProfileScreen({ onNavigate }: Props) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLogout = async () => {
+    if (!window.confirm('Are you sure you want to sign out?')) {
+      return
+    }
+    await logout()
+    clearUser()
+    onNavigate('home')
   }
 
   return (
@@ -285,6 +311,15 @@ export function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
           </div>
+
+          {/* Sign Out Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+          >
+            <LogOut size={18} />
+            Sign Out
+          </button>
         </div>
       </div>
   )
