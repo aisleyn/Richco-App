@@ -14,6 +14,7 @@ interface AppState {
   currentUserEmail: string
   currentUserId: string
   initializeUser: (name: string, email: string, userId: string) => void
+  clearUser: () => void
 
   // Clock state
   clockedIn: boolean
@@ -95,6 +96,26 @@ export const useAppStore = create<AppState>()(
           activeTimesheetId: null,
           activeBreakPeriodId: null,
           activeSheetEntry: null,
+        })
+      },
+
+      clearUser: () => {
+        console.log('[Store] Clearing user data')
+        set({
+          currentUserName: '',
+          currentUserEmail: '',
+          currentUserId: '',
+          clockedIn: false,
+          clockInTime: null,
+          breakActive: false,
+          breakStartTime: null,
+          totalBreakMs: 0,
+          activeTimesheetId: null,
+          activeBreakPeriodId: null,
+          activeSheetEntry: null,
+          crewMessages: {},
+          crewActiveThread: null,
+          chatMessages: [],
         })
       },
 

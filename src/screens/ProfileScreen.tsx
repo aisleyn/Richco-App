@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, User, Mail, Phone, Shield, Edit2, Check, X } from 'lucide-react'
-import { AppLayout } from '../components/layout/AppLayout'
+import { ArrowLeft, User, Mail, Shield, Edit2, Check, X } from 'lucide-react'
 import { useAppStore } from '../store/appStore'
 import { updatePassword } from '../services/supabaseAuth'
 
@@ -73,8 +72,7 @@ export function ProfileScreen({ onNavigate }: Props) {
   }
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-white dark:bg-slate-900 pt-20 pb-8">
+    <div className="min-h-screen bg-white dark:bg-slate-900 pt-20 pb-8">
         {/* Header */}
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
           <button
@@ -289,6 +287,5 @@ export function ProfileScreen({ onNavigate }: Props) {
           </div>
         </div>
       </div>
-    </AppLayout>
   )
 }
