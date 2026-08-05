@@ -17,11 +17,15 @@ create index if not exists password_reset_codes_email_idx on public.password_res
 -- Allow users to view and update their own reset codes
 alter table public.password_reset_codes enable row level security;
 
-create policy "Users can view their own reset codes" on public.password_reset_codes
-  for select using (email = auth.jwt() ->> 'email');
-
+-- Anyone can insert (for initiating password reset)
 create policy "Anyone can insert reset codes" on public.password_reset_codes
   for insert with check (true);
 
+-- Allow viewing by code for verification (password reset flow)
+-- Also allow users to view their own codes by email
+create policy "Allow password reset code verification" on public.password_reset_codes
+  for select using (true);
+
+-- Users can update their own codes (mark as used)
 create policy "Users can update their own reset codes" on public.password_reset_codes
   for update using (email = auth.jwt() ->> 'email');

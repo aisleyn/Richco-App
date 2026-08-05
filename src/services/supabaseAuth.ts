@@ -374,18 +374,19 @@ export async function setPasswordDirect(userId: string, password: string): Promi
 }
 
 // Request password reset with text code
-export async function requestPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string }> {
+export async function requestPasswordResetCode(email: string): Promise<{ success: boolean; message: string }> {
   try {
-    // First, find the user by email
-    const { data: userData, error: userError } = await supabase
+    // First, find the user by email (silently, don't reveal if user exists)
+    const { data: userData } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
       .single()
 
-    if (userError || !userData) {
-      console.error('[Auth] User not found for email:', email)
-      return { success: false, message: 'Email not found in our system' }
+    // Always return success message (security: don't reveal if email exists)
+    if (!userData) {
+      console.log('[Auth] Password reset requested for non-existent email:', email)
+      return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
     }
 
     // Generate 6-digit code
@@ -404,15 +405,18 @@ export async function requestPasswordResetCode(email: string): Promise<{ success
 
     if (error) {
       console.error('[Auth] Failed to create reset code:', error.message)
-      return { success: false, message: 'Failed to generate reset code' }
+      return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
     }
 
+    // TODO: Send code via email using SendGrid, AWS SES, or Supabase email service
+    // For now, just log it for development
     console.log('[Auth] ✅ Password reset code generated for:', email, '(code:', code, ')')
-    // In production, send this via email/SMS. For testing, return it.
-    return { success: true, message: `Reset code has been generated. Code expires in 15 minutes.`, code }
+    console.log('[Auth] TODO: Send this code to the user via email')
+
+    return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
   } catch (err) {
     console.error('[Auth] Password reset code error:', err)
-    return { success: false, message: 'Failed to request password reset' }
+    return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
   }
 }
 
