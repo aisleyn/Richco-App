@@ -2,12 +2,19 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error('Missing Supabase environment variables')
 }
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+// Admin client for privileged operations (password reset, user management)
+// Uses service role key - should only be used server-side in production
+export const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null
 
 export interface User {
   id: string
@@ -408,10 +415,35 @@ export async function requestPasswordResetCode(email: string): Promise<{ success
       return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
     }
 
-    // TODO: Send code via email using SendGrid, AWS SES, or Supabase email service
-    // For now, just log it for development
-    console.log('[Auth] ✅ Password reset code generated for:', email, '(code:', code, ')')
-    console.log('[Auth] TODO: Send this code to the user via email')
+    // Send code via Power Automate flow
+    const POWER_AUTOMATE_FLOW_URL = 'https://e4bdc34769a8e6c783d5b9fd7e2535.13.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/14/workflows/7102fc06a2a44db3aeb4a1adccf559e6/triggers/manual/paths/invoke?api-version=1'
+
+    console.log('[Auth] 🔄 Attempting to send email via Power Automate...')
+    console.log('[Auth] Flow URL:', POWER_AUTOMATE_FLOW_URL)
+    console.log('[Auth] Sending payload:', { email, code })
+
+    try {
+      const emailResponse = await fetch(POWER_AUTOMATE_FLOW_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      })
+
+      console.log('[Auth] Flow response status:', emailResponse.status)
+      const responseText = await emailResponse.text()
+      console.log('[Auth] Flow response body:', responseText)
+
+      if (emailResponse.ok) {
+        console.log('[Auth] ✅ Password reset email sent to:', email)
+      } else {
+        console.warn('[Auth] ⚠️ Email send failed (flow error), but code was generated:', emailResponse.status, responseText)
+        // Still return success - code exists in DB, user can get it another way
+      }
+    } catch (emailErr) {
+      console.warn('[Auth] ⚠️ Failed to call Power Automate flow:', emailErr)
+      console.error('[Auth] Full error:', emailErr)
+      // Still return success - code exists in DB
+    }
 
     return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
   } catch (err) {
@@ -459,8 +491,13 @@ export async function verifyPasswordResetCode(code: string, newPassword: string)
       return { success: false, message: 'User not found' }
     }
 
-    // Update password in auth
-    const { error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
+    // Update password in auth using admin client
+    if (!supabaseAdmin) {
+      console.error('[Auth] Service role key not available for password reset')
+      return { success: false, message: 'Password reset service unavailable' }
+    }
+
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userData.id, {
       password: newPassword,
     })
 
