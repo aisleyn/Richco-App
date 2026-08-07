@@ -16,6 +16,14 @@ export const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
   : null
 
+// Debug: Log service role key availability
+if (typeof window !== 'undefined') {
+  console.log('[Auth] Service role key available:', !!SUPABASE_SERVICE_ROLE_KEY)
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('[Auth] ⚠️  VITE_SUPABASE_SERVICE_ROLE_KEY not set - password reset will fail!')
+  }
+}
+
 export interface User {
   id: string
   email: string
@@ -416,7 +424,7 @@ export async function requestPasswordResetCode(email: string): Promise<{ success
     }
 
     // Send code via Power Automate flow
-    const POWER_AUTOMATE_FLOW_URL = 'https://e4bdc34769a8e6c783d5b9fd7e2535.13.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/14/workflows/7102fc06a2a44db3aeb4a1adccf559e6/triggers/manual/paths/invoke?api-version=1'
+    const POWER_AUTOMATE_FLOW_URL = 'https://e4bdc34769a8e6c783d5b9fd7e2535.13.environment.api.powerplatform.com/powerautomate/automations/direct/cu/14/workflows/7102fc06a2a44db3aeb4a1adccf559e6/triggers/manual/paths/invoke?api-version=1'
 
     console.log('[Auth] 🔄 Attempting to send email via Power Automate...')
     console.log('[Auth] Flow URL:', POWER_AUTOMATE_FLOW_URL)

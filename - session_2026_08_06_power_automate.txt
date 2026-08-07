@@ -1,0 +1,2 @@
+- session_2026_08_06_power_automate_email.md - Full implementation details
+- tomorrow_prompt_2026_08_06_password_reset_testing.md - Testing checklist
