@@ -423,8 +423,8 @@ export async function requestPasswordResetCode(email: string): Promise<{ success
       return { success: true, message: 'If an account exists with that email, a reset code will be sent.' }
     }
 
-    // Send code via Power Automate flow
-    const POWER_AUTOMATE_FLOW_URL = 'https://e4bdc34769a8e6c783d5b9fd7e2535.13.environment.api.powerplatform.com/powerautomate/automations/direct/cu/14/workflows/7102fc06a2a44db3aeb4a1adccf559e6/triggers/manual/paths/invoke?api-version=1'
+    // Send code via Power Automate flow (with SAS token authentication)
+    const POWER_AUTOMATE_FLOW_URL = 'https://e4bdc34769a8e6c783d5b9fd7e2535.13.environment.api.powerplatform.com/powerautomate/automations/direct/cu/14/workflows/7102fc06a2a44db3aeb4a1adccf559e6/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=16V0Q2LCWT7kDHb0Ri-NpC89H2aAeXGp4XEQv633-4Y'
 
     console.log('[Auth] 🔄 Attempting to send email via Power Automate...')
     console.log('[Auth] Flow URL:', POWER_AUTOMATE_FLOW_URL)
