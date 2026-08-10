@@ -1067,3 +1067,81 @@ export async function removeCrewFromShift(assignmentId: string): Promise<boolean
     return false
   }
 }
+
+// ─── File Uploads ────────────────────────────────────────────────────────────
+
+import { supabase } from './supabaseAuth'
+
+export async function uploadCrewFile(
+  email: string,
+  fileType: 'identification' | 'qualification' | 'employment_file',
+  file: File
+): Promise<{ url: string; name: string } | null> {
+  try {
+    if (!SUPABASE_URL) return null
+
+    // Create unique file path
+    const timestamp = Date.now()
+    const fileExt = file.name.split('.').pop() || 'bin'
+    const filePath = `crew-files/${email}/${fileType}/${timestamp}.${fileExt}`
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('crew-documents')
+      .upload(filePath, file, { upsert: false })
+
+    if (uploadError) {
+      console.error('[Supabase] File upload failed:', uploadError.message)
+      return null
+    }
+
+    // Get public URL
+    const { data } = supabase.storage.from('crew-documents').getPublicUrl(filePath)
+    const publicUrl = data.publicUrl
+
+    console.log('[Supabase] File uploaded:', publicUrl)
+    return { url: publicUrl, name: file.name }
+  } catch (err) {
+    console.error('[Supabase] File upload error:', err)
+    return null
+  }
+}
+
+export async function updateCrewMemberFiles(
+  email: string,
+  updates: {
+    identification?: { type: string; url: string; uploadedDate: number }
+    qualifications?: Array<{ name: string; url?: string; uploadedDate?: number }>
+    employmentFiles?: Array<{ name: string; type: string; url?: string; uploadedDate?: number }>
+  }
+): Promise<boolean> {
+  try {
+    const payload: Record<string, any> = {}
+
+    if (updates.identification) {
+      payload.identification = JSON.stringify(updates.identification)
+    }
+    if (updates.qualifications) {
+      payload.qualifications = JSON.stringify(updates.qualifications)
+    }
+    if (updates.employmentFiles) {
+      payload.employment_files = JSON.stringify(updates.employmentFiles)
+    }
+
+    const result = await crewRequest(
+      'PATCH',
+      `/crew_members?email=eq.${encodeURIComponent(email)}`,
+      payload,
+      true
+    )
+
+    if (result && result.length > 0) {
+      console.log('[Supabase] Updated crew member files:', email)
+      return true
+    }
+    return false
+  } catch (err) {
+    console.error('[Supabase] Failed to update crew member files:', err)
+    return false
+  }
+}

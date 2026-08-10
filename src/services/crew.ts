@@ -18,6 +18,7 @@ export interface Qualification {
   issueDate?: string
   url?: string
   id?: string
+  uploadedDate?: number
 }
 
 export interface EmploymentFile {

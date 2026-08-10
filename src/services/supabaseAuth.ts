@@ -74,6 +74,21 @@ export async function register(
       return { success: false, message: `Profile error: ${profileError.message}` }
     }
 
+    // Also create a crew member entry so the user appears in the employee hub
+    const { error: crewError } = await supabase.from('crew_members').insert({
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      role: 'site_employee',
+      status: 'available',
+      is_admin: false,
+    })
+
+    if (crewError) {
+      console.error('[Auth] Failed to create crew member:', crewError.message)
+      // Don't fail the whole registration, crew member will be created by the user
+    }
+
     const user: User = {
       id: authData.user.id,
       email,

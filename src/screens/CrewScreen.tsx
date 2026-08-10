@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle, Download, Trash2, Calendar } from 'lucide-react'
+import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle, Download, Trash2, Calendar, Upload, FileUp } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
 import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
+import { uploadCrewFile, updateCrewMemberFiles } from '../services/supabase'
 import { AddCrewModal } from '../components/crew/AddCrewModal'
 import { EditCrewModal } from '../components/crew/EditCrewModal'
 import type { Message } from '../types'
@@ -177,6 +178,8 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
   const [commRefresh, setCommRefresh] = useState(0)
   const [ppeRefresh, setPpeRefresh] = useState(0)
   const [crewRefresh, setCrewRefresh] = useState(0)
+  const [uploadingFile, setUploadingFile] = useState<string | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
   const [showAddPPE, setShowAddPPE] = useState(false)
   const [ppeFormData, setPpeFormData] = useState<{ name: string; status: 'pending' | 'checked_out'; issueDate: string; quantity: number }>({
     name: '',
@@ -189,6 +192,9 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messageFileInputRef = useRef<HTMLInputElement>(null)
   const messageInputRef = useRef<HTMLInputElement>(null)
+  const identificationInputRef = useRef<HTMLInputElement>(null)
+  const qualificationsInputRef = useRef<HTMLInputElement>(null)
+  const employmentFilesInputRef = useRef<HTMLInputElement>(null)
   const { currentUserEmail, setUnreadMessageCount } = useAppStore()
 
   // Calculate unread message count
@@ -294,6 +300,67 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
     setUnreadMessageCount(calculateUnreadCount())
     // Refocus input on mobile for quick follow-up messages
     messageInputRef.current?.focus()
+  }
+
+  async function handleFileUpload(file: File, fileType: 'identification' | 'qualification' | 'employment_file') {
+    if (!viewingProfile) return
+
+    setFileError(null)
+    setUploadingFile(fileType)
+
+    try {
+      const result = await uploadCrewFile(viewingProfile.email, fileType, file)
+      if (!result) {
+        setFileError('Failed to upload file. Please try again.')
+        return
+      }
+
+      // Update crew member with the new file
+      if (fileType === 'identification') {
+        const identificationType = file.name.toLowerCase().includes('passport') ? 'passport' : 'drivers_license'
+        await updateCrewMemberFiles(viewingProfile.email, {
+          identification: {
+            type: identificationType,
+            url: result.url,
+            uploadedDate: Date.now(),
+          },
+        })
+        // Update local state
+        viewingProfile.identification = {
+          type: identificationType,
+          url: result.url,
+          uploadedDate: Date.now(),
+        }
+      } else if (fileType === 'qualification') {
+        const qualifications = viewingProfile.qualifications || []
+        qualifications.push({
+          name: file.name.replace(/\.[^/.]+$/, ''),
+          url: result.url,
+          uploadedDate: Date.now(),
+        })
+        await updateCrewMemberFiles(viewingProfile.email, { qualifications })
+        viewingProfile.qualifications = qualifications
+      } else if (fileType === 'employment_file') {
+        const employmentFiles = viewingProfile.employmentFiles || []
+        employmentFiles.push({
+          id: `file-${Date.now()}`,
+          name: file.name,
+          type: 'contract',
+          uploadedDate: Date.now(),
+          url: result.url,
+        })
+        await updateCrewMemberFiles(viewingProfile.email, { employmentFiles })
+        viewingProfile.employmentFiles = employmentFiles
+      }
+
+      // Refresh crew list to get updated data
+      setCrewRefresh(prev => prev + 1)
+    } catch (err) {
+      console.error('File upload error:', err)
+      setFileError('An error occurred during upload')
+    } finally {
+      setUploadingFile(null)
+    }
   }
 
   // Mark thread messages as read when viewing
@@ -779,48 +846,114 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center"
+                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6"
                       >
-                        <div className="text-3xl mb-3">🪪</div>
-                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1">Identification</h4>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+                        <div className="text-3xl mb-3 text-center">🪪</div>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1 text-center">Identification</h4>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 text-center">
                           {viewingProfile.identification
                             ? `${viewingProfile.identification.type.replace('_', ' ')}`
                             : "Passport, Driver's License, etc."}
                         </p>
-                        {viewingProfile.identification ? (
-                          <a
-                            href={viewingProfile.identification.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
-                          >
-                            View Document
-                          </a>
-                        ) : (
-                          <p className="text-slate-500 text-sm font-medium">No files</p>
+
+                        {viewingProfile.identification?.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(viewingProfile.identification.url) && (
+                          <img
+                            src={viewingProfile.identification.url}
+                            alt="ID"
+                            className="w-full h-40 object-cover rounded-lg mb-3 border border-slate-300 dark:border-slate-600"
+                          />
                         )}
+
+                        <div className="flex gap-2 justify-center">
+                          {viewingProfile.identification ? (
+                            <a
+                              href={viewingProfile.identification.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-semibold hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                            >
+                              View
+                            </a>
+                          ) : null}
+                          {isAdmin && (
+                            <>
+                              <button
+                                onClick={() => identificationInputRef.current?.click()}
+                                disabled={uploadingFile === 'identification'}
+                                className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-semibold hover:bg-green-200 dark:hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center gap-1"
+                              >
+                                <FileUp size={12} /> Upload
+                              </button>
+                              <input
+                                ref={identificationInputRef}
+                                type="file"
+                                accept="image/*,.pdf"
+                                onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'identification')}
+                                className="hidden"
+                              />
+                            </>
+                          )}
+                        </div>
                       </motion.div>
 
                       {/* Qualifications */}
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center"
+                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6"
                       >
-                        <div className="text-3xl mb-3">📜</div>
-                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1">Qualifications</h4>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Certificates and Degrees</p>
+                        <div className="text-3xl mb-3 text-center">📜</div>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1 text-center">Qualifications</h4>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 text-center">Certificates and Degrees</p>
+
                         {viewingProfile.qualifications && viewingProfile.qualifications.length > 0 ? (
-                          <div className="space-y-2">
+                          <div className="space-y-2 mb-3">
                             {viewingProfile.qualifications.map((q, i) => (
-                              <div key={i} className="text-xs text-slate-700 dark:text-slate-300">
-                                {q.name}
+                              <div key={i}>
+                                {q.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(q.url) && (
+                                  <img
+                                    src={q.url}
+                                    alt={q.name}
+                                    className="w-full h-32 object-cover rounded-lg mb-2 border border-slate-300 dark:border-slate-600"
+                                  />
+                                )}
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-xs text-slate-700 dark:text-slate-300 flex-1">{q.name}</p>
+                                  {q.url && (
+                                    <a
+                                      href={q.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-slate-500 text-sm font-medium">No files</p>
+                          <p className="text-slate-500 text-sm font-medium text-center mb-3">No qualifications</p>
+                        )}
+
+                        {isAdmin && (
+                          <>
+                            <button
+                              onClick={() => qualificationsInputRef.current?.click()}
+                              disabled={uploadingFile === 'qualification'}
+                              className="w-full px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-semibold hover:bg-green-200 dark:hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                            >
+                              <FileUp size={12} /> Add Qualification
+                            </button>
+                            <input
+                              ref={qualificationsInputRef}
+                              type="file"
+                              accept="image/*,.pdf"
+                              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'qualification')}
+                              className="hidden"
+                            />
+                          </>
                         )}
                       </motion.div>
 
@@ -828,27 +961,55 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center"
+                        className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6"
                       >
-                        <div className="text-3xl mb-3">📄</div>
-                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1">Employment Files</h4>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Contracts and Official Letters</p>
+                        <div className="text-3xl mb-3 text-center">📄</div>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1 text-center">Employment Files</h4>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 text-center">Contracts and Official Letters</p>
+
                         {viewingProfile.employmentFiles && viewingProfile.employmentFiles.length > 0 ? (
-                          <div className="space-y-2">
+                          <div className="space-y-2 mb-3">
                             {viewingProfile.employmentFiles.map((f, i) => (
-                              <a
-                                key={i}
-                                href={f.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
-                              >
-                                {f.name}
-                              </a>
+                              <div key={i}>
+                                {f.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(f.url) && (
+                                  <img
+                                    src={f.url}
+                                    alt={f.name}
+                                    className="w-full h-32 object-cover rounded-lg mb-2 border border-slate-300 dark:border-slate-600"
+                                  />
+                                )}
+                                <a
+                                  href={f.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate block"
+                                >
+                                  {f.name}
+                                </a>
+                              </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-slate-500 text-sm font-medium">No files</p>
+                          <p className="text-slate-500 text-sm font-medium text-center mb-3">No files</p>
+                        )}
+
+                        {isAdmin && (
+                          <>
+                            <button
+                              onClick={() => employmentFilesInputRef.current?.click()}
+                              disabled={uploadingFile === 'employment_file'}
+                              className="w-full px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-semibold hover:bg-green-200 dark:hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                            >
+                              <FileUp size={12} /> Add Employment File
+                            </button>
+                            <input
+                              ref={employmentFilesInputRef}
+                              type="file"
+                              accept="image/*,.pdf"
+                              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'employment_file')}
+                              className="hidden"
+                            />
+                          </>
                         )}
                       </motion.div>
                     </div>
