@@ -176,6 +176,7 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
   const [refresh, setRefresh] = useState(0)
   const [commRefresh, setCommRefresh] = useState(0)
   const [ppeRefresh, setPpeRefresh] = useState(0)
+  const [crewRefresh, setCrewRefresh] = useState(0)
   const [showAddPPE, setShowAddPPE] = useState(false)
   const [ppeFormData, setPpeFormData] = useState<{ name: string; status: 'pending' | 'checked_out'; issueDate: string; quantity: number }>({
     name: '',
@@ -187,6 +188,7 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
   const [messageAttachedFile, setMessageAttachedFile] = useState<{ name: string; url: string; type: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messageFileInputRef = useRef<HTMLInputElement>(null)
+  const messageInputRef = useRef<HTMLInputElement>(null)
   const { currentUserEmail, setUnreadMessageCount } = useAppStore()
 
   // Calculate unread message count
@@ -228,8 +230,8 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
 
   const [isAdmin, setIsAdmin] = useState(false)
 
+  // Auto-refresh crew members and messages
   useEffect(() => {
-    // Initialize crew system and load crew members
     const loadCrew = async () => {
       initializeCrew()
       const members = await getAllCrew()
@@ -238,8 +240,26 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
       setIsAdmin(admin)
       setUnreadMessageCount(calculateUnreadCount())
     }
+
     loadCrew()
+
+    // Auto-refresh crew list every 3 seconds to catch new registrations
+    const crewInterval = setInterval(loadCrew, 3000)
+
+    return () => clearInterval(crewInterval)
   }, [setUnreadMessageCount, currentUserEmail])
+
+  // Auto-refresh messages every 2 seconds when in a thread
+  useEffect(() => {
+    if (!activeThreadId) return
+
+    const messageRefreshInterval = setInterval(() => {
+      setRefresh(prev => prev + 1)
+      setUnreadMessageCount(calculateUnreadCount())
+    }, 2000)
+
+    return () => clearInterval(messageRefreshInterval)
+  }, [activeThreadId, setUnreadMessageCount])
   const currentUserMember = crew.find(m => m.email.toLowerCase() === currentUserEmail.toLowerCase())
   const canViewTimesheets = isAdmin || currentUserMember?.role === 'leadership'
 
@@ -272,6 +292,8 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
     setRefresh(prev => prev + 1)
     // Update unread count after sending
     setUnreadMessageCount(calculateUnreadCount())
+    // Refocus input on mobile for quick follow-up messages
+    messageInputRef.current?.focus()
   }
 
   // Mark thread messages as read when viewing
@@ -380,9 +402,15 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
               )}
               <div className="flex items-center gap-2 bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-white/10 dark:border-white/5 px-4 py-2.5">
                 <input
+                  ref={messageInputRef}
                   value={messageInput}
                   onChange={e => setMessageInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      sendMessage()
+                    }
+                  }}
                   placeholder="Message..."
                   className="flex-1 bg-transparent text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-600 dark:placeholder:text-slate-500 outline-none"
                 />
@@ -415,9 +443,10 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                 <button
                   onClick={sendMessage}
                   disabled={!messageInput.trim() && !messageAttachedFile}
-                  className="w-8 h-8 rounded-full bg-green-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity"
+                  className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-green-600 disabled:opacity-30 flex items-center justify-center shrink-0 transition-opacity hover:bg-green-700 active:scale-95"
+                  title="Send message (Enter key or tap)"
                 >
-                  <Send size={14} className="text-slate-900" />
+                  <Send size={16} className="text-white md:text-slate-900" />
                 </button>
               </div>
             </div>
