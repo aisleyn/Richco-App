@@ -1145,3 +1145,147 @@ export async function updateCrewMemberFiles(
     return false
   }
 }
+
+// ─── Weekly Reporting ─────────────────────────────────────────────────────────
+
+export interface WeeklyTimeEntryReport {
+  employee_id: string
+  employee_name: string
+  employee_email: string
+  week_start: string
+  week_end: string
+  entries: Array<{
+    date: string
+    site_name: string
+    clock_in: string
+    clock_out: string
+    total_hours: number
+    break_hours: number
+    regular_hours: number
+    overtime_hours: number
+  }>
+  weekly_totals: {
+    total_hours: number
+    regular_hours: number
+    overtime_hours: number
+    break_hours: number
+    days_worked: number
+  }
+}
+
+export async function getWeeklyTimeEntriesReport(
+  startDate: string,
+  endDate: string
+): Promise<WeeklyTimeEntryReport[]> {
+  try {
+    const result = await timeEntriesRequest(
+      'GET',
+      `/time_entries?clock_in_time=gte.${startDate}&clock_in_time=lte.${endDate}&order=employee_id.asc,clock_in_time.asc`
+    )
+
+    if (!result || !Array.isArray(result)) {
+      return []
+    }
+
+    // Get crew member emails
+    const crewResult = await crewRequest('GET', '/crew_members')
+    const crewMap = new Map<string, { email: string; name: string }>(
+      (crewResult?.map((c: any) => [c.id, { email: c.email || '', name: `${c.first_name || ''} ${c.last_name || ''}`.trim() }]) || []) as Array<[string, { email: string; name: string }]>
+    )
+
+    // Group entries by employee
+    const entriesByEmployee = new Map<string, any[]>()
+    result.forEach((entry: any) => {
+      if (!entriesByEmployee.has(entry.employee_id)) {
+        entriesByEmployee.set(entry.employee_id, [])
+      }
+      entriesByEmployee.get(entry.employee_id)?.push(entry)
+    })
+
+    // Generate report for each employee
+    const reports: WeeklyTimeEntryReport[] = []
+    entriesByEmployee.forEach((entries, employeeId) => {
+      if (entries.length === 0) return
+
+      const firstEntry = entries[0]
+      const crewInfo = crewMap.get(employeeId) || { email: '', name: firstEntry.employee_name }
+
+      const dailyEntries = new Map<string, any>()
+      let totalHours = 0
+      let regularHours = 0
+      let overtimeHours = 0
+      let breakHours = 0
+      let daysWorked = 0
+
+      entries.forEach((entry: any) => {
+        const date = entry.clock_in_time?.split('T')[0]
+        if (!date) return
+
+        if (!dailyEntries.has(date)) {
+          dailyEntries.set(date, [])
+          daysWorked++
+        }
+        dailyEntries.get(date)?.push(entry)
+
+        const hours = entry.total_hours || 0
+        const regular = entry.regular_hours || 0
+        const overtime = entry.overtime_hours || 0
+        const breaks = entry.break_hours || 0
+
+        totalHours += hours
+        regularHours += regular
+        overtimeHours += overtime
+        breakHours += breaks
+      })
+
+      const reportEntries: WeeklyTimeEntryReport['entries'] = []
+      dailyEntries.forEach((dayEntries, date) => {
+        let dayTotalHours = 0
+        let dayRegularHours = 0
+        let dayOvertimeHours = 0
+        let dayBreakHours = 0
+        const sites = new Set<string>()
+
+        dayEntries.forEach((entry: any) => {
+          dayTotalHours += entry.total_hours || 0
+          dayRegularHours += entry.regular_hours || 0
+          dayOvertimeHours += entry.overtime_hours || 0
+          dayBreakHours += entry.break_hours || 0
+          sites.add(entry.site_name)
+        })
+
+        reportEntries.push({
+          date,
+          site_name: Array.from(sites).join(', '),
+          clock_in: dayEntries[0]?.clock_in_time?.split('T')[1]?.slice(0, 5) || '',
+          clock_out: dayEntries[dayEntries.length - 1]?.clock_out_time?.split('T')[1]?.slice(0, 5) || '',
+          total_hours: parseFloat(dayTotalHours.toFixed(2)),
+          break_hours: parseFloat(dayBreakHours.toFixed(2)),
+          regular_hours: parseFloat(dayRegularHours.toFixed(2)),
+          overtime_hours: parseFloat(dayOvertimeHours.toFixed(2)),
+        })
+      })
+
+      reports.push({
+        employee_id: employeeId,
+        employee_name: crewInfo.name,
+        employee_email: crewInfo.email,
+        week_start: startDate,
+        week_end: endDate,
+        entries: reportEntries,
+        weekly_totals: {
+          total_hours: parseFloat(totalHours.toFixed(2)),
+          regular_hours: parseFloat(regularHours.toFixed(2)),
+          overtime_hours: parseFloat(overtimeHours.toFixed(2)),
+          break_hours: parseFloat(breakHours.toFixed(2)),
+          days_worked: daysWorked,
+        },
+      })
+    })
+
+    return reports.sort((a, b) => a.employee_name.localeCompare(b.employee_name))
+  } catch (err) {
+    console.error('[Supabase] Failed to get weekly time entries report:', err)
+    return []
+  }
+}
