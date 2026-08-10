@@ -100,15 +100,17 @@ export function WeatherCard() {
               <div className="px-4 pb-2 pt-4">
                 <p className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-widest mb-3">Hourly</p>
                 {weather.hourly && weather.hourly.length > 0 ? (
-                  <div className={`flex ${weather.hourly.length <= 6 ? 'justify-between' : 'gap-3 overflow-x-auto pb-2 scrollbar-hide'}`}>
-                    {weather.hourly?.map((h, i) => (
-                      <div key={i} className={`flex flex-col items-center gap-1.5 ${weather.hourly && weather.hourly.length <= 6 ? 'flex-1' : 'shrink-0'} bg-slate-100 dark:bg-slate-700 rounded-lg px-3 py-2.5`}>
-                        <span className="text-slate-600 dark:text-slate-400 text-[10px] font-semibold">{h.time}</span>
-                        <span className="text-base">{h.condition.toLowerCase().includes('rain') ? '🌧️' : h.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️'}</span>
-                        <span className="text-slate-900 dark:text-slate-100 text-sm font-semibold">{h.temp}°</span>
-                        <span className="text-accent-blue text-[10px] h-4 flex items-center font-bold">{h.precipChance > 20 ? `${h.precipChance}%` : '–'}</span>
-                      </div>
-                    ))}
+                  <div className="w-full overflow-hidden">
+                    <div className="flex gap-2 justify-between">
+                      {weather.hourly?.map((h, i) => (
+                        <div key={i} className="flex-1 min-w-0 flex flex-col items-center gap-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg px-2 py-2.5">
+                          <span className="text-slate-600 dark:text-slate-400 text-[10px] font-semibold truncate">{h.time}</span>
+                          <span className="text-base">{h.condition.toLowerCase().includes('rain') ? '🌧️' : h.condition.toLowerCase().includes('cloud') ? '☁️' : '☀️'}</span>
+                          <span className="text-slate-900 dark:text-slate-100 text-sm font-semibold">{h.temp}°</span>
+                          <span className="text-accent-blue text-[10px] h-4 flex items-center font-bold">{h.precipChance > 20 ? `${h.precipChance}%` : '–'}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <p className="text-slate-400 dark:text-slate-500 text-xs">No hourly forecast available</p>

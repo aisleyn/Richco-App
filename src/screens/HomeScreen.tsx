@@ -11,7 +11,7 @@ import { ThemeToggle } from '../components/ThemeToggle'
 import { useGreeting } from '../hooks/useGreeting'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { useAppStore } from '../store/appStore'
-import { fetchSites, type DataverseSite } from '../services/dataverse'
+import { getProjects, type Project } from '../services/supabase'
 import { isUserAdmin, getAllCrew } from '../services/crew'
 
 interface Props {
@@ -26,8 +26,8 @@ export function HomeScreen({ onNavigate }: Props) {
   const { requestLocation, isLoading: isGeoLoading, error: geoError } = useGeolocation()
   const [showClockOut, setShowClockOut] = useState(false)
   const [showSitePicker, setShowSitePicker] = useState(false)
-  const [sites, setSites] = useState<DataverseSite[]>([])
-  const [selectedSite, setSelectedSite] = useState<DataverseSite | null>(null)
+  const [sites, setSites] = useState<Project[]>([])
+  const [selectedSite, setSelectedSite] = useState<Project | null>(null)
   const [isLoadingSites, setIsLoadingSites] = useState(false)
   const [isClockingIn, setIsClockingIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -37,8 +37,13 @@ export function HomeScreen({ onNavigate }: Props) {
   useEffect(() => {
     async function loadSites() {
       setIsLoadingSites(true)
-      const fetchedSites = await fetchSites()
-      setSites(fetchedSites.length > 0 ? fetchedSites : [{ craa5_projectid: 'site1', craa5_projectname: 'Grandview Heights Phase 3', craa5_client: '18955 Fraser Hwy, Surrey, BC' }])
+      try {
+        const fetchedProjects = await getProjects('active')
+        setSites(fetchedProjects)
+      } catch (err) {
+        console.error('Failed to load projects:', err)
+        setSites([])
+      }
       setIsLoadingSites(false)
     }
     loadSites()
@@ -74,13 +79,13 @@ export function HomeScreen({ onNavigate }: Props) {
 
     // Use real GPS if available, otherwise use site location
     const gpsData = location || {
-      lat: parseFloat(selectedSite.craa5_client?.split(',')[0] || '49.1234'),
-      lng: parseFloat(selectedSite.craa5_client?.split(',')[1] || '-122.7654'),
-      address: selectedSite.craa5_client || '18955 Fraser Hwy, Surrey, BC'
+      lat: parseFloat(selectedSite.location?.split(',')[0] || '49.1234'),
+      lng: parseFloat(selectedSite.location?.split(',')[1] || '-122.7654'),
+      address: selectedSite.location || selectedSite.client || 'Site Location'
     }
 
     console.log('[HomeScreen] Clocking in with GPS data:', gpsData)
-    clockIn(selectedSite.craa5_projectid, selectedSite.craa5_projectname, isOvernight, gpsData)
+    clockIn(selectedSite.id, selectedSite.name, isOvernight, gpsData)
     setShowSitePicker(false)
     setSelectedSite(null)
     setIsClockingIn(false)
@@ -162,36 +167,36 @@ export function HomeScreen({ onNavigate }: Props) {
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="w-full max-w-md bg-surface rounded-2xl p-4 max-h-[90vh] overflow-y-auto shadow-md"
+            className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl p-4 max-h-[90vh] overflow-y-auto shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-primary font-bold">Select Job Site</h2>
+              <h2 className="text-slate-900 dark:text-white font-bold">Select Project</h2>
               <button
                 onClick={() => setShowSitePicker(false)}
-                className="w-8 h-8 rounded-lg bg-elevated flex items-center justify-center"
+                className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center"
               >
-                <X size={16} className="text-muted" />
+                <X size={16} className="text-slate-600 dark:text-slate-400" />
               </button>
             </div>
 
             {isLoadingSites ? (
-              <p className="text-slate-400 text-center py-8">Loading sites...</p>
+              <p className="text-slate-400 text-center py-8">Loading projects...</p>
             ) : (
               <div className="space-y-2">
                 {sites.map((site) => (
                   <motion.button
-                    key={site.craa5_projectid}
+                    key={site.id}
                     onClick={() => setSelectedSite(site)}
                     className={`w-full p-4 rounded-xl text-left transition-colors ${
-                      selectedSite?.craa5_projectid === site.craa5_projectid
-                        ? 'bg-brand-green/20 border border-brand-green text-slate-800'
-                        : 'bg-bg-surface border border-slate-200 text-slate-300 hover:border-white/10'
+                      selectedSite?.id === site.id
+                        ? 'bg-green-100 dark:bg-green-900/30 border border-green-500 text-slate-900 dark:text-slate-100'
+                        : 'bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                   >
-                    <p className="font-semibold">{site.craa5_projectname}</p>
-                    {site.craa5_client && (
-                      <p className="text-xs text-slate-500 mt-1">{site.craa5_client}</p>
+                    <p className="font-semibold">{site.name}</p>
+                    {site.client && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{site.client}</p>
                     )}
                   </motion.button>
                 ))}
@@ -207,7 +212,7 @@ export function HomeScreen({ onNavigate }: Props) {
             <button
               onClick={() => confirmClockIn(false)}
               disabled={!selectedSite || isLoadingSites || isClockingIn}
-              className="w-full mt-6 py-3 bg-brand-green text-slate-800 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isClockingIn ? 'Getting GPS...' : 'Clock In'}
             </button>
