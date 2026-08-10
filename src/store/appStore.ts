@@ -3,10 +3,11 @@ import { persist } from 'zustand/middleware'
 import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
 import { mockAlerts, mockMessages } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
-import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod } from '../services/supabase'
+import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod, getCrewMemberByEmail } from '../services/supabase'
 import { getMandatoryBreakHours } from '../services/dataverse'
 import { generateLeaveRequestAlerts } from '../services/timeoff'
 import { getProjectIdFromLocation } from '../services/projectLocationMap'
+import { sendClockInSMS, sendClockOutSMS } from '../services/twilioService'
 
 interface AppState {
   // Authentication
@@ -208,6 +209,18 @@ export const useAppStore = create<AppState>()(
           geofenceFlag: false,
           scheduledStartTime: '07:00',
         })
+
+        // Send SMS notification (non-blocking)
+        try {
+          const crewMember = await getCrewMemberByEmail(currentUserEmail)
+          if (crewMember?.phone) {
+            sendClockInSMS(crewMember.phone, currentUserName, siteName, new Date(now).toISOString()).catch(err => {
+              console.warn('[SMS] Failed to send clock-in SMS:', err)
+            })
+          }
+        } catch (err) {
+          console.warn('[SMS] Error getting crew member for SMS:', err)
+        }
       },
 
       clockOut: async (data) => {
@@ -320,6 +333,18 @@ export const useAppStore = create<AppState>()(
           concerns: data.concerns,
           photoCount: data.photos?.length ?? 0,
         })
+
+        // Send SMS notification (non-blocking)
+        try {
+          const crewMember = await getCrewMemberByEmail(currentUserEmail)
+          if (crewMember?.phone) {
+            sendClockOutSMS(crewMember.phone, currentUserName, data.siteName ?? '', parseFloat(rawHours.toFixed(2)), new Date(now).toISOString()).catch(err => {
+              console.warn('[SMS] Failed to send clock-out SMS:', err)
+            })
+          }
+        } catch (err) {
+          console.warn('[SMS] Error getting crew member for SMS:', err)
+        }
       },
 
       startBreak: async () => {
