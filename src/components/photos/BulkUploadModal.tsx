@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Upload, ChevronLeft, Edit2 } from 'lucide-react'
+import { X, Upload, ChevronLeft, Edit2, Eye } from 'lucide-react'
 import { jobSites } from '../../data/mockData'
 import { extractDateFromFilename, addPhotos } from '../../services/photoDatabase'
 import { uploadProjectPhoto } from '../../services/storageService'
+import { ImagePreviewModal } from '../ImagePreviewModal'
 import type { Photo, PhotoCategory } from '../../types'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
@@ -31,6 +32,7 @@ export function BulkUploadModal({ siteId, projectId, userEmail, onClose, onPhoto
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
 
   const site = jobSites.find(s => s.id === siteId)
   const editingPhoto = editingIndex !== null ? pendingPhotos[editingIndex] : null
@@ -281,15 +283,18 @@ export function BulkUploadModal({ siteId, projectId, userEmail, onClose, onPhoto
                       key={i}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="relative rounded-lg overflow-hidden bg-white dark:bg-slate-700"
+                      className="relative rounded-lg overflow-hidden bg-white dark:bg-slate-700 cursor-pointer group"
                     >
                       <img src={photo.preview} alt="" className="w-full aspect-square object-cover" />
-                      <button
-                        onClick={() => setEditingIndex(i)}
-                        className="absolute inset-0 bg-black/0 hover:bg-black/40 flex items-center justify-center transition-colors"
-                      >
-                        <Edit2 size={18} className="text-white opacity-0 hover:opacity-100" />
-                      </button>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-colors">
+                        <button
+                          onClick={() => setPreviewIndex(i)}
+                          className="text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Preview full size"
+                        >
+                          <Eye size={24} />
+                        </button>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
@@ -331,6 +336,18 @@ export function BulkUploadModal({ siteId, projectId, userEmail, onClose, onPhoto
           </>
         )}
       </motion.div>
+
+      {/* Image preview modal */}
+      {previewIndex !== null && (
+        <ImagePreviewModal
+          isOpen={true}
+          imageUrl={pendingPhotos[previewIndex].preview}
+          fileName={pendingPhotos[previewIndex].file.name}
+          onConfirm={() => setPreviewIndex(null)}
+          onCancel={() => setPreviewIndex(null)}
+          isUploading={false}
+        />
+      )}
     </motion.div>
   )
 }

@@ -35,11 +35,17 @@ async function storageRequest(
   const allHeaders = { ...defaultHeaders, ...headers }
 
   try {
-    const res = await fetch(url, {
+    const config: RequestInit = {
       method,
       headers: allHeaders,
-      body: method !== 'GET' && method !== 'DELETE' ? body : undefined,
-    })
+    }
+
+    // For uploads, send raw file data (not FormData)
+    if (method !== 'GET' && method !== 'DELETE' && body) {
+      config.body = body instanceof File ? body : body
+    }
+
+    const res = await fetch(url, config)
 
     if (!res.ok) {
       const errorBody = await res.text()
@@ -74,14 +80,11 @@ export async function uploadProjectPhoto(
     const filename = file.name.replace(/[^a-z0-9.-]/gi, '_')
     const path = `projects/${projectId}/photos/${timestamp}-${filename}`
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     const result = await storageRequest(
       'POST',
       `/object/project-photos/${encodeURIComponent(path)}`,
-      formData,
-      { 'Content-Type': 'multipart/form-data' }
+      file,
+      { 'Content-Type': file.type }
     )
 
     if (result && result.Key) {
@@ -117,14 +120,11 @@ export async function uploadCrewAvatar(
       // Ignore if file doesn't exist
     }
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     const result = await storageRequest(
       'POST',
       `/object/crew-avatars/${encodeURIComponent(path)}`,
-      formData,
-      { 'Content-Type': 'multipart/form-data' }
+      file,
+      { 'Content-Type': file.type }
     )
 
     if (result && result.Key) {
@@ -155,14 +155,11 @@ export async function uploadDocument(
     const filename = file.name.replace(/[^a-z0-9.-]/gi, '_')
     const path = `projects/${projectId}/documents/${timestamp}-${filename}`
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     const result = await storageRequest(
       'POST',
       `/object/documents/${encodeURIComponent(path)}`,
-      formData,
-      { 'Content-Type': 'multipart/form-data' }
+      file,
+      { 'Content-Type': file.type }
     )
 
     if (result && result.Key) {
@@ -196,14 +193,11 @@ export async function uploadMessageAttachment(
     const filename = file.name.replace(/[^a-z0-9.-]/gi, '_')
     const path = `threads/${threadId}/${timestamp}-${filename}`
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     const result = await storageRequest(
       'POST',
       `/object/message-attachments/${encodeURIComponent(path)}`,
-      formData,
-      { 'Content-Type': 'multipart/form-data' }
+      file,
+      { 'Content-Type': file.type }
     )
 
     if (result && result.Key) {
