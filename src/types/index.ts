@@ -106,6 +106,7 @@ export interface Alert {
   startDate?: string
   endDate?: string
   totalDays?: number
+  photos?: string[]  // Photo URLs for alerts (e.g., safety issues, incidents)
 }
 
 export interface CrewMember {

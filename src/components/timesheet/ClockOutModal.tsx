@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Camera, CheckCircle, ChevronDown, AlertCircle, MapPin } from 'lucide-react'
+import { X, Camera, CheckCircle, ChevronDown, AlertCircle, MapPin, Loader } from 'lucide-react'
 import { jobSites, mockVehicles } from '../../data/mockData'
 import { useAppStore } from '../../store/appStore'
 import { useGeolocation } from '../../hooks/useGeolocation'
 import { useElapsedTime, formatElapsed, msToDecimalHours } from '../../hooks/useTimer'
 import { addPhotos } from '../../services/photoDatabase'
+import { uploadProjectPhoto } from '../../services/storageService'
 import type { Photo } from '../../types'
 
 interface Props {
@@ -30,7 +31,8 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
   const [breakTaken, setBreakTaken] = useState<'yes' | 'no' | ''>('')
   const [concerns, setConcerns] = useState('')
   const [summary, setSummary] = useState('')
-  const [photos, setPhotos] = useState<string[]>([])
+  const [photos, setPhotos] = useState<Array<{ file: File; preview: string; url?: string }>>([])
+  const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<number | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -52,7 +54,11 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
     if (vehicleUsed === 'yes' && !vehicleId) e.vehicle = 'Please select the vehicle used'
     if (!breakTaken) e.break = 'Please confirm break status'
     if (!summary.trim()) e.summary = 'Please enter a shift summary'
-    if (photos.length === 0) e.photos = 'At least one photo is required'
+
+    // Check if at least one photo is uploaded to cloud
+    const uploadedPhotos = photos.filter(p => p.url)
+    if (uploadedPhotos.length === 0) e.photos = 'At least one photo must be uploaded'
+
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -68,24 +74,25 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
     const { currentProjectId, currentProjectName, currentUserEmail, currentUserName, currentUserId } = useAppStore.getState()
     const site = jobSites.find(s => s.id === siteId)
 
-    // Save photos to database with projectId
-    if (photos.length > 0 && currentProjectId) {
-      const photoObjects: Photo[] = photos.map((url, idx) => ({
+    // Save uploaded photos to database with Supabase URLs
+    const uploadedPhotos = photos.filter(p => p.url)
+    if (uploadedPhotos.length > 0 && currentProjectId) {
+      const photoObjects: Photo[] = uploadedPhotos.map((p, idx) => ({
         id: `photo-${Date.now()}-${idx}`,
-        url,
-        thumbnailUrl: url,
+        url: p.url!,  // Use Supabase URL (not preview)
+        thumbnailUrl: p.url!,
         siteId,
         siteName: site?.name || '',
         projectId: currentProjectId,
         projectName: currentProjectName,
-        submittedBy: currentUserName,
-        submittedById: currentUserId,
+        submittedBy: currentUserName || 'Clock Out',
+        submittedById: currentUserId || 'system',
         timestamp: Date.now(),
         category: 'Site Conditions',
       }))
       try {
         await addPhotos(photoObjects, currentUserEmail)
-        console.log('[ClockOut] Saved', photos.length, 'photos with projectId:', currentProjectId)
+        console.log('[ClockOut] Saved', uploadedPhotos.length, 'photos to Supabase')
       } catch (err) {
         console.error('[ClockOut] Failed to save photos:', err)
       }
@@ -98,7 +105,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
       breakTaken: breakTaken === 'yes',
       concerns,
       shiftSummary: summary,
-      photos,
+      photos: uploadedPhotos.map(p => p.url!),  // Extract Supabase URLs
       gpsOut: gpsOut || undefined,
     })
     setSubmitted(true)
@@ -107,11 +114,40 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
   function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
-    files.forEach(f => {
-      const url = URL.createObjectURL(f)
-      setPhotos(prev => [...prev, url])
+    files.forEach((f) => {
+      const preview = URL.createObjectURL(f)
+      setPhotos(prev => {
+        const newPhotos = [...prev, { file: f, preview }]
+        // Auto-upload in background
+        uploadPhotoToCloud(newPhotos.length - 1, f)
+        return newPhotos
+      })
     })
     setErrors(prev => ({ ...prev, photos: '' }))
+  }
+
+  async function uploadPhotoToCloud(index: number, file: File) {
+    try {
+      setUploadingPhotoIndex(index)
+      const { currentProjectId } = useAppStore.getState()
+      const projectFolder = currentProjectId || siteId
+
+      const result = await uploadProjectPhoto(projectFolder, file)
+      if (result) {
+        setPhotos(prev => {
+          const updated = [...prev]
+          if (updated[index]) {
+            updated[index].url = result.url
+          }
+          return updated
+        })
+        console.log('[ClockOut] Photo uploaded:', result.url)
+      }
+    } catch (err) {
+      console.error('[ClockOut] Failed to upload photo:', err)
+    } finally {
+      setUploadingPhotoIndex(null)
+    }
   }
 
   if (submitted) {
@@ -279,12 +315,28 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
               {photos.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1.5">
-                  {photos.map((url, i) => (
-                    <div key={i} className="w-14 h-14 rounded-lg overflow-hidden shrink-0 relative">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                  {photos.map((photo, i) => (
+                    <div key={i} className="w-14 h-14 rounded-lg overflow-hidden shrink-0 relative group">
+                      <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+
+                      {/* Upload progress overlay */}
+                      {uploadingPhotoIndex === i && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <Loader size={16} className="text-white animate-spin" />
+                        </div>
+                      )}
+
+                      {/* Uploaded checkmark */}
+                      {photo.url && uploadingPhotoIndex !== i && (
+                        <div className="absolute inset-0 bg-success-base/20 border border-success-base/40 flex items-center justify-center">
+                          <CheckCircle size={12} className="text-success-base" />
+                        </div>
+                      )}
+
+                      {/* Delete button */}
                       <button
                         onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 flex items-center justify-center"
+                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X size={9} className="text-primary" />
                       </button>
@@ -316,10 +368,22 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
             )}
             <button
               onClick={handleSubmit}
-              disabled={isGeoLoading}
-              className="w-full py-3 bg-error-base active:bg-error-dark rounded-lg text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isGeoLoading || uploadingPhotoIndex !== null}
+              className="w-full py-3 bg-error-base active:bg-error-dark rounded-lg text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isGeoLoading && clockOutGps ? 'Getting Location...' : 'Finalize Clock Out'}
+              {uploadingPhotoIndex !== null ? (
+                <>
+                  <Loader size={14} className="animate-spin" />
+                  Uploading Photo...
+                </>
+              ) : isGeoLoading && clockOutGps ? (
+                <>
+                  <MapPin size={14} className="animate-pulse" />
+                  Getting Location...
+                </>
+              ) : (
+                'Finalize Clock Out'
+              )}
             </button>
           </div>
         </motion.div>

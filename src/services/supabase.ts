@@ -211,6 +211,7 @@ export interface CrewMemberData {
   firstName: string
   lastName: string
   phone?: string
+  avatarUrl?: string
   role: 'site_employee' | 'office_staff' | 'leadership'
   status?: string
   isAdmin?: boolean
@@ -268,6 +269,7 @@ export async function addCrewMember(data: Omit<CrewMemberData, 'id'>): Promise<C
       first_name: data.firstName,
       last_name: data.lastName,
       phone: data.phone || '',
+      avatar_url: data.avatarUrl || '',
       role: data.role || 'site_employee',
       status: data.status || 'available',
       is_admin: data.isAdmin || false,
@@ -283,6 +285,7 @@ export async function addCrewMember(data: Omit<CrewMemberData, 'id'>): Promise<C
         firstName: member.first_name,
         lastName: member.last_name,
         phone: member.phone,
+        avatarUrl: member.avatar_url,
         role: member.role,
         status: member.status,
         isAdmin: member.is_admin,
@@ -308,6 +311,7 @@ export async function getCrewMemberByEmail(email: string): Promise<CrewMemberDat
         firstName: member.first_name,
         lastName: member.last_name,
         phone: member.phone,
+        avatarUrl: member.avatar_url,
         role: member.role,
         status: member.status,
         isAdmin: member.is_admin,
@@ -332,6 +336,7 @@ export async function getAllCrewMembers(): Promise<CrewMemberData[]> {
         firstName: member.first_name,
         lastName: member.last_name,
         phone: member.phone,
+        avatarUrl: member.avatar_url,
         role: member.role,
         status: member.status,
         isAdmin: member.is_admin,
@@ -355,6 +360,7 @@ export async function updateCrewMember(
     if (updates.firstName) payload.first_name = updates.firstName
     if (updates.lastName) payload.last_name = updates.lastName
     if (updates.phone) payload.phone = updates.phone
+    if (updates.avatarUrl) payload.avatar_url = updates.avatarUrl
     if (updates.role) payload.role = updates.role
     if (updates.status) payload.status = updates.status
     if (updates.isAdmin !== undefined) payload.is_admin = updates.isAdmin
@@ -374,6 +380,7 @@ export async function updateCrewMember(
         firstName: member.first_name,
         lastName: member.last_name,
         phone: member.phone,
+        avatarUrl: member.avatar_url,
         role: member.role,
         status: member.status,
         isAdmin: member.is_admin,
