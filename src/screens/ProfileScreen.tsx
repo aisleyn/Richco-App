@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, User, Mail, Shield, Edit2, Check, X, LogOut } from 'lucide-react'
+import { ArrowLeft, User, Mail, Shield, Edit2, Check, X, LogOut, Upload, Loader, Camera } from 'lucide-react'
 import { useAppStore } from '../store/appStore'
 import { updatePassword, updateUserProfile, logout } from '../services/supabaseAuth'
+import { uploadCrewAvatar } from '../services/storageService'
+import { updateCrewMember, getCrewMemberByEmail } from '../services/supabase'
 
 interface Props {
   onNavigate: (screen: string) => void
@@ -19,6 +21,27 @@ export function ProfileScreen({ onNavigate }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Load avatar on mount
+  useEffect(() => {
+    const loadAvatar = async () => {
+      try {
+        if (currentUserEmail) {
+          const member = await getCrewMemberByEmail(currentUserEmail)
+          if (member?.avatarUrl) {
+            setAvatarUrl(member.avatarUrl)
+          }
+        }
+      } catch (err) {
+        console.error('[Profile] Failed to load avatar:', err)
+      }
+    }
+    loadAvatar()
+  }, [currentUserEmail])
 
   const handleSaveName = async () => {
     if (!editName.trim()) {
@@ -85,6 +108,51 @@ export function ProfileScreen({ onNavigate }: Props) {
       setError(err instanceof Error ? err.message : 'Failed to change password')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Show preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setAvatarPreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload to Supabase
+    handleAvatarUpload(file)
+  }
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!currentUserId) {
+      setError('User ID not found')
+      return
+    }
+
+    setUploadingAvatar(true)
+    setError(null)
+
+    try {
+      const result = await uploadCrewAvatar(parseInt(currentUserId as string), file)
+      if (result) {
+        // Update database
+        if (currentUserEmail) {
+          await updateCrewMember(currentUserEmail, { avatarUrl: result.url })
+        }
+        setAvatarUrl(result.url)
+        setSuccess('Avatar updated successfully')
+        setTimeout(() => setSuccess(null), 3000)
+      } else {
+        setError('Failed to upload avatar')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload avatar')
+    } finally {
+      setUploadingAvatar(false)
+      setAvatarPreview(null)
     }
   }
 
@@ -160,9 +228,42 @@ export function ProfileScreen({ onNavigate }: Props) {
             <div className="space-y-4">
               {/* Avatar & Name */}
               <div className="flex items-center gap-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-                <div className="w-16 h-16 rounded-full bg-green-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                  {currentUserName?.charAt(0).toUpperCase() || 'U'}
+                {/* Avatar Upload */}
+                <div className="relative group flex-shrink-0">
+                  <div className="w-16 h-16 rounded-full bg-green-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      currentUserName?.charAt(0).toUpperCase() || 'U'
+                    )}
+                  </div>
+
+                  {/* Upload overlay on hover */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
+                  >
+                    {uploadingAvatar ? (
+                      <Loader size={18} className="text-white animate-spin" />
+                    ) : (
+                      <Camera size={18} className="text-white" />
+                    )}
+                  </button>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarSelect}
+                    className="hidden"
+                    disabled={uploadingAvatar}
+                  />
                 </div>
+
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
                     <div className="space-y-2">
