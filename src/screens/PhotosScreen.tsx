@@ -493,9 +493,10 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
 
       {/* Bulk upload modal */}
       <AnimatePresence>
-        {showBulkUpload && activeSite && (
+        {showBulkUpload && (activeSite || activeProject) && (
           <BulkUploadModal
-            siteId={activeSite}
+            siteId={activeSite || activeProject || 'site-default'}
+            projectId={activeProject || undefined}
             userEmail={currentUserEmail}
             onClose={() => setShowBulkUpload(false)}
             onPhotosAdded={() => setRefresh(prev => prev + 1)}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Upload, ChevronLeft, Edit2 } from 'lucide-react'
 import { jobSites } from '../../data/mockData'
 import { extractDateFromFilename, addPhotos } from '../../services/photoDatabase'
+import { uploadProjectPhoto } from '../../services/storageService'
 import type { Photo, PhotoCategory } from '../../types'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
@@ -20,14 +21,16 @@ interface Props {
   userEmail: string
   onClose: () => void
   onPhotosAdded: () => void
+  projectId?: string
 }
 
-export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: Props) {
+export function BulkUploadModal({ siteId, projectId, userEmail, onClose, onPhotosAdded }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const site = jobSites.find(s => s.id === siteId)
   const editingPhoto = editingIndex !== null ? pendingPhotos[editingIndex] : null
@@ -79,27 +82,61 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
 
   async function handleUpload() {
     setUploading(true)
+    setUploadProgress(0)
     try {
-      const photosToAdd: Photo[] = pendingPhotos.map((pp, i) => ({
-        id: `photo-${Date.now()}-${i}`,
-        url: pp.preview,
-        thumbnailUrl: pp.preview,
-        siteId,
-        siteName: site?.name || 'Unknown Site',
-        submittedBy: 'Bulk Upload',
-        submittedById: 'bulk',
-        timestamp: pp.timestamp,
-        category: pp.category,
-        caption: pp.caption,
-      }))
+      const photosToAdd: Photo[] = []
+      const folderName = projectId || siteId  // Use projectId if available, else siteId
 
-      await addPhotos(photosToAdd, userEmail)
+      // Upload each photo to Supabase and collect results
+      for (let i = 0; i < pendingPhotos.length; i++) {
+        const pp = pendingPhotos[i]
+        try {
+          // Show progress
+          setUploadProgress(Math.round((i / pendingPhotos.length) * 100))
+
+          // Upload to Supabase project-photos bucket
+          const result = await uploadProjectPhoto(folderName, pp.file)
+
+          if (result) {
+            photosToAdd.push({
+              id: `photo-${Date.now()}-${i}`,
+              url: result.url,  // ✅ Use Supabase public URL instead of data URL
+              thumbnailUrl: result.url,  // ✅ Same URL (Supabase handles thumbnails)
+              siteId,
+              siteName: site?.name || 'Unknown Site',
+              projectId,
+              submittedBy: 'Bulk Upload',
+              submittedById: 'bulk',
+              timestamp: pp.timestamp,
+              category: pp.category,
+              caption: pp.caption,
+            })
+          } else {
+            console.error(`[BulkUpload] Failed to upload photo ${i + 1}/${pendingPhotos.length}`)
+          }
+        } catch (err) {
+          console.error(`[BulkUpload] Error uploading photo ${i + 1}:`, err)
+        }
+      }
+
+      // Save uploaded photos to database
+      if (photosToAdd.length > 0) {
+        await addPhotos(photosToAdd, userEmail)
+        console.log(`[BulkUpload] Successfully uploaded ${photosToAdd.length}/${pendingPhotos.length} photos`)
+      } else {
+        console.warn('[BulkUpload] No photos were successfully uploaded')
+      }
+
+      setUploadProgress(100)
       setPendingPhotos([])
       setEditingIndex(null)
       onPhotosAdded()
       onClose()
+    } catch (err) {
+      console.error('[BulkUpload] Upload error:', err)
     } finally {
       setUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -267,7 +304,8 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                 <div className="flex gap-3">
                   <button
                     onClick={() => setPendingPhotos([])}
-                    className="flex-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-800 dark:text-slate-100 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                    disabled={uploading}
+                    className="flex-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-800 dark:text-slate-100 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
                   >
                     Clear
                   </button>
@@ -276,9 +314,18 @@ export function BulkUploadModal({ siteId, userEmail, onClose, onPhotosAdded }: P
                     disabled={uploading}
                     className="flex-1 bg-green-600 hover:bg-amber-500 disabled:opacity-50 text-slate-900 font-medium rounded-lg px-4 py-2.5 transition-colors"
                   >
-                    Upload {pendingPhotos.length} Photos
+                    {uploading ? `Uploading ${uploadProgress}%` : `Upload ${pendingPhotos.length} Photos`}
                   </button>
                 </div>
+
+                {uploading && (
+                  <div className="mt-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-green-600 h-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
               </>
             )}
           </>
