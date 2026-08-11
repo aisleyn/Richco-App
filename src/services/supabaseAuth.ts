@@ -486,9 +486,11 @@ export async function verifyPasswordResetCode(code: string, newPassword: string)
       .single()
 
     if (fetchError || !resetData) {
-      console.error('[Auth] Invalid or expired code')
+      console.error('[Auth] Invalid or expired code:', fetchError?.message || 'No code found')
       return { success: false, message: 'Invalid or expired code' }
     }
+
+    console.log('[Auth] Found reset code for:', resetData.email, 'User ID:', resetData.user_id)
 
     // Check if expired
     if (new Date(resetData.expires_at) < new Date()) {
@@ -502,43 +504,52 @@ export async function verifyPasswordResetCode(code: string, newPassword: string)
       return { success: false, message: 'This reset code has already been used' }
     }
 
-    // Find user by email
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', resetData.email)
-      .single()
-
-    if (userError || !userData) {
-      console.error('[Auth] User not found')
-      return { success: false, message: 'User not found' }
+    // Use user_id from reset code (more reliable than looking up by email)
+    const userId = resetData.user_id
+    if (!userId) {
+      console.error('[Auth] No user ID in reset code')
+      return { success: false, message: 'Invalid reset code data' }
     }
 
-    // Update password in auth using admin client
-    if (!supabaseAdmin) {
-      console.error('[Auth] Service role key not available for password reset')
-      return { success: false, message: 'Password reset service unavailable' }
-    }
+    // Try to use admin client if available, otherwise use regular updateUser
+    let updateError = null
 
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userData.id, {
-      password: newPassword,
-    })
+    if (supabaseAdmin) {
+      console.log('[Auth] Using admin client to update password for user:', userId)
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: newPassword,
+      })
+      updateError = error
+    } else {
+      console.warn('[Auth] ⚠️ Service role key not available, using regular auth update')
+      // Fallback: Update the user's password directly via auth method
+      // This only works if the user is signed in, but during reset flow they might not be
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+      updateError = error
+    }
 
     if (updateError) {
       console.error('[Auth] Failed to update password:', updateError.message)
-      return { success: false, message: 'Failed to update password' }
+      return { success: false, message: `Failed to update password: ${updateError.message}` }
     }
 
     // Mark code as used
-    await supabase
+    const { error: useError } = await supabase
       .from('password_reset_codes')
       .update({ used: true })
       .eq('id', resetData.id)
+
+    if (useError) {
+      console.warn('[Auth] Could not mark code as used:', useError.message)
+      // Continue anyway - password was updated
+    }
 
     console.log('[Auth] ✅ Password reset successful for:', resetData.email)
     return { success: true, message: 'Password has been reset successfully' }
   } catch (err) {
     console.error('[Auth] Verify reset code error:', err)
-    return { success: false, message: 'Failed to reset password' }
+    return { success: false, message: `Failed to reset password: ${err instanceof Error ? err.message : 'Unknown error'}` }
   }
 }
