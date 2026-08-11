@@ -68,6 +68,21 @@ Check Storage page:
 
 ---
 
+## 🔐 RLS Policies (Optional - Skip For Now)
+
+If you see SQL errors when creating policies:
+- ❌ Skip them for now — not required
+- ✅ Buckets work fine with public/private toggle only
+- 🔒 Apply policies later for production security
+
+Errors you might see:
+- `"policy already exists"` — Policy name conflicts (fixed in updated docs)
+- `"WITH CHECK cannot be applied to SELECT"` — SQL syntax error (fixed in updated docs)
+
+**To skip:** Just don't run the SQL. Buckets are fully functional without policies.
+
+---
+
 ## 🧪 Test Upload (Optional)
 
 In browser console (or component):

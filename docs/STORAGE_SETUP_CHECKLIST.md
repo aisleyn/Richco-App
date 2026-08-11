@@ -61,15 +61,20 @@ In Supabase Storage page:
 
 ---
 
-## RLS Policies (Optional - for Production)
+## RLS Policies (⏭️ SKIP FOR NOW - Optional for Production)
 
-For now, basic setup works. For production security:
+**Skip this step for now.** Basic bucket setup (public/private toggle) is sufficient.
 
-1. Go to **SQL Editor**
-2. Paste each policy from `/docs/SUPABASE_STORAGE_SETUP.md` (Step 6)
-3. Execute each SQL block
+For **production** security later:
+1. Go to **SQL Editor** in Supabase
+2. Copy policies from `/docs/SUPABASE_STORAGE_SETUP.md` (Step 6, corrected version)
+3. Execute each policy SQL block
 
-This locks down who can upload/download files.
+**Important:** If you see errors like:
+- `"policy already exists"` — Different policies have same name (fixed in updated docs)
+- `"WITH CHECK cannot be applied to SELECT"` — Wrong SQL syntax (fixed in updated docs)
+
+Use the **corrected policies** in the updated `SUPABASE_STORAGE_SETUP.md` (just updated above).
 
 ---
 

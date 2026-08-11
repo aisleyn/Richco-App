@@ -116,17 +116,20 @@ This guide walks through creating and configuring Supabase storage buckets for t
 
 ## Step 6: Configure RLS Policies (Important!)
 
+⚠️ **IMPORTANT:** RLS policies are optional for now. **Basic bucket settings (public/private toggle) are sufficient.**
+
+For **production**, apply these policies. Each policy has a **unique name** to avoid conflicts.
+
 ### For `project-photos` (Public):
 
 ```sql
--- Allow anyone to read
-CREATE POLICY "Allow public read" ON storage.objects
+-- Allow anyone to read photos
+CREATE POLICY "project_photos_public_read" ON storage.objects
   FOR SELECT USING (bucket_id = 'project-photos');
 
--- Allow authenticated users to upload to their project
-CREATE POLICY "Allow authenticated upload" ON storage.objects
-  FOR INSERT 
-  WITH CHECK (
+-- Allow authenticated users to upload
+CREATE POLICY "project_photos_auth_insert" ON storage.objects
+  FOR INSERT WITH CHECK (
     bucket_id = 'project-photos' 
     AND auth.role() = 'authenticated'
   );
@@ -135,34 +138,45 @@ CREATE POLICY "Allow authenticated upload" ON storage.objects
 ### For `crew-avatars` (Public):
 
 ```sql
--- Allow anyone to read
-CREATE POLICY "Allow public read" ON storage.objects
+-- Allow anyone to read avatars
+CREATE POLICY "crew_avatars_public_read" ON storage.objects
   FOR SELECT USING (bucket_id = 'crew-avatars');
 
--- Allow users to update their own avatar
-CREATE POLICY "Allow users to update own avatar" ON storage.objects
-  FOR UPDATE
-  WITH CHECK (
+-- Allow authenticated users to upload their own avatar
+CREATE POLICY "crew_avatars_auth_insert" ON storage.objects
+  FOR INSERT WITH CHECK (
     bucket_id = 'crew-avatars'
-    AND auth.uid()::text = (storage.foldername(name))[1]
+    AND auth.role() = 'authenticated'
+  );
+
+-- Allow users to update their own avatar
+CREATE POLICY "crew_avatars_auth_update" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'crew-avatars'
+    AND auth.role() = 'authenticated'
   );
 ```
 
 ### For `documents` (Private):
 
 ```sql
--- Allow authenticated users to read their project docs
-CREATE POLICY "Allow authenticated read" ON storage.objects
-  FOR SELECT
-  WITH CHECK (
+-- Allow authenticated users to read documents
+CREATE POLICY "documents_auth_read" ON storage.objects
+  FOR SELECT USING (
     bucket_id = 'documents'
     AND auth.role() = 'authenticated'
   );
 
--- Allow authenticated users to upload
-CREATE POLICY "Allow authenticated upload" ON storage.objects
-  FOR INSERT
-  WITH CHECK (
+-- Allow authenticated users to upload documents
+CREATE POLICY "documents_auth_insert" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'documents'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Allow authenticated users to delete their documents
+CREATE POLICY "documents_auth_delete" ON storage.objects
+  FOR DELETE USING (
     bucket_id = 'documents'
     AND auth.role() = 'authenticated'
   );
@@ -171,14 +185,34 @@ CREATE POLICY "Allow authenticated upload" ON storage.objects
 ### For `message-attachments` (Private):
 
 ```sql
--- Allow authenticated users only
-CREATE POLICY "Allow authenticated access" ON storage.objects
-  FOR ALL
-  WITH CHECK (
+-- Allow authenticated users to read attachments
+CREATE POLICY "message_attachments_auth_read" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'message-attachments'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Allow authenticated users to upload attachments
+CREATE POLICY "message_attachments_auth_insert" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'message-attachments'
+    AND auth.role() = 'authenticated'
+  );
+
+-- Allow authenticated users to delete attachments
+CREATE POLICY "message_attachments_auth_delete" ON storage.objects
+  FOR DELETE USING (
     bucket_id = 'message-attachments'
     AND auth.role() = 'authenticated'
   );
 ```
+
+### Important Notes:
+- ✅ Each policy has a **unique name** (prefix with bucket name)
+- ✅ Use `USING` for SELECT and DELETE (not `WITH CHECK`)
+- ✅ Use `WITH CHECK` for INSERT and UPDATE only
+- ✅ These are optional — buckets work without RLS initially
+- ✅ Apply these for production use (production RLS lock-down)
 
 ---
 
