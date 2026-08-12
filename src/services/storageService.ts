@@ -3,6 +3,8 @@
  * Handles uploads/downloads for photos, documents, and avatars
  */
 
+import { supabase } from './supabaseAuth'
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -14,6 +16,7 @@ interface UploadResult {
 /**
  * Storage request helper (REST API)
  * Used for file uploads/downloads
+ * Uses authenticated user's JWT token for RLS enforcement
  */
 async function storageRequest(
   method: string,
@@ -27,9 +30,22 @@ async function storageRequest(
   }
 
   const url = `${SUPABASE_URL}/storage/v1${endpoint}`
+
+  // Get authenticated user's JWT token
+  let authToken = SUPABASE_ANON_KEY
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) {
+      authToken = session.access_token
+      console.log('[Storage] Using authenticated JWT token')
+    }
+  } catch (err) {
+    console.warn('[Storage] Failed to get auth token, using anon key:', err)
+  }
+
   const defaultHeaders: Record<string, string> = {
     apikey: SUPABASE_ANON_KEY,
-    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    Authorization: `Bearer ${authToken}`,
   }
 
   const allHeaders = { ...defaultHeaders, ...headers }
