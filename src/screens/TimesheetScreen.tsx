@@ -12,11 +12,13 @@ import { UpcomingShiftCard } from '../components/shifts/UpcomingShiftCard'
 import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
 import { CreateShiftFormV2 } from '../components/admin/CreateShiftFormV2'
 import { ShiftAssignmentManagerV2 } from '../components/admin/ShiftAssignmentManagerV2'
+import { WeekNavigator } from '../components/timesheet/WeekNavigator'
+import { PerEmployeeHistory } from '../components/timesheet/PerEmployeeHistory'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
 import { useGeolocation } from '../hooks/useGeolocation'
 import { isUserAdmin } from '../services/crew'
-import { getCrewMemberByEmail } from '../services/supabase'
+import { getCrewMemberByEmail, getAllCrewMembers } from '../services/supabase'
 import { jobSites } from '../data/mockData'
 import type { TimesheetEntry } from '../types'
 
@@ -51,6 +53,8 @@ export function TimesheetScreen({ onNavigate }: Props) {
   const [isLoadingSites, setIsLoadingSites] = useState(false)
   const [isClockingIn, setIsClockingIn] = useState(false)
   const [pendingIsOvernight, setPendingIsOvernight] = useState(false)
+  const [selectedWeek, setSelectedWeek] = useState(new Date())
+  const [employees, setEmployees] = useState<any[]>([])
   const hours = elapsed / 3600000
 
   useEffect(() => {
@@ -62,6 +66,12 @@ export function TimesheetScreen({ onNavigate }: Props) {
       const crewMember = await getCrewMemberByEmail(currentUserEmail)
       if (crewMember) {
         setCrewMemberId(crewMember.id as number)
+      }
+
+      // Load all employees if admin
+      if (admin) {
+        const allEmployees = await getAllCrewMembers()
+        setEmployees(allEmployees)
       }
     }
     loadUserData()
@@ -281,23 +291,65 @@ export function TimesheetScreen({ onNavigate }: Props) {
           </motion.div>
         )}
 
-        {/* Timecards */}
-        <div className="mt-6 flex items-center justify-between mb-3">
-          {isAdmin && (
-            <button
-              onClick={() => setShowManualTimecard(true)}
-              className="text-green-600 hover:text-green-700 flex items-center gap-1 text-xs font-semibold transition-colors"
-            >
-              <Plus size={12} /> Manual Entry
-            </button>
-          )}
-        </div>
-        <div className="mt-0">
-          <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} />
-        </div>
+        {/* Personal Week History */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mt-6"
+        >
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+              Week History
+            </h3>
+            <WeekNavigator
+              selectedDate={selectedWeek}
+              onWeekChange={setSelectedWeek}
+              showCurrentWeekButton={true}
+            />
+          </div>
+
+          {/* Timecards */}
+          <div className="flex items-center justify-between mb-3">
+            {isAdmin && (
+              <button
+                onClick={() => setShowManualTimecard(true)}
+                className="text-green-600 hover:text-green-700 flex items-center gap-1 text-xs font-semibold transition-colors"
+              >
+                <Plus size={12} /> Manual Entry
+              </button>
+            )}
+          </div>
+          <div className="mt-0">
+            <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} />
+          </div>
+        </motion.div>
+
+        {/* Per-Employee History (Admin only) */}
+        {isAdmin && employees.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 p-6 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl"
+          >
+            <PerEmployeeHistory
+              employees={employees}
+              selectedWeek={selectedWeek}
+              onWeekChange={setSelectedWeek}
+            />
+          </motion.div>
+        )}
 
         {/* Time Off Card */}
-        <TimeOffCard />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="mt-6"
+        >
+          <TimeOffCard />
+        </motion.div>
       </div>
 
       {showClockOut && (

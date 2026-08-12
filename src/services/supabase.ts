@@ -106,6 +106,61 @@ export async function updateTimeEntry(
   }
 }
 
+export async function adjustTimeEntryByAdmin(
+  timeEntryId: string,
+  adjustedHours: number,
+  adminNote: string,
+  adminUserId: string
+): Promise<boolean> {
+  try {
+    // Calculate work hours (adjusted - break hours)
+    const entry = await getTimeEntry(timeEntryId)
+    if (!entry) {
+      console.error('[Supabase] Time entry not found:', timeEntryId)
+      return false
+    }
+
+    const breakHours = entry.break_hours || 0
+    const workHours = Math.max(0, adjustedHours - breakHours)
+    const regularHours = Math.min(workHours, 8)
+    const overtimeHours = Math.max(0, workHours - 8)
+
+    console.log('[Supabase] Adjusting timecard:', {
+      timeEntryId,
+      originalHours: entry.total_hours,
+      adjustedHours,
+      breakHours,
+      workHours,
+      regularHours,
+      overtimeHours,
+    })
+
+    const updates = {
+      adjusted_hours: adjustedHours,
+      adjusted_by_admin: true,
+      admin_adjustment_note: adminNote,
+      adjusted_at: new Date().toISOString(),
+      adjusted_by_user_id: adminUserId,
+      regular_hours: regularHours,
+      overtime_hours: overtimeHours,
+      total_hours: adjustedHours,
+    }
+
+    await timeEntriesRequest(
+      'PATCH',
+      `/time_entries?id=eq.${timeEntryId}`,
+      updates,
+      true
+    )
+
+    console.log('[Supabase] Adjusted time entry:', timeEntryId)
+    return true
+  } catch (err) {
+    console.error('[Supabase] Failed to adjust time entry:', err)
+    return false
+  }
+}
+
 export async function getTimeEntry(entryId: string): Promise<TimeEntry | null> {
   try {
     const result = await timeEntriesRequest('GET', `/time_entries?id=eq.${entryId}`)
