@@ -237,10 +237,16 @@ export async function updateUserProfile(userId: string, updates: Partial<User>):
 // Create new crew member (admin only)
 export async function createCrewMember(email: string, name: string): Promise<{ success: boolean; message: string }> {
   try {
+    // Must use service role key (supabaseAdmin), NOT anon key
+    if (!supabaseAdmin) {
+      console.error('[Auth] Admin service not available')
+      return { success: false, message: 'Admin service not available' }
+    }
+
     // First, create auth user with temporary password
     const tempPassword = Math.random().toString(36).slice(-12)
 
-    const { data, error: authError } = await supabase.auth.admin.createUser({
+    const { data, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: false, // Require email confirmation
@@ -360,11 +366,18 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
 // Delete crew member (admin only)
 export async function deleteCrewMember(userId: string): Promise<{ success: boolean; message: string }> {
   try {
-    const { error } = await supabase.auth.admin.deleteUser(userId)
+    // Must use service role key (supabaseAdmin), NOT anon key
+    if (!supabaseAdmin) {
+      console.error('[Auth] Admin service not available')
+      return { success: false, message: 'Admin service not available' }
+    }
 
-    if (error) {
-      console.error('[Auth] Failed to delete user auth:', error.message)
-      return { success: false, message: error.message }
+    // Delete from auth.users first (requires service role key)
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+
+    if (authError) {
+      console.error('[Auth] Failed to delete user auth:', authError.message)
+      return { success: false, message: authError.message }
     }
 
     // Delete from users table
@@ -375,7 +388,15 @@ export async function deleteCrewMember(userId: string): Promise<{ success: boole
       return { success: false, message: profileError.message }
     }
 
-    console.log('[Auth] ✅ Deleted crew member')
+    // Delete from crew_members table
+    const { error: crewError } = await supabase.from('crew_members').delete().eq('user_id', userId)
+
+    if (crewError) {
+      console.error('[Auth] Failed to delete crew member record:', crewError.message)
+      // Don't fail if crew_members delete fails, auth was already deleted
+    }
+
+    console.log('[Auth] ✅ Deleted crew member with ID:', userId)
     return { success: true, message: 'Crew member deleted' }
   } catch (err) {
     console.error('[Auth] Delete crew member error:', err)
@@ -386,7 +407,13 @@ export async function deleteCrewMember(userId: string): Promise<{ success: boole
 // Set password directly (admin only - no email verification)
 export async function setPasswordDirect(userId: string, password: string): Promise<{ success: boolean; message: string }> {
   try {
-    const { error } = await supabase.auth.admin.updateUserById(userId, {
+    // Must use service role key (supabaseAdmin), NOT anon key
+    if (!supabaseAdmin) {
+      console.error('[Auth] Admin service not available')
+      return { success: false, message: 'Admin service not available' }
+    }
+
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
       password,
     })
 
