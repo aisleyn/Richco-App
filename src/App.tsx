@@ -17,8 +17,9 @@ import { ProfileScreen } from './screens/ProfileScreen'
 import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supabaseAuth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
+import { useClockSync } from './hooks/useClockSync'
 import { initializeCrew } from './services/crew'
-import { syncEmployeeTimesheets } from './services/supabase'
+import { syncEmployeeTimesheets, getActiveTimeEntry } from './services/supabase'
 import { SetPasswordModal } from './components/crew/SetPasswordModal'
 import type { Notification } from './services/notificationService'
 import type { Alert } from './types'
@@ -34,8 +35,11 @@ export default function App() {
   const [pendingEmail, setPendingEmail] = useState<string | null>(null)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
-  const { initializeUser, updateAppLocation } = useAppStore()
+  const { initializeUser, updateAppLocation, currentUserId, updateActiveEntry } = useAppStore()
   useDarkMode()
+
+  // Multi-device clock sync (real-time subscription)
+  useClockSync()
 
   // Request geolocation permission on startup
   useEffect(() => {
@@ -73,6 +77,46 @@ export default function App() {
       )
     }
   }, [authenticated, updateAppLocation])
+
+  // Polling fallback for multi-device sync (every 30 seconds)
+  useEffect(() => {
+    if (!authenticated || !currentUserId) return
+
+    const pollInterval = setInterval(async () => {
+      try {
+        console.log('[App] Polling: checking for active time entry')
+        const activeEntry = await getActiveTimeEntry(currentUserId)
+        if (activeEntry) {
+          console.log('[App] Polling: found active entry, syncing...')
+          updateActiveEntry(activeEntry)
+        }
+      } catch (err) {
+        console.warn('[App] Polling failed:', err)
+      }
+    }, 30000) // Poll every 30 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [authenticated, currentUserId, updateActiveEntry])
+
+  // On-focus sync (when app regains focus, sync immediately)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && authenticated && currentUserId) {
+        console.log('[App] App regained focus, syncing clock state...')
+        getActiveTimeEntry(currentUserId).then((entry) => {
+          if (entry) {
+            console.log('[App] On-focus sync: found active entry')
+            updateActiveEntry(entry)
+          }
+        }).catch(err => {
+          console.warn('[App] On-focus sync failed:', err)
+        })
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [authenticated, currentUserId, updateActiveEntry])
 
   // Handle email confirmation from Supabase
   useEffect(() => {

@@ -132,6 +132,25 @@ export async function getEmployeeTimeEntries(
   }
 }
 
+export async function getActiveTimeEntry(employeeId: string): Promise<TimeEntry | null> {
+  try {
+    console.log('[Supabase] Fetching active time entry for', employeeId)
+    const result = await timeEntriesRequest(
+      'GET',
+      `/time_entries?employee_id=eq.${employeeId}&clock_out_time=is.null&order=created_at.desc&limit=1`
+    )
+    if (result && result.length > 0) {
+      console.log('[Supabase] Found active time entry:', result[0].id)
+      return result[0]
+    }
+    console.log('[Supabase] No active time entry found')
+    return null
+  } catch (err) {
+    console.error('[Supabase] Failed to fetch active time entry:', err)
+    return null
+  }
+}
+
 export async function syncEmployeeTimesheets(employeeId: string, employeeEmail: string): Promise<void> {
   try {
     console.log('[Supabase] Syncing timesheets for', employeeEmail)

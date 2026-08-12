@@ -77,6 +77,10 @@ interface AppState {
   // Geolocation
   appLocation: { lat: number; lng: number; address: string } | null
   updateAppLocation: (location: { lat: number; lng: number; address: string }) => void
+
+  // Multi-device clock sync
+  syncClockState: (timeEntry: any | null) => void
+  updateActiveEntry: (entry: any | null) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -464,6 +468,42 @@ export const useAppStore = create<AppState>()(
       updateAppLocation: (location) => {
         console.log('[Store] Updating app location:', location)
         set({ appLocation: location })
+      },
+
+      // Multi-device clock sync
+      syncClockState: (timeEntry) => {
+        if (!timeEntry) {
+          console.log('[Store] Syncing clock state: user clocked out')
+          set({
+            clockedIn: false,
+            clockInTime: null,
+            activeTimesheetId: null,
+            activeSheetEntry: null,
+          })
+          return
+        }
+
+        console.log('[Store] Syncing clock state: user clocked in')
+        const clockInMs = new Date(timeEntry.clock_in_time).getTime()
+
+        set({
+          clockedIn: !timeEntry.clock_out_time,
+          clockInTime: clockInMs,
+          activeTimesheetId: timeEntry.id,
+          activeSheetEntry: {
+            id: timeEntry.id,
+            date: timeEntry.clock_in_time.split('T')[0],
+            siteId: timeEntry.site_id,
+            siteName: timeEntry.site_name,
+            clockInTime: clockInMs,
+            status: timeEntry.clock_out_time ? 'complete' : 'active',
+          },
+        })
+      },
+
+      updateActiveEntry: (entry) => {
+        console.log('[Store] Updating active entry from sync:', entry?.id)
+        get().syncClockState(entry)
       },
     }),
     {
