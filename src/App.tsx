@@ -34,8 +34,45 @@ export default function App() {
   const [pendingEmail, setPendingEmail] = useState<string | null>(null)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
-  const { initializeUser } = useAppStore()
+  const { initializeUser, updateAppLocation } = useAppStore()
   useDarkMode()
+
+  // Request geolocation permission on startup
+  useEffect(() => {
+    if (authenticated && navigator.geolocation) {
+      console.log('[App] Requesting geolocation on startup...')
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+          console.log('[App] Got coordinates:', latitude, longitude)
+
+          // Get address from coordinates using reverse geocoding
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            )
+            if (response.ok) {
+              const data = await response.json()
+              const address = data.address?.city || data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+              console.log('[App] Got address:', address)
+              updateAppLocation({ lat: latitude, lng: longitude, address })
+            }
+          } catch (err) {
+            console.warn('[App] Failed to get address:', err)
+            updateAppLocation({ lat: latitude, lng: longitude, address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` })
+          }
+        },
+        (err) => {
+          console.warn('[App] Geolocation error:', err.message)
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      )
+    }
+  }, [authenticated, updateAppLocation])
 
   // Handle email confirmation from Supabase
   useEffect(() => {

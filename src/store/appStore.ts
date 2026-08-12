@@ -73,6 +73,10 @@ interface AppState {
   // Modal state
   isModalOpen: boolean
   setIsModalOpen: (open: boolean) => void
+
+  // Geolocation
+  appLocation: { lat: number; lng: number; address: string } | null
+  updateAppLocation: (location: { lat: number; lng: number; address: string }) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -454,6 +458,13 @@ export const useAppStore = create<AppState>()(
 
       isModalOpen: false,
       setIsModalOpen: (open) => set({ isModalOpen: open }),
+
+      // Geolocation
+      appLocation: null,
+      updateAppLocation: (location) => {
+        console.log('[Store] Updating app location:', location)
+        set({ appLocation: location })
+      },
     }),
     {
       name: 'richco-app-state',

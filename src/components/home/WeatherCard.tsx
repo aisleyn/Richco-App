@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wind, Droplets, Sun, AlertTriangle, ChevronDown } from 'lucide-react'
+import { Wind, Droplets, Sun, AlertTriangle, ChevronDown, MapPin } from 'lucide-react'
 import { useWeather } from '../../hooks/useWeather'
+import { useAppStore } from '../../store/appStore'
 import { getWeatherVideo, getWeatherLabel } from '../../services/weatherVideos'
 
 export function WeatherCard() {
   const { weather, alerts } = useWeather()
+  const { appLocation } = useAppStore()
   const [expanded, setExpanded] = useState(false)
   const videoUrl = getWeatherVideo(weather.condition)
   const timeLabel = getWeatherLabel(weather.condition)
@@ -54,6 +56,14 @@ export function WeatherCard() {
                 <p className="text-white/80 text-sm drop-shadow-lg">Feels like {weather.feelsLike}°F</p>
               </div>
             </div>
+
+            {/* Location display */}
+            {appLocation && (
+              <div className="flex items-center gap-1.5 text-white/70 text-xs drop-shadow-lg">
+                <MapPin size={12} className="shrink-0" />
+                <span className="truncate">{appLocation.address}</span>
+              </div>
+            )}
           </div>
         </div>
 
