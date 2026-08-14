@@ -206,6 +206,14 @@ export async function getActiveTimeEntry(employeeId: string): Promise<TimeEntry 
   }
 }
 
+/**
+ * Check if user has an active clock-in on any device
+ * Used to prevent duplicate clock-ins (Layer 3: Duplicate Prevention)
+ */
+export async function checkActiveClockIn(employeeId: string): Promise<TimeEntry | null> {
+  return getActiveTimeEntry(employeeId)
+}
+
 export async function syncEmployeeTimesheets(employeeId: string, employeeEmail: string): Promise<void> {
   try {
     console.log('[Supabase] Syncing timesheets for', employeeEmail)

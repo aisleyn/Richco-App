@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Clock, Play, Pause, Square, ChevronDown } from 'lucide-react'
+import { MapPin, Clock, Play, Pause, Square, ChevronDown, AlertCircle } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { useElapsedTime, formatElapsed } from '../../hooks/useTimer'
-import { getCrewShiftAssignment, getCrewMemberByEmail } from '../../services/supabase'
+import { getCrewShiftAssignment, getCrewMemberByEmail, checkActiveClockIn } from '../../services/supabase'
 import type { ShiftData, ShiftLocationData } from '../../services/supabase'
 
 interface Props {
@@ -14,12 +14,14 @@ interface Props {
 }
 
 export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernightShift = false }: Props) {
-  const { clockedIn, clockInTime, breakActive, breakStartTime, totalBreakMs, startBreak, endBreak, currentUserEmail } = useAppStore()
+  const { clockedIn, clockInTime, breakActive, breakStartTime, totalBreakMs, startBreak, endBreak, currentUserEmail, currentUserId } = useAppStore()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
   const [assignedShift, setAssignedShift] = useState<(ShiftData & { locations: ShiftLocationData[] }) | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<ShiftLocationData | null>(null)
   const [locationsExpanded, setLocationsExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [validatingClockIn, setValidatingClockIn] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAssignedShift()
@@ -45,11 +47,38 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
     }
   }
 
-  const handleClockIn = () => {
-    if (assignedShift && selectedLocation) {
-      onClockIn(isOvernightShift, selectedLocation.location_name, selectedLocation.location_name)
-    } else {
-      onClockIn(isOvernightShift, 'shift', 'Shift')
+  const handleClockIn = async () => {
+    setValidatingClockIn(true)
+    setValidationError(null)
+
+    try {
+      // Layer 3: Prevent duplicate clock-ins
+      // Check if user is already clocked in on another device
+      const activeEntry = await checkActiveClockIn(currentUserId)
+
+      if (activeEntry) {
+        const clockInTime = new Date(activeEntry.clock_in_time).toLocaleTimeString()
+        setValidationError(`⚠️ Already clocked in since ${clockInTime}. Please clock out first.`)
+        setValidatingClockIn(false)
+        return
+      }
+
+      // All checks passed, proceed with clock-in
+      if (assignedShift && selectedLocation) {
+        onClockIn(isOvernightShift, selectedLocation.location_name, selectedLocation.location_name)
+      } else {
+        onClockIn(isOvernightShift, 'shift', 'Shift')
+      }
+    } catch (err) {
+      console.error('[ClockInCard] Validation error:', err)
+      // Allow clock-in if validation fails (assume offline)
+      if (assignedShift && selectedLocation) {
+        onClockIn(isOvernightShift, selectedLocation.location_name, selectedLocation.location_name)
+      } else {
+        onClockIn(isOvernightShift, 'shift', 'Shift')
+      }
+    } finally {
+      setValidatingClockIn(false)
     }
   }
 
@@ -228,10 +257,22 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
         )}
       </AnimatePresence>
 
+      {validationError && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="px-4 py-3 bg-error-base/10 border-t border-error-base/20 flex items-start gap-2"
+        >
+          <AlertCircle size={16} className="text-error-base shrink-0 mt-0.5" />
+          <p className="text-error-base text-xs">{validationError}</p>
+        </motion.div>
+      )}
+
       <button
         onClick={handleClockIn}
-        className="w-full flex items-center justify-center gap-2 py-4 active:opacity-90 transition-opacity"
-        style={{ backgroundColor: '#0D8A60' }}
+        disabled={validatingClockIn || !!validationError}
+        className="w-full flex items-center justify-center gap-2 py-4 active:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ backgroundColor: validationError ? '#8B5A5A' : '#0D8A60' }}
       >
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}
@@ -239,7 +280,9 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
         >
           <Play size={18} fill="white" className="text-white ml-0.5" />
         </motion.div>
-        <span className="text-white font-bold text-base">Clock In</span>
+        <span className="text-white font-bold text-base">
+          {validatingClockIn ? 'Validating...' : 'Clock In'}
+        </span>
       </button>
     </motion.div>
   )
