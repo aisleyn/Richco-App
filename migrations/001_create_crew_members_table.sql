@@ -28,16 +28,19 @@ CREATE INDEX IF NOT EXISTS crew_members_role_idx ON public.crew_members(role);
 ALTER TABLE public.crew_members ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow authenticated users to read all crew members
+DROP POLICY IF EXISTS "allow_read_all_crew" ON public.crew_members;
 CREATE POLICY "allow_read_all_crew" ON public.crew_members
   FOR SELECT
   USING (TRUE);
 
 -- Policy: Allow authenticated users to insert their own registration
+DROP POLICY IF EXISTS "allow_insert_crew" ON public.crew_members;
 CREATE POLICY "allow_insert_crew" ON public.crew_members
   FOR INSERT
   WITH CHECK (TRUE);
 
 -- Policy: Allow users to update their own record
+DROP POLICY IF EXISTS "allow_update_own_crew" ON public.crew_members;
 CREATE POLICY "allow_update_own_crew" ON public.crew_members
   FOR UPDATE
   USING (auth.jwt() ->> 'email' = email)

@@ -12,14 +12,17 @@ create table if not exists public.users (
 alter table public.users enable row level security;
 
 -- Policy: Users can read their own profile
+drop policy if exists "Users can read their own profile" on public.users;
 create policy "Users can read their own profile" on public.users
   for select using (auth.uid() = id);
 
 -- Policy: Users can read all crew members (for messaging, crew list)
+drop policy if exists "Users can read all crew members" on public.users;
 create policy "Users can read all crew members" on public.users
   for select using (true);
 
 -- Policy: Admin can insert new users
+drop policy if exists "Admin can insert users" on public.users;
 create policy "Admin can insert users" on public.users
   for insert with check (
     exists (
@@ -29,6 +32,7 @@ create policy "Admin can insert users" on public.users
   );
 
 -- Policy: Admin can update users
+drop policy if exists "Admin can update users" on public.users;
 create policy "Admin can update users" on public.users
   for update using (
     exists (
@@ -38,6 +42,7 @@ create policy "Admin can update users" on public.users
   );
 
 -- Policy: Admin can delete users
+drop policy if exists "Admin can delete users" on public.users;
 create policy "Admin can delete users" on public.users
   for delete using (
     exists (

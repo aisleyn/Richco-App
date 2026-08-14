@@ -15,14 +15,17 @@ CREATE INDEX IF NOT EXISTS idx_notification_reactions_notification_id ON notific
 ALTER TABLE notification_reactions ENABLE ROW LEVEL SECURITY;
 
 -- Policies for reactions
+DROP POLICY IF EXISTS "Anyone can read notification reactions" ON notification_reactions;
 CREATE POLICY "Anyone can read notification reactions" ON notification_reactions
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can react to notifications" ON notification_reactions;
 CREATE POLICY "Authenticated users can react to notifications" ON notification_reactions
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Users can remove their own reactions" ON notification_reactions;
 CREATE POLICY "Users can remove their own reactions" ON notification_reactions
   FOR DELETE
   USING (auth.role() = 'authenticated');

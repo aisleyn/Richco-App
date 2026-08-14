@@ -16,10 +16,12 @@ CREATE INDEX idx_shift_locations_shift_id ON shift_locations(shift_id);
 
 -- RLS - inherit from shifts table via join
 ALTER TABLE shift_locations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "View shift locations" ON shift_locations;
 CREATE POLICY "View shift locations" ON shift_locations FOR SELECT USING (
   shift_id IN (SELECT id FROM shifts WHERE crew_member_id = (SELECT id FROM crew_members WHERE email = auth.jwt() ->> 'email'))
   OR (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );
+DROP POLICY IF EXISTS "Admins manage shift locations" ON shift_locations;
 CREATE POLICY "Admins manage shift locations" ON shift_locations FOR ALL USING (
   (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );

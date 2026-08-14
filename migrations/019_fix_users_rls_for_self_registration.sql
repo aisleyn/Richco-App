@@ -5,6 +5,7 @@ drop policy if exists "Admin can insert users" on public.users;
 -- Create new policy that allows:
 -- 1. Users to insert their own profile (for self-registration)
 -- 2. Admins to insert any user profile
+drop policy if exists "Users can insert own profile or admin can insert users" on public.users;
 create policy "Users can insert own profile or admin can insert users" on public.users
   for insert with check (
     -- Allow user to insert their own profile using their auth ID

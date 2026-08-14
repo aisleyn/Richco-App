@@ -30,19 +30,23 @@ ALTER TABLE notifications_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications_comments ENABLE ROW LEVEL SECURITY;
 
 -- Policies for views (anyone can read/create)
+DROP POLICY IF EXISTS "Anyone can read notification views" ON notifications_views;
 CREATE POLICY "Anyone can read notification views" ON notifications_views
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can track views" ON notifications_views;
 CREATE POLICY "Authenticated users can track views" ON notifications_views
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
 -- Policies for comments (anyone can read, authenticated can create)
+DROP POLICY IF EXISTS "Anyone can read notification comments" ON notifications_comments;
 CREATE POLICY "Anyone can read notification comments" ON notifications_comments
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can comment" ON notifications_comments;
 CREATE POLICY "Authenticated users can comment" ON notifications_comments
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');

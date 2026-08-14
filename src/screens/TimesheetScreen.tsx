@@ -321,7 +321,7 @@ export function TimesheetScreen({ onNavigate }: Props) {
             )}
           </div>
           <div className="mt-0">
-            <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} />
+            <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} selectedDate={selectedWeek} />
           </div>
         </motion.div>
 

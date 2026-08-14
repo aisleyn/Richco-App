@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.password_resets (
 ALTER TABLE public.password_resets ENABLE ROW LEVEL SECURITY;
 
 -- Allow admins to see/insert password resets
+DROP POLICY IF EXISTS "Admins can manage password resets" ON public.password_resets;
 CREATE POLICY "Admins can manage password resets" ON public.password_resets
   FOR ALL
   USING (

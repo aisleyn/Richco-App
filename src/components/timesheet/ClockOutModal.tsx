@@ -7,6 +7,7 @@ import { useGeolocation } from '../../hooks/useGeolocation'
 import { useElapsedTime, formatElapsed, msToDecimalHours } from '../../hooks/useTimer'
 import { addPhotos } from '../../services/photoDatabase'
 import { uploadProjectPhoto } from '../../services/storageService'
+import { ImageViewerModal } from '../ImageViewerModal'
 import type { Photo } from '../../types'
 
 interface Props {
@@ -37,6 +38,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
   const [submitted, setSubmitted] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const [clockOutGps, setClockOutGps] = useState(false)
+  const [expandedPhotoIndex, setExpandedPhotoIndex] = useState<number | null>(null)
 
   // Mandatory break depends on shift type
   const mandatoryBreakHours = currentShiftIsOvernight ? 0.5 : 1.0 // -0.5h overnight, -1h day shift
@@ -316,7 +318,11 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
               {photos.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1.5">
                   {photos.map((photo, i) => (
-                    <div key={i} className="w-14 h-14 rounded-lg overflow-hidden shrink-0 relative group">
+                    <div
+                      key={i}
+                      onClick={() => setExpandedPhotoIndex(i)}
+                      className="w-14 h-14 rounded-lg overflow-hidden shrink-0 relative group cursor-pointer hover:opacity-75 transition-opacity"
+                    >
                       <img src={photo.preview} alt="" className="w-full h-full object-cover" />
 
                       {/* Upload progress overlay */}
@@ -335,7 +341,11 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
                       {/* Delete button */}
                       <button
-                        onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPhotos(prev => prev.filter((_, j) => j !== i))
+                          setExpandedPhotoIndex(null)
+                        }}
                         className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X size={9} className="text-primary" />
@@ -387,6 +397,26 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
             </button>
           </div>
         </motion.div>
+
+        {/* Image viewer modal for expanded photo preview */}
+        <ImageViewerModal
+          isOpen={expandedPhotoIndex !== null}
+          imageUrl={expandedPhotoIndex !== null ? photos[expandedPhotoIndex]?.preview || '' : ''}
+          fileName={`photo-${(expandedPhotoIndex || 0) + 1}`}
+          onClose={() => setExpandedPhotoIndex(null)}
+          currentIndex={expandedPhotoIndex || 0}
+          totalImages={photos.length}
+          onPrev={() => {
+            if (expandedPhotoIndex !== null && expandedPhotoIndex > 0) {
+              setExpandedPhotoIndex(expandedPhotoIndex - 1)
+            }
+          }}
+          onNext={() => {
+            if (expandedPhotoIndex !== null && expandedPhotoIndex < photos.length - 1) {
+              setExpandedPhotoIndex(expandedPhotoIndex + 1)
+            }
+          }}
+        />
       </div>
     </AnimatePresence>
   )

@@ -59,11 +59,11 @@ export function EditTimecardModal({ timecard, onClose, onSave }: Props) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full sm:w-full sm:max-w-md bg-surface rounded-t-3xl sm:rounded-2xl p-6 border border-border-light"
+        className="w-full sm:w-full sm:max-w-md bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-lg"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-primary text-xl font-bold">Edit Timecard</h2>
-          <button onClick={onClose} className="text-secondary hover:text-primary">
+          <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold">Edit Timecard</h2>
+          <button onClick={onClose} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
             <X size={20} />
           </button>
         </div>
@@ -71,13 +71,13 @@ export function EditTimecardModal({ timecard, onClose, onSave }: Props) {
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           {/* Site Name */}
           <div>
-            <label className="text-muted text-xs font-semibold uppercase tracking-wider mb-2 block">
+            <label className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
               Site
             </label>
             <select
               value={formData.siteId}
               onChange={e => handleSiteChange(e.target.value)}
-              className="w-full bg-elevated border border-border-light rounded-lg px-3 py-2.5 text-primary text-sm focus:outline-none focus:border-primary-base"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 dark:focus:border-green-400"
             >
               {jobSites.map(site => (
                 <option key={site.id} value={site.id}>
@@ -89,46 +89,46 @@ export function EditTimecardModal({ timecard, onClose, onSave }: Props) {
 
           {/* Clock In */}
           <div>
-            <label className="text-muted text-xs font-semibold uppercase tracking-wider mb-2 block">
+            <label className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
               Clock In
             </label>
             <input
               type="datetime-local"
               value={formData.clockInTime}
               onChange={e => setFormData({ ...formData, clockInTime: e.target.value })}
-              className="w-full bg-elevated border border-border-light rounded-lg px-3 py-2.5 text-primary text-sm focus:outline-none focus:border-primary-base"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 dark:focus:border-green-400"
             />
           </div>
 
           {/* Clock Out */}
           <div>
-            <label className="text-muted text-xs font-semibold uppercase tracking-wider mb-2 block">
+            <label className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
               Clock Out
             </label>
             <input
               type="datetime-local"
               value={formData.clockOutTime}
               onChange={e => setFormData({ ...formData, clockOutTime: e.target.value })}
-              className="w-full bg-elevated border border-border-light rounded-lg px-3 py-2.5 text-primary text-sm focus:outline-none focus:border-primary-base"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 dark:focus:border-green-400"
             />
           </div>
 
           {/* Break Minutes */}
           <div>
-            <label className="text-muted text-xs font-semibold uppercase tracking-wider mb-2 block">
+            <label className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
               Break Minutes
             </label>
             <input
               type="number"
               value={formData.breakMinutes}
               onChange={e => setFormData({ ...formData, breakMinutes: e.target.value })}
-              className="w-full bg-elevated border border-border-light rounded-lg px-3 py-2.5 text-primary text-sm focus:outline-none focus:border-primary-base"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 dark:focus:border-green-400"
             />
           </div>
 
           {/* Total Hours */}
           <div>
-            <label className="text-muted text-xs font-semibold uppercase tracking-wider mb-2 block">
+            <label className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
               Total Hours
             </label>
             <input
@@ -136,23 +136,23 @@ export function EditTimecardModal({ timecard, onClose, onSave }: Props) {
               step="0.01"
               value={formData.totalHours}
               onChange={e => setFormData({ ...formData, totalHours: e.target.value })}
-              className="w-full bg-elevated border border-border-light rounded-lg px-3 py-2.5 text-primary text-sm focus:outline-none focus:border-primary-base"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-green-600 dark:focus:border-green-400"
             />
           </div>
         </div>
 
-        <div className="flex gap-3 pt-6 mt-6 border-t border-border-light">
+        <div className="flex gap-3 pt-6 mt-6 border-t border-slate-200 dark:border-slate-700">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 bg-elevated border border-border-light rounded-lg px-4 py-2.5 text-primary font-medium text-sm hover:bg-base transition-colors"
+            className="flex-1 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-700 dark:text-slate-200 font-medium text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className="flex-1 bg-primary-base hover:bg-primary-dark disabled:opacity-50 rounded-lg px-4 py-2.5 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg px-4 py-2.5 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2"
           >
             {loading && <Loader size={16} className="animate-spin" />}
             Save Changes

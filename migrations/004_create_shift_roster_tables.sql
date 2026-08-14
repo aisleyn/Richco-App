@@ -30,13 +30,21 @@ ALTER TABLE shift_roster_rows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shift_roster_columns ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for shift_roster_rows
+DROP POLICY IF EXISTS "Anyone can read shift roster rows" ON shift_roster_rows;
 CREATE POLICY "Anyone can read shift roster rows" ON shift_roster_rows FOR SELECT USING (TRUE);
+DROP POLICY IF EXISTS "Anyone can create shift roster rows" ON shift_roster_rows;
 CREATE POLICY "Anyone can create shift roster rows" ON shift_roster_rows FOR INSERT WITH CHECK (TRUE);
+DROP POLICY IF EXISTS "Anyone can update shift roster rows" ON shift_roster_rows;
 CREATE POLICY "Anyone can update shift roster rows" ON shift_roster_rows FOR UPDATE USING (TRUE) WITH CHECK (TRUE);
+DROP POLICY IF EXISTS "Anyone can delete shift roster rows" ON shift_roster_rows;
 CREATE POLICY "Anyone can delete shift roster rows" ON shift_roster_rows FOR DELETE USING (TRUE);
 
 -- RLS Policies for shift_roster_columns
+DROP POLICY IF EXISTS "Anyone can read shift roster columns" ON shift_roster_columns;
 CREATE POLICY "Anyone can read shift roster columns" ON shift_roster_columns FOR SELECT USING (TRUE);
+DROP POLICY IF EXISTS "Anyone can create shift roster columns" ON shift_roster_columns;
 CREATE POLICY "Anyone can create shift roster columns" ON shift_roster_columns FOR INSERT WITH CHECK (TRUE);
+DROP POLICY IF EXISTS "Anyone can update shift roster columns" ON shift_roster_columns;
 CREATE POLICY "Anyone can update shift roster columns" ON shift_roster_columns FOR UPDATE USING (TRUE) WITH CHECK (TRUE);
+DROP POLICY IF EXISTS "Anyone can delete shift roster columns" ON shift_roster_columns;
 CREATE POLICY "Anyone can delete shift roster columns" ON shift_roster_columns FOR DELETE USING (TRUE);

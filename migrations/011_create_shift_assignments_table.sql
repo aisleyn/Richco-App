@@ -12,10 +12,12 @@ CREATE INDEX idx_shift_assignments_shift ON shift_assignments(shift_id);
 
 -- RLS Policies
 ALTER TABLE shift_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view their own assignments" ON shift_assignments;
 CREATE POLICY "Users can view their own assignments" ON shift_assignments FOR SELECT USING (
   crew_member_id = (SELECT id FROM crew_members WHERE email = auth.jwt() ->> 'email')
   OR (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );
+DROP POLICY IF EXISTS "Admins can manage assignments" ON shift_assignments;
 CREATE POLICY "Admins can manage assignments" ON shift_assignments FOR ALL USING (
   (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );

@@ -17,12 +17,15 @@ CREATE INDEX idx_shifts_date ON shifts(scheduled_date);
 
 -- RLS Policies
 ALTER TABLE shifts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view their own shifts" ON shifts;
 CREATE POLICY "Users can view their own shifts" ON shifts FOR SELECT USING (
   crew_member_id = (SELECT id FROM crew_members WHERE email = auth.jwt() ->> 'email')
 );
+DROP POLICY IF EXISTS "Admins can view all shifts" ON shifts;
 CREATE POLICY "Admins can view all shifts" ON shifts FOR SELECT USING (
   (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );
+DROP POLICY IF EXISTS "Admins can create/update/delete shifts" ON shifts;
 CREATE POLICY "Admins can create/update/delete shifts" ON shifts FOR ALL USING (
   (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );

@@ -41,32 +41,39 @@ ALTER TABLE notification_comment_reactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notification_comment_views ENABLE ROW LEVEL SECURITY;
 
 -- Policies for replies (anyone can read, authenticated can create)
+DROP POLICY IF EXISTS "Anyone can read comment replies" ON notification_comment_replies;
 CREATE POLICY "Anyone can read comment replies" ON notification_comment_replies
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can reply to comments" ON notification_comment_replies;
 CREATE POLICY "Authenticated users can reply to comments" ON notification_comment_replies
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
 -- Policies for reactions (anyone can read, authenticated can create/delete)
+DROP POLICY IF EXISTS "Anyone can read comment reactions" ON notification_comment_reactions;
 CREATE POLICY "Anyone can read comment reactions" ON notification_comment_reactions
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can react to comments" ON notification_comment_reactions;
 CREATE POLICY "Authenticated users can react to comments" ON notification_comment_reactions
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "Users can remove their own reactions" ON notification_comment_reactions;
 CREATE POLICY "Users can remove their own reactions" ON notification_comment_reactions
   FOR DELETE
   USING (auth.role() = 'authenticated');
 
 -- Policies for comment views (anyone can read, authenticated can create)
+DROP POLICY IF EXISTS "Anyone can read comment views" ON notification_comment_views;
 CREATE POLICY "Anyone can read comment views" ON notification_comment_views
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can track comment views" ON notification_comment_views;
 CREATE POLICY "Authenticated users can track comment views" ON notification_comment_views
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');

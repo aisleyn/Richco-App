@@ -10,6 +10,7 @@ import { useAppStore } from '../store/appStore'
 import { BulkUploadModal } from '../components/photos/BulkUploadModal'
 import { EditPhotoModal } from '../components/photos/EditPhotoModal'
 import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
+import { ImageViewerModal } from '../components/ImageViewerModal'
 
 const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
 
@@ -20,6 +21,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
   const [activeProject, setActiveProject] = useState<string | null>(initialProjectId || null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null)
   const [selectedForDelete, setSelectedForDelete] = useState<Set<string>>(new Set())
   const [deleteMode, setDeleteMode] = useState(false)
@@ -295,10 +297,17 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
                 className="aspect-square relative overflow-hidden group"
               >
                 <button
-                  onClick={() => deleteMode ? togglePhotoSelect(photo.id) : setSelectedPhoto(photo)}
+                  onClick={() => {
+                    if (deleteMode) {
+                      togglePhotoSelect(photo.id)
+                    } else {
+                      setSelectedPhoto(photo)
+                      setSelectedPhotoIndex(filtered.findIndex(p => p.id === photo.id))
+                    }
+                  }}
                   className={`w-full h-full ${deleteMode && selectedForDelete.has(photo.id) ? 'ring-2 ring-red-500' : ''}`}
                 >
-                  <img src={photo.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={photo.thumbnailUrl} alt="" className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                   {/* AI flag */}
                   {photo.aiFlags && photo.aiFlags.length > 0 && (
                     <div className="absolute top-1 left-1 bg-amber-500/90 rounded-md p-0.5">
@@ -337,45 +346,53 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
         </div>
       )}
 
-      {/* Photo detail modal */}
+      {/* Image viewer modal with carousel */}
+      <ImageViewerModal
+        isOpen={selectedPhoto !== null}
+        imageUrl={selectedPhoto?.url || ''}
+        fileName={`${selectedPhoto?.category || 'photo'}-${selectedPhoto?.timestamp}`}
+        onClose={() => setSelectedPhoto(null)}
+        currentIndex={selectedPhotoIndex}
+        totalImages={filtered.length}
+        onPrev={() => {
+          if (selectedPhotoIndex > 0) {
+            const newIndex = selectedPhotoIndex - 1
+            setSelectedPhotoIndex(newIndex)
+            setSelectedPhoto(filtered[newIndex])
+          }
+        }}
+        onNext={() => {
+          if (selectedPhotoIndex < filtered.length - 1) {
+            const newIndex = selectedPhotoIndex + 1
+            setSelectedPhotoIndex(newIndex)
+            setSelectedPhoto(filtered[newIndex])
+          }
+        }}
+      />
+
+      {/* Photo details overlay (below image viewer) */}
       <AnimatePresence>
         {selectedPhoto && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 flex flex-col"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent px-4 py-6 pointer-events-none"
           >
-            <div className="flex items-center justify-between px-4 pt-12 pb-4">
-              <button onClick={() => setSelectedPhoto(null)} className="text-slate-800">
-                <ChevronLeft size={24} />
-              </button>
-              <span className="text-slate-300 text-sm">{selectedPhoto.category}</span>
-              <div className="w-6" />
-            </div>
-
-            <div className="flex-1 flex items-center justify-center px-4">
-              <img src={selectedPhoto.url} alt="" className="w-full max-h-full object-contain rounded-xl" />
-            </div>
-
-            <div className="px-4 py-6 space-y-3">
+            <div className="max-w-2xl mx-auto space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-800 font-semibold">{selectedPhoto.submittedBy}</p>
+                  <p className="text-slate-200 font-semibold">{selectedPhoto.submittedBy}</p>
                   <p className="text-slate-400 text-sm">{format(selectedPhoto.timestamp, 'MMM d, yyyy · h:mm a')}</p>
                 </div>
-                <div className="flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-lg px-2.5 py-1.5">
-                  <CheckCircle size={12} className="text-emerald-400" />
-                  <span className="text-emerald-400 text-xs">{Math.round((selectedPhoto.aiConfidence ?? 0) * 100)}% AI</span>
-                </div>
+                <span className="text-slate-400 text-xs bg-slate-800/50 px-2.5 py-1 rounded">{selectedPhoto.category}</span>
               </div>
 
               {selectedPhoto.aiFlags && selectedPhoto.aiFlags.length > 0 && (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                  <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5 mb-1">
-                    <AlertTriangle size={12} /> AI Flag
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
+                  <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                    <AlertTriangle size={12} /> AI Flag: {selectedPhoto.aiFlags.join(', ')}
                   </p>
-                  {selectedPhoto.aiFlags.map((f, i) => <p key={i} className="text-amber-200 text-sm">{f}</p>)}
                 </div>
               )}
 

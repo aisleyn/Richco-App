@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { addDays, startOfWeek, format } from 'date-fns'
+import { useState, useRef } from 'react'
 
 interface WeekNavigatorProps {
   selectedDate: Date
@@ -12,6 +13,9 @@ export function WeekNavigator({
   onWeekChange,
   showCurrentWeekButton = true,
 }: WeekNavigatorProps) {
+  const [showCalendar, setShowCalendar] = useState(false)
+  const dateInputRef = useRef<HTMLInputElement>(null)
+
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 }) // Sunday
   const weekEnd = addDays(weekStart, 6)
 
@@ -25,6 +29,14 @@ export function WeekNavigator({
 
   const handleCurrentWeek = () => {
     onWeekChange(new Date())
+  }
+
+  const handleDateSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateStr = e.target.value
+    if (dateStr) {
+      onWeekChange(new Date(dateStr))
+      setShowCalendar(false)
+    }
   }
 
   const weekLabel = `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d')}`
@@ -54,12 +66,33 @@ export function WeekNavigator({
       </div>
 
       {showCurrentWeekButton && (
-        <button
-          onClick={handleCurrentWeek}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm"
-        >
-          Current Week
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCurrentWeek}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm"
+          >
+            Current Week
+          </button>
+          <button
+            onClick={() => {
+              setShowCalendar(!showCalendar)
+              if (!showCalendar) {
+                setTimeout(() => dateInputRef.current?.click(), 0)
+              }
+            }}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            title="Pick a date"
+          >
+            <Calendar size={20} className="text-slate-600 dark:text-slate-400" />
+          </button>
+          <input
+            ref={dateInputRef}
+            type="date"
+            value={selectedDate.toISOString().split('T')[0]}
+            onChange={handleDateSelect}
+            className="hidden"
+          />
+        </div>
       )}
     </div>
   )

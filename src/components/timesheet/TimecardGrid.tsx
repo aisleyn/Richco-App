@@ -30,9 +30,10 @@ function saveTimecards(timecards: TimesheetEntry[], userId: string) {
 interface TimecardGridProps {
   isAdmin?: boolean
   onEditTimecard?: (timecard: TimesheetEntry) => void
+  selectedDate?: Date
 }
 
-export function TimecardGrid({ isAdmin = false, onEditTimecard }: TimecardGridProps) {
+export function TimecardGrid({ isAdmin = false, onEditTimecard, selectedDate }: TimecardGridProps) {
   const { currentUserId } = useAppStore()
   const [allTimecards, setAllTimecards] = useState<TimesheetEntry[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -52,14 +53,15 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard }: TimecardGridPr
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [currentUserId])
 
-  const getCardsByDateRange = (daysBack: number) => {
-    const now = new Date()
-    const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    return allTimecards.filter(tc => tc.date >= cutoffDate)
+  const getCardsByDateRange = (daysBack: number, baseDate: Date) => {
+    const cutoffDate = new Date(baseDate.getTime() - daysBack * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const endDate = baseDate.toISOString().split('T')[0]
+    return allTimecards.filter(tc => tc.date >= cutoffDate && tc.date <= endDate)
   }
 
-  const weekCards = getCardsByDateRange(7)
-  const monthCards = getCardsByDateRange(30)
+  const baseDate = selectedDate || new Date()
+  const weekCards = getCardsByDateRange(7, baseDate)
+  const monthCards = getCardsByDateRange(30, baseDate)
   const displayCards = showFullMonth ? monthCards : weekCards
 
   function deleteTimecard(id: string) {

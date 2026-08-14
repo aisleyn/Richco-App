@@ -38,10 +38,12 @@ ALTER TABLE notification_reaction_details ENABLE ROW LEVEL SECURITY;
 ALTER TABLE comment_reaction_details ENABLE ROW LEVEL SECURITY;
 
 -- Policies for reaction details (public read)
+DROP POLICY IF EXISTS "Anyone can read notification reaction details" ON notification_reaction_details;
 CREATE POLICY "Anyone can read notification reaction details" ON notification_reaction_details
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Anyone can read comment reaction details" ON comment_reaction_details;
 CREATE POLICY "Anyone can read comment reaction details" ON comment_reaction_details
   FOR SELECT
   USING (true);

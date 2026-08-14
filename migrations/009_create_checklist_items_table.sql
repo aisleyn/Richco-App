@@ -11,7 +11,9 @@ CREATE INDEX idx_checklist_items_checklist_id ON checklist_items(daily_checklist
 
 -- RLS
 ALTER TABLE checklist_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Everyone can view checklist items" ON checklist_items;
 CREATE POLICY "Everyone can view checklist items" ON checklist_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admins manage checklist items" ON checklist_items;
 CREATE POLICY "Admins manage checklist items" ON checklist_items FOR ALL USING (
   (SELECT is_admin FROM crew_members WHERE email = auth.jwt() ->> 'email') = true
 );

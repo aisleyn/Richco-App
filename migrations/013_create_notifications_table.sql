@@ -16,16 +16,19 @@ CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Create policy: Anyone can read notifications
+DROP POLICY IF EXISTS "Anyone can read notifications" ON notifications;
 CREATE POLICY "Anyone can read notifications" ON notifications
   FOR SELECT
   USING (true);
 
 -- Create policy: Only authenticated users can create notifications
+DROP POLICY IF EXISTS "Authenticated users can create notifications" ON notifications;
 CREATE POLICY "Authenticated users can create notifications" ON notifications
   FOR INSERT
   WITH CHECK (auth.role() = 'authenticated');
 
 -- Create policy: Only creators can delete their notifications (or admins)
+DROP POLICY IF EXISTS "Users can delete notifications" ON notifications;
 CREATE POLICY "Users can delete notifications" ON notifications
   FOR DELETE
   USING (auth.role() = 'authenticated');
