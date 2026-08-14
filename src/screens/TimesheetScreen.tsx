@@ -291,6 +291,22 @@ export function TimesheetScreen({ onNavigate }: Props) {
           </motion.div>
         )}
 
+        {/* Per-Employee History (Admin only) - Moved to top */}
+        {isAdmin && employees.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.36 }}
+            className="mt-8 p-6 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl"
+          >
+            <PerEmployeeHistory
+              employees={employees}
+              selectedWeek={selectedWeek}
+              onWeekChange={setSelectedWeek}
+            />
+          </motion.div>
+        )}
+
         {/* Personal Week History */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -324,22 +340,6 @@ export function TimesheetScreen({ onNavigate }: Props) {
             <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} selectedDate={selectedWeek} />
           </div>
         </motion.div>
-
-        {/* Per-Employee History (Admin only) */}
-        {isAdmin && employees.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 p-6 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl"
-          >
-            <PerEmployeeHistory
-              employees={employees}
-              selectedWeek={selectedWeek}
-              onWeekChange={setSelectedWeek}
-            />
-          </motion.div>
-        )}
 
         {/* Time Off Card */}
         <motion.div

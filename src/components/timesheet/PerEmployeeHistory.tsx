@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { WeekNavigator } from './WeekNavigator'
 import { TimeCardAdjustmentModal } from './TimeCardAdjustmentModal'
@@ -33,9 +33,8 @@ export function PerEmployeeHistory({
   selectedWeek,
   onWeekChange,
 }: PerEmployeeHistoryProps) {
-  const [selectedEmployee, setSelectedEmployee] = useState<any | null>(
-    employees.length > 0 ? employees[0] : null
-  )
+  const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [timecards, setTimecards] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTimecard, setSelectedTimecard] = useState<any | null>(null)
@@ -118,7 +117,10 @@ export function PerEmployeeHistory({
 
       {/* Employee Selector */}
       <div className="relative">
-        <button className="w-full px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-lg flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-500 transition-colors">
+        <button
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="w-full px-4 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-lg flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-500 transition-colors"
+        >
           <div className="text-left">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               EMPLOYEE
@@ -129,33 +131,38 @@ export function PerEmployeeHistory({
                 : selectedEmployee?.name || 'Select Employee'}
             </p>
           </div>
-          <ChevronDown size={20} className="text-slate-400" />
+          <motion.div animate={{ rotate: dropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown size={20} className="text-slate-400" />
+          </motion.div>
         </button>
 
         {/* Dropdown Menu */}
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
-          {employees.map((emp) => {
-            const empName = emp.firstName
-              ? `${emp.firstName} ${emp.lastName || ''}`
-              : emp.name || 'Unknown'
-            return (
-              <button
-                key={emp.id}
-                onClick={() => {
-                  setSelectedEmployee(emp)
-                }}
-                className={`w-full px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${
-                  selectedEmployee?.id === emp.id
-                    ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600'
-                    : ''
-                }`}
-              >
-                <p className="font-semibold text-slate-900 dark:text-white">{empName}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{emp.email}</p>
-              </button>
-            )
-          })}
-        </div>
+        {dropdownOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+            {employees.map((emp) => {
+              const empName = emp.firstName
+                ? `${emp.firstName} ${emp.lastName || ''}`
+                : emp.name || 'Unknown'
+              return (
+                <button
+                  key={emp.id}
+                  onClick={() => {
+                    setSelectedEmployee(emp)
+                    setDropdownOpen(false)
+                  }}
+                  className={`w-full px-4 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${
+                    selectedEmployee?.id === emp.id
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600'
+                      : ''
+                  }`}
+                >
+                  <p className="font-semibold text-slate-900 dark:text-white">{empName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{emp.email}</p>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Week Navigator */}
