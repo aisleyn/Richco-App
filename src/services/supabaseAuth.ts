@@ -372,6 +372,15 @@ export async function deleteCrewMember(userId: string): Promise<{ success: boole
       return { success: false, message: 'Admin service not available' }
     }
 
+    // First, get the email from users table before deleting
+    const { data: userData } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single()
+
+    const userEmail = userData?.email
+
     // Delete from auth.users first (requires service role key)
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
@@ -388,16 +397,21 @@ export async function deleteCrewMember(userId: string): Promise<{ success: boole
       return { success: false, message: profileError.message }
     }
 
-    // Delete from crew_members table
-    const { error: crewError } = await supabase.from('crew_members').delete().eq('user_id', userId)
+    // Delete from crew_members table (by email, since crew_members stores email, not user_id)
+    if (userEmail) {
+      const { error: crewError } = await supabase
+        .from('crew_members')
+        .delete()
+        .eq('email', userEmail)
 
-    if (crewError) {
-      console.error('[Auth] Failed to delete crew member record:', crewError.message)
-      // Don't fail if crew_members delete fails, auth was already deleted
+      if (crewError) {
+        console.error('[Auth] Failed to delete crew member record:', crewError.message)
+        // Don't fail if crew_members delete fails, auth and profile were already deleted
+      }
     }
 
-    console.log('[Auth] ✅ Deleted crew member with ID:', userId)
-    return { success: true, message: 'Crew member deleted' }
+    console.log('[Auth] ✅ Deleted crew member with ID:', userId, userEmail ? `(${userEmail})` : '')
+    return { success: true, message: 'Crew member deleted successfully' }
   } catch (err) {
     console.error('[Auth] Delete crew member error:', err)
     return { success: false, message: 'Failed to delete crew member' }
