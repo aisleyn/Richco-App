@@ -246,11 +246,10 @@ export const useAppStore = create<AppState>()(
         const rawHours = workMs / 3600000 // Work time without mandatory break
         const breakHours = breakDurationMs / 3600000 // Actual breaks taken
         const mandatoryBreak = getMandatoryBreakHours(currentShiftIsOvernight)
-        const paidHours = Math.max(0, rawHours - mandatoryBreak)
-        const regularHours = Math.min(paidHours, 8)
-        const overtimeHours = Math.max(0, paidHours - 8)
+        const paidHours = Math.max(0, rawHours - mandatoryBreak) // Hours after mandatory breaks
 
         // Save completed timecard to localStorage
+        // NOTE: Overtime is calculated WEEKLY (not daily) - see TimesheetScreen for weekly calculation
         const completedTimecard: TimesheetEntry = {
           id: activeTimesheetId ?? `ts-${now}`,
           date: new Date(clockInTime ?? now).toISOString().split('T')[0],
@@ -261,8 +260,8 @@ export const useAppStore = create<AppState>()(
           clockInTime: clockInTime ?? now,
           clockOutTime: now,
           breakMinutes: Math.round(breakDurationMs / 60000),
-          totalHours: parseFloat(rawHours.toFixed(2)),
-          overtimeHours: parseFloat(overtimeHours.toFixed(2)),
+          totalHours: parseFloat(paidHours.toFixed(2)), // Use paid hours (after mandatory breaks)
+          overtimeHours: 0, // Overtime calculated weekly, not daily
           status: 'complete',
           breakTaken: (data.breakTaken ?? false) || breakDurationMs > 0,
           shiftSummary: data.shiftSummary,
@@ -291,10 +290,10 @@ export const useAppStore = create<AppState>()(
             clock_out_latitude: data.gpsOut?.lat,
             clock_out_longitude: data.gpsOut?.lng,
             clock_out_address: data.gpsOut?.address,
-            total_hours: parseFloat(rawHours.toFixed(4)),
+            total_hours: parseFloat(paidHours.toFixed(4)), // Use paid hours (after mandatory breaks)
             break_hours: parseFloat((breakDurationMs / 3600000).toFixed(4)),
-            regular_hours: parseFloat(regularHours.toFixed(4)),
-            overtime_hours: parseFloat(overtimeHours.toFixed(4)),
+            regular_hours: parseFloat(paidHours.toFixed(4)), // All hours are regular at entry level; overtime calculated weekly
+            overtime_hours: 0, // Overtime calculated weekly, not daily
             shift_notes: data.shiftSummary,
             concerns: data.concerns,
             vehicle_used: data.vehicleUsed,
@@ -323,6 +322,7 @@ export const useAppStore = create<AppState>()(
         })
 
         // Also send to Power Automate for compatibility
+        // NOTE: Overtime is calculated WEEKLY; here we pass paid hours as regular
         sendClockOut({
           employeeId: currentUserId,
           employeeName: currentUserName,
@@ -331,10 +331,10 @@ export const useAppStore = create<AppState>()(
           siteName: data.siteName ?? '',
           clockInTime: new Date(clockInTime ?? now).toISOString(),
           clockOutTime: new Date(now).toISOString(),
-          totalHoursDecimal: parseFloat(rawHours.toFixed(4)),
+          totalHoursDecimal: parseFloat(paidHours.toFixed(4)), // Paid hours (after mandatory breaks)
           breakHoursDecimal: parseFloat(breakHours.toFixed(4)),
-          regularHours: parseFloat(regularHours.toFixed(4)),
-          overtimeHours: parseFloat(overtimeHours.toFixed(4)),
+          regularHours: parseFloat(paidHours.toFixed(4)), // All paid hours count as regular at entry level
+          overtimeHours: 0, // Overtime calculated weekly, not daily
           vehicleId: data.vehicleUsed,
           breakTaken: data.breakTaken ?? false,
           shiftSummary: data.shiftSummary ?? '',

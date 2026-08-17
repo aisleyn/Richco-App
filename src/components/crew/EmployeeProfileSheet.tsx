@@ -367,7 +367,6 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
               {employeeTimesheets.map((entry: TimesheetEntry) => {
                 const clockInDate = new Date(entry.clockInTime)
                 const hours = entry.totalHours || 0
-                const isOvertime = (entry.overtimeHours || 0) > 0
 
                 return (
                   <motion.div
@@ -397,7 +396,7 @@ export function EmployeeProfileSheet({ member, onClose, isAdmin, onUpdated, canV
                       </div>
                       <div>
                         <p className="text-slate-500 text-xs uppercase tracking-wider">Hours</p>
-                        <p className={`font-semibold text-sm mt-1 ${isOvertime ? 'text-orange-600' : 'text-slate-900'}`}>
+                        <p className="font-semibold text-sm mt-1 text-slate-900">
                           {hours.toFixed(2)}h
                         </p>
                       </div>

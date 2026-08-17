@@ -81,7 +81,16 @@ export function TimesheetScreen({ onNavigate }: Props) {
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
     const now = new Date()
-    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+    // Calculate week start: Saturday of the current/previous week
+    // If today is Saturday (0), weekStart is today
+    // Otherwise, go back to the last Saturday
+    const dayOfWeek = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToSaturday = dayOfWeek === 6 ? 0 : (dayOfWeek === 0 ? -1 : (7 - dayOfWeek - 1))
+    const weekStart = new Date(now.getTime() + daysToSaturday * 24 * 60 * 60 * 1000)
+    weekStart.setHours(0, 0, 0, 0)
+    const weekStartStr = weekStart.toISOString().split('T')[0]
+
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
 
     try {
@@ -93,10 +102,11 @@ export function TimesheetScreen({ onNavigate }: Props) {
       const todayTimecards = timecards.filter(tc => tc.date === today)
       const completedToday = todayTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
 
-      // This week (past 7 days)
-      const weekTimecards = timecards.filter(tc => tc.date >= weekStart && tc.date <= today)
+      // This week (Saturday to Friday)
+      const weekTimecards = timecards.filter(tc => tc.date >= weekStartStr && tc.date <= today)
       const weekHours = weekTimecards.reduce((sum, tc) => sum + (tc.totalHours || 0), 0)
-      const weekOvertime = weekTimecards.reduce((sum, tc) => sum + (tc.overtimeHours || 0), 0)
+      // Overtime is calculated as hours OVER 40 in the week
+      const weekOvertime = Math.max(0, weekHours - 40)
 
       // This month
       const monthTimecards = timecards.filter(tc => tc.date >= monthStart && tc.date <= today)

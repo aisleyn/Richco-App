@@ -211,13 +211,8 @@ export function PerEmployeeHistory({
                     {tc.total_hours?.toFixed(2)}h
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Regular: {tc.regular_hours?.toFixed(2)}h
+                    (Overtime calculated weekly)
                   </p>
-                  {(tc.overtime_hours || 0) > 0 && (
-                    <p className="text-xs text-orange-600 dark:text-orange-400">
-                      OT: {tc.overtime_hours?.toFixed(2)}h
-                    </p>
-                  )}
                 </div>
               </div>
             </motion.button>

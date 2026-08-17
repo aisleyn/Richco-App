@@ -122,8 +122,7 @@ export async function adjustTimeEntryByAdmin(
 
     const breakHours = entry.break_hours || 0
     const workHours = Math.max(0, adjustedHours - breakHours)
-    const regularHours = Math.min(workHours, 8)
-    const overtimeHours = Math.max(0, workHours - 8)
+    // NOTE: Overtime is calculated WEEKLY (not daily) - remove daily overtime calculation
 
     console.log('[Supabase] Adjusting timecard:', {
       timeEntryId,
@@ -131,8 +130,6 @@ export async function adjustTimeEntryByAdmin(
       adjustedHours,
       breakHours,
       workHours,
-      regularHours,
-      overtimeHours,
     })
 
     const updates = {
@@ -141,8 +138,8 @@ export async function adjustTimeEntryByAdmin(
       admin_adjustment_note: adminNote,
       adjusted_at: new Date().toISOString(),
       adjusted_by_user_id: adminUserId,
-      regular_hours: regularHours,
-      overtime_hours: overtimeHours,
+      regular_hours: workHours, // All hours counted as regular at entry level; overtime calculated weekly
+      overtime_hours: 0, // Overtime calculated weekly, not daily
       total_hours: adjustedHours,
     }
 
@@ -1317,31 +1314,34 @@ export async function getWeeklyTimeEntriesReport(
         dailyEntries.get(date)?.push(entry)
 
         const hours = entry.total_hours || 0
-        const regular = entry.regular_hours || 0
-        const overtime = entry.overtime_hours || 0
         const breaks = entry.break_hours || 0
 
         totalHours += hours
-        regularHours += regular
-        overtimeHours += overtime
         breakHours += breaks
       })
 
+      // Calculate weekly overtime: hours over 40 in the week
+      const weeklyOvertimeHours = Math.max(0, totalHours - 40)
+      regularHours = Math.min(totalHours, 40) // First 40 hours are regular
+
+      // Build daily entries report (distributing overtime from bottom to top)
       const reportEntries: WeeklyTimeEntryReport['entries'] = []
+      let cumulativeHours = 0
+
       dailyEntries.forEach((dayEntries, date) => {
         let dayTotalHours = 0
-        let dayRegularHours = 0
-        let dayOvertimeHours = 0
         let dayBreakHours = 0
         const sites = new Set<string>()
 
         dayEntries.forEach((entry: any) => {
           dayTotalHours += entry.total_hours || 0
-          dayRegularHours += entry.regular_hours || 0
-          dayOvertimeHours += entry.overtime_hours || 0
           dayBreakHours += entry.break_hours || 0
           sites.add(entry.site_name)
         })
+
+        // Determine how many of these hours are regular vs overtime
+        const dayRegularHours = Math.min(dayTotalHours, Math.max(0, 40 - cumulativeHours))
+        const dayOvertimeHours = dayTotalHours - dayRegularHours
 
         reportEntries.push({
           date,
@@ -1353,6 +1353,8 @@ export async function getWeeklyTimeEntriesReport(
           regular_hours: parseFloat(dayRegularHours.toFixed(2)),
           overtime_hours: parseFloat(dayOvertimeHours.toFixed(2)),
         })
+
+        cumulativeHours += dayTotalHours
       })
 
       reports.push({
@@ -1365,7 +1367,7 @@ export async function getWeeklyTimeEntriesReport(
         weekly_totals: {
           total_hours: parseFloat(totalHours.toFixed(2)),
           regular_hours: parseFloat(regularHours.toFixed(2)),
-          overtime_hours: parseFloat(overtimeHours.toFixed(2)),
+          overtime_hours: parseFloat(weeklyOvertimeHours.toFixed(2)),
           break_hours: parseFloat(breakHours.toFixed(2)),
           days_worked: daysWorked,
         },

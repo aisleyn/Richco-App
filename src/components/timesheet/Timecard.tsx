@@ -79,7 +79,7 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className={`bg-surface rounded-xl border p-4 ${tc.overtimeHours && tc.overtimeHours > 0 ? 'border-warning-base/20' : 'border-border-light'} group`}
+            className="bg-surface rounded-xl border border-border-light p-4 group"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
@@ -97,7 +97,7 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
                 </p>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-warning-base' : 'text-primary'}`}>
+                <p className="text-sm font-bold text-primary">
                   {tc.totalHours?.toFixed(2)}h
                 </p>
                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-success-base/15 text-success-base">
@@ -111,9 +111,6 @@ export function TimecardList({ isAdmin = false, onEditTimecard, daysBack = 7 }: 
                 ? <span className="text-success-base/60">Break ✓ {tc.breakMinutes}m</span>
                 : <span className="text-error-base">No Break</span>
               }
-              {tc.overtimeHours && tc.overtimeHours > 0 && (
-                <span className="text-warning-base">+{tc.overtimeHours.toFixed(2)}h OT</span>
-              )}
             </div>
             {isAdmin && (
               <div className="flex gap-2">

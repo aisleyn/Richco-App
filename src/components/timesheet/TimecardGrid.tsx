@@ -123,9 +123,7 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard, selectedDate }: 
                 className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border p-3 transition-all shadow-md ${
                   expandedId === tc.id
                     ? 'border-green-500 ring-2 ring-green-500/20'
-                    : tc.overtimeHours && tc.overtimeHours > 0
-                      ? 'border-amber-500/20 hover:border-amber-500/40'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >
                 {/* Collapsed view - just date and hours */}
@@ -143,12 +141,9 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard, selectedDate }: 
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-base font-bold ${tc.overtimeHours && tc.overtimeHours > 0 ? 'text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                      <p className="text-base font-bold text-slate-800 dark:text-slate-100">
                         {tc.totalHours?.toFixed(2)}h
                       </p>
-                      {tc.overtimeHours && tc.overtimeHours > 0 && (
-                        <p className="text-amber-400 text-[10px] font-semibold">+{tc.overtimeHours.toFixed(2)}h OT</p>
-                      )}
                     </div>
                   </div>
 

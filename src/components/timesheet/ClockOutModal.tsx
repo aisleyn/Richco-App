@@ -47,8 +47,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
   const rawHours = msToDecimalHours(elapsed) // Work time without breaks
   const breakHours = msToDecimalHours(totalBreakMs) // Actual break time taken
   const paidHours = Math.max(0, rawHours - mandatoryBreakHours) // Subtract mandatory break
-  const regularHours = Math.min(paidHours, 8)
-  const overtimeHours = Math.max(0, paidHours - 8)
+  // NOTE: Overtime is calculated WEEKLY (not daily) - no daily overtime calculation here
 
   function validate() {
     const e: Record<string, string> = {}
@@ -203,12 +202,12 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
                 <p className="text-secondary text-xs mt-0.5">Work Time</p>
               </div>
               <div className="text-center border-x border-border-light">
-                <p className="text-success-base font-semibold text-xl font-bold">{regularHours.toFixed(2)}h</p>
-                <p className="text-secondary text-xs mt-0.5">Regular</p>
+                <p className="text-success-base font-semibold text-xl font-bold">{paidHours.toFixed(2)}h</p>
+                <p className="text-secondary text-xs mt-0.5">Paid Hours</p>
               </div>
               <div className="text-center">
-                <p className={`font-bold text-xl ${overtimeHours > 0 ? 'text-warning-base' : 'text-secondary'}`}>{overtimeHours.toFixed(2)}h</p>
-                <p className="text-secondary text-xs mt-0.5">Overtime</p>
+                <p className="text-secondary font-semibold text-xl">(Overtime calculated weekly)</p>
+                <p className="text-secondary text-xs mt-0.5">See weekly summary</p>
               </div>
             </div>
             <div className="text-center text-xs border-t border-border-light pt-1.5">

@@ -63,7 +63,8 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
 
       const totalMs = clockOutTime - clockInTime
       const totalHours = totalMs / 3600000
-      const overtimeHours = Math.max(0, totalHours - formData.breakMinutes / 60 - 8)
+      const paidHours = Math.max(0, totalHours - formData.breakMinutes / 60) // Subtract breaks
+      // NOTE: Overtime is calculated WEEKLY (not daily) - no daily overtime calculation here
 
       const timecard: TimesheetEntry = {
         id: `manual-${Date.now()}`,
@@ -73,8 +74,8 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
         clockInTime,
         clockOutTime,
         breakMinutes: formData.breakMinutes,
-        totalHours: parseFloat(totalHours.toFixed(2)),
-        overtimeHours: parseFloat(overtimeHours.toFixed(2)),
+        totalHours: parseFloat(paidHours.toFixed(2)), // Use paid hours (after breaks)
+        overtimeHours: 0, // Overtime calculated weekly, not daily
         status: 'complete',
         breakTaken: formData.breakMinutes > 0,
         vehicleUsed: formData.vehicleUsed,

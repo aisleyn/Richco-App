@@ -29,11 +29,10 @@ export function TimeCardAdjustmentModal({
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
 
-  // Auto-calculate regular/overtime based on adjusted hours
+  // Auto-calculate based on adjusted hours
+  // NOTE: Overtime is calculated WEEKLY (not daily) - no daily overtime calculation here
   const breakHours = timeEntry.break_hours || 0
   const workHours = Math.max(0, adjustedHours - breakHours)
-  const regularHours = Math.min(workHours, 8)
-  const overtimeHours = Math.max(0, workHours - 8)
 
   const handleSave = async () => {
     if (adjustedHours < 0) {
@@ -98,11 +97,6 @@ export function TimeCardAdjustmentModal({
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
               Regular: {timeEntry.regular_hours?.toFixed(2)}h
             </p>
-            {(timeEntry.overtime_hours || 0) > 0 && (
-              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                OT: {timeEntry.overtime_hours?.toFixed(2)}h
-              </p>
-            )}
           </div>
 
           <div>
@@ -113,13 +107,11 @@ export function TimeCardAdjustmentModal({
               {adjustedHours.toFixed(2)}h
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Regular: {regularHours.toFixed(2)}h
+              Work Hours: {workHours.toFixed(2)}h
             </p>
-            {overtimeHours > 0 && (
-              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                OT: {overtimeHours.toFixed(2)}h
-              </p>
-            )}
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              (Overtime calculated weekly)
+            </p>
           </div>
         </div>
 
