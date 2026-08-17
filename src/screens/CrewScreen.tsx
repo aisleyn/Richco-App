@@ -1265,6 +1265,9 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
               const updated = members.find(m => m.email === editingMember.email)
               if (updated) {
                 setViewingProfile(updated)
+              } else {
+                // User was deleted - clear the viewing profile
+                setViewingProfile(null)
               }
             }}
           />
