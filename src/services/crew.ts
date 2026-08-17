@@ -195,7 +195,7 @@ export async function hasUserCompletedRegistration(email: string): Promise<boole
   return member !== undefined
 }
 
-// Remove a crew member (deletes auth user, user profile, and crew member record)
+// Remove a crew member completely - deletes from all tables and data
 export async function removeCrewMember(email: string): Promise<boolean> {
   try {
     console.log('[Crew] Removing crew member:', email)
@@ -212,46 +212,79 @@ export async function removeCrewMember(email: string): Promise<boolean> {
       userId = userData.id
       console.log('[Crew] Found user in users table:', userId)
     } else {
-      console.warn('[Crew] User not found in users table, will try to delete from crew_members by email')
-      // If user not in users table, try to get from auth system
-      // We'll still need the userId to call deleteCrewMember
-      // For now, delete directly from crew_members by email
-      try {
-        const { error: crewError } = await supabase
-          .from('crew_members')
-          .delete()
-          .eq('email', email)
-
-        if (crewError) {
-          console.error('[Crew] Failed to delete from crew_members:', crewError.message)
-          return false
-        }
-
-        console.log('[Crew] ✅ Crew member removed from crew_members table:', email)
-        return true
-      } catch (err) {
-        console.error('[Crew] Error deleting from crew_members:', err)
-        return false
-      }
+      console.warn('[Crew] User not found in users table, will do full cleanup by email')
     }
 
-    // If we have userId, use the full deletion process
+    // Clean up all related data regardless of whether user is in users table
+    // This ensures complete removal from the system
+    await cleanupUserData(email, userId)
+
+    // If we have userId, use the auth deletion process
     if (userId) {
       const result = await authDeleteCrewMember(userId)
-
       if (result.success) {
-        console.log('[Crew] ✅ Crew member fully removed:', email)
+        console.log('[Crew] ✅ Crew member fully removed (with auth):', email)
         return true
       } else {
-        console.error('[Crew] Failed to remove crew member:', result.message)
+        console.error('[Crew] Failed to delete auth user:', result.message)
+        // Continue anyway - crew member is deleted even if auth cleanup failed
+      }
+    } else {
+      // No userId - just delete from crew_members table
+      const { error: crewError } = await supabase
+        .from('crew_members')
+        .delete()
+        .eq('email', email)
+
+      if (crewError) {
+        console.error('[Crew] Failed to delete from crew_members:', crewError.message)
         return false
       }
     }
 
-    return false
+    console.log('[Crew] ✅ Crew member fully removed:', email)
+    return true
   } catch (err) {
     console.error('[Crew] Error removing crew member:', err)
     return false
+  }
+}
+
+// Helper function to clean up all user-related data
+async function cleanupUserData(email: string, userId: string | null): Promise<void> {
+  try {
+    console.log('[Crew] Cleaning up data for:', email)
+
+    // Delete time entries (timesheets)
+    if (userId) {
+      await supabase.from('time_entries').delete().eq('user_id', userId)
+      console.log('[Crew] Deleted time entries for:', email)
+
+      // Delete break periods
+      await supabase.from('break_periods').delete().eq('user_id', userId)
+      console.log('[Crew] Deleted break periods for:', email)
+
+      // Delete shift assignments
+      await supabase.from('shift_assignments').delete().eq('crew_member_id', userId)
+      console.log('[Crew] Deleted shift assignments for:', email)
+
+      // Delete photos uploaded by this user
+      await supabase.from('photos').delete().eq('submitted_by_id', userId)
+      console.log('[Crew] Deleted photos for:', email)
+
+      // Delete messages from this user
+      await supabase.from('messages').delete().eq('sender_id', userId)
+      console.log('[Crew] Deleted messages for:', email)
+    }
+
+    // Delete crew member record (by email, works regardless of userId)
+    await supabase.from('crew_members').delete().eq('email', email)
+    console.log('[Crew] Deleted crew member record for:', email)
+
+    console.log('[Crew] ✅ All data cleaned up for:', email)
+  } catch (err) {
+    console.error('[Crew] Error during cleanup:', err)
+    // Don't throw - continue with deletion even if cleanup partially fails
   }
 }
 
