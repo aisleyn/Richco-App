@@ -1281,16 +1281,20 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
             member={editingMember}
             onClose={() => setEditingMember(null)}
             onUpdated={async () => {
-              const members = await getAllCrew()
-              setCrew(members)
+              // Immediately remove the user from current crew state
+              // This ensures UI updates even if API call is slow
+              const filteredCrew = crew.filter(m => m.email !== editingMember.email)
+              setCrew(filteredCrew)
+              setViewingProfile(null)
               setEditingMember(null)
-              // Update the viewing profile if it was edited
-              const updated = members.find(m => m.email === editingMember.email)
-              if (updated) {
-                setViewingProfile(updated)
-              } else {
-                // User was deleted - clear the viewing profile
-                setViewingProfile(null)
+              setSearch('') // Clear search to show full list
+
+              // Then do a full refresh to confirm with server
+              try {
+                const members = await getAllCrew()
+                setCrew(members)
+              } catch (err) {
+                console.error('[Crew] Failed to refresh crew list:', err)
               }
             }}
           />
