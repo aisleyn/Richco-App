@@ -205,10 +205,17 @@ export async function removeCrewMember(email: string): Promise<boolean> {
       .from('users')
       .select('id')
       .eq('email', email)
-      .single()
+      .maybeSingle() // Use maybeSingle instead of single to avoid 406 error
 
-    if (error || !data) {
-      console.error('[Crew] Failed to find user by email:', email, error?.message)
+    if (error) {
+      console.error('[Crew] Failed to find user by email:', email, error.message)
+      return false
+    }
+
+    if (!data) {
+      console.warn('[Crew] User not found in users table:', email)
+      // Even if user not in users table, try to delete from crew_members by email
+      // The deletion via deleteCrewMember will fail, but at least log it
       return false
     }
 

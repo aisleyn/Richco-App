@@ -377,7 +377,7 @@ export async function deleteCrewMember(userId: string): Promise<{ success: boole
       .from('users')
       .select('email')
       .eq('id', userId)
-      .single()
+      .maybeSingle() // Use maybeSingle to avoid 406 error if user doesn't exist
 
     const userEmail = userData?.email
 
