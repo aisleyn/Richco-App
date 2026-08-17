@@ -59,13 +59,20 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
     }
   }
 
-  function handleDelete() {
+  async function handleDelete() {
+    setLoading(true)
     try {
-      removeCrewMember(member.email)
+      const success = await removeCrewMember(member.email)
+      if (!success) {
+        setError('Failed to delete crew member')
+        setLoading(false)
+        return
+      }
       onUpdated()
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete crew member')
+      setLoading(false)
     }
   }
 

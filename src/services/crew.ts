@@ -5,6 +5,7 @@ import {
   getAllCrewMembers,
   updateCrewMember as supabaseUpdateCrewMember,
 } from './supabase'
+import { deleteCrewMember as authDeleteCrewMember, supabase } from './supabaseAuth'
 
 export interface EmergencyContact {
   name: string
@@ -194,10 +195,39 @@ export async function hasUserCompletedRegistration(email: string): Promise<boole
   return member !== undefined
 }
 
-// Stub for backwards compatibility - removing from Supabase should be done carefully
-export async function removeCrewMember(_email: string): Promise<boolean> {
-  console.warn('[Crew] removeCrewMember not implemented for Supabase backend')
-  return false
+// Remove a crew member (deletes auth user, user profile, and crew member record)
+export async function removeCrewMember(email: string): Promise<boolean> {
+  try {
+    console.log('[Crew] Removing crew member:', email)
+
+    // Get user_id from users table by email
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single()
+
+    if (error || !data) {
+      console.error('[Crew] Failed to find user by email:', email, error?.message)
+      return false
+    }
+
+    const userId = data.id
+
+    // Delete using auth service (handles auth user, user profile, and crew_members)
+    const result = await authDeleteCrewMember(userId)
+
+    if (result.success) {
+      console.log('[Crew] ✅ Crew member removed:', email)
+      return true
+    } else {
+      console.error('[Crew] Failed to remove crew member:', result.message)
+      return false
+    }
+  } catch (err) {
+    console.error('[Crew] Error removing crew member:', err)
+    return false
+  }
 }
 
 // Stub for backwards compatibility - clearing all crew should be done carefully
