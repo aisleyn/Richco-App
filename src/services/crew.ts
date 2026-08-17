@@ -200,37 +200,55 @@ export async function removeCrewMember(email: string): Promise<boolean> {
   try {
     console.log('[Crew] Removing crew member:', email)
 
-    // Get user_id from users table by email
-    const { data, error } = await supabase
+    // First try to get user_id from users table by email
+    let userId: string | null = null
+    const { data: userData } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
-      .maybeSingle() // Use maybeSingle instead of single to avoid 406 error
+      .maybeSingle()
 
-    if (error) {
-      console.error('[Crew] Failed to find user by email:', email, error.message)
-      return false
-    }
-
-    if (!data) {
-      console.warn('[Crew] User not found in users table:', email)
-      // Even if user not in users table, try to delete from crew_members by email
-      // The deletion via deleteCrewMember will fail, but at least log it
-      return false
-    }
-
-    const userId = data.id
-
-    // Delete using auth service (handles auth user, user profile, and crew_members)
-    const result = await authDeleteCrewMember(userId)
-
-    if (result.success) {
-      console.log('[Crew] ✅ Crew member removed:', email)
-      return true
+    if (userData?.id) {
+      userId = userData.id
+      console.log('[Crew] Found user in users table:', userId)
     } else {
-      console.error('[Crew] Failed to remove crew member:', result.message)
-      return false
+      console.warn('[Crew] User not found in users table, will try to delete from crew_members by email')
+      // If user not in users table, try to get from auth system
+      // We'll still need the userId to call deleteCrewMember
+      // For now, delete directly from crew_members by email
+      try {
+        const { error: crewError } = await supabase
+          .from('crew_members')
+          .delete()
+          .eq('email', email)
+
+        if (crewError) {
+          console.error('[Crew] Failed to delete from crew_members:', crewError.message)
+          return false
+        }
+
+        console.log('[Crew] ✅ Crew member removed from crew_members table:', email)
+        return true
+      } catch (err) {
+        console.error('[Crew] Error deleting from crew_members:', err)
+        return false
+      }
     }
+
+    // If we have userId, use the full deletion process
+    if (userId) {
+      const result = await authDeleteCrewMember(userId)
+
+      if (result.success) {
+        console.log('[Crew] ✅ Crew member fully removed:', email)
+        return true
+      } else {
+        console.error('[Crew] Failed to remove crew member:', result.message)
+        return false
+      }
+    }
+
+    return false
   } catch (err) {
     console.error('[Crew] Error removing crew member:', err)
     return false
