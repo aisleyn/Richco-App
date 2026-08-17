@@ -6,6 +6,7 @@ import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
 import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
 import { uploadCrewFile, updateCrewMemberFiles } from '../services/supabase'
+import { supabase } from '../services/supabaseAuth'
 import { AddCrewModal } from '../components/crew/AddCrewModal'
 import { EditCrewModal } from '../components/crew/EditCrewModal'
 import { DocumentUploadPreview } from '../components/crew/DocumentUploadPreview'
@@ -253,7 +254,29 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
     // Auto-refresh crew list every 3 seconds to catch new registrations
     const crewInterval = setInterval(loadCrew, 3000)
 
-    return () => clearInterval(crewInterval)
+    // Subscribe to real-time crew_members table changes (deletions, additions)
+    const subscription = supabase
+      .channel('crew_changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'crew_members' },
+        (payload) => {
+          console.log('[Crew] Real-time update received:', payload.eventType)
+          // Reload crew list on any change (insert, update, delete)
+          loadCrew()
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Crew] Real-time subscribed to crew_members changes')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.warn('[Crew] Real-time subscription error')
+        }
+      })
+
+    return () => {
+      clearInterval(crewInterval)
+      supabase.removeChannel(subscription)
+    }
   }, [setUnreadMessageCount, currentUserEmail])
 
   // Auto-refresh messages every 2 seconds when in a thread
