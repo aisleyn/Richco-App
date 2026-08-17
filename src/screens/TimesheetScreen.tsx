@@ -13,7 +13,7 @@ import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
 import { CreateShiftFormV2 } from '../components/admin/CreateShiftFormV2'
 import { ShiftAssignmentManagerV2 } from '../components/admin/ShiftAssignmentManagerV2'
 import { WeekNavigator } from '../components/timesheet/WeekNavigator'
-import { PerEmployeeHistory } from '../components/timesheet/PerEmployeeHistory'
+import { EmployeeTimecardsGrid } from '../components/timesheet/EmployeeTimecardsGrid'
 import { useAppStore } from '../store/appStore'
 import { useElapsedTime } from '../hooks/useTimer'
 import { useGeolocation } from '../hooks/useGeolocation'
@@ -301,22 +301,6 @@ export function TimesheetScreen({ onNavigate }: Props) {
           </motion.div>
         )}
 
-        {/* Per-Employee History (Admin only) - Moved to top */}
-        {isAdmin && employees.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.36 }}
-            className="mt-8 p-6 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl"
-          >
-            <PerEmployeeHistory
-              employees={employees}
-              selectedWeek={selectedWeek}
-              onWeekChange={setSelectedWeek}
-            />
-          </motion.div>
-        )}
-
         {/* Personal Week History */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -350,6 +334,24 @@ export function TimesheetScreen({ onNavigate }: Props) {
             <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} selectedDate={selectedWeek} />
           </div>
         </motion.div>
+
+        {/* All Employees' Timecards Grid (Admin only) - Below Week History */}
+        {isAdmin && employees.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.40 }}
+            className="mt-8"
+          >
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+              Team Timecards
+            </h3>
+            <EmployeeTimecardsGrid
+              employees={employees}
+              selectedWeek={selectedWeek}
+            />
+          </motion.div>
+        )}
 
         {/* Time Off Card */}
         <motion.div
