@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Zap } from 'lucide-react'
 import { getEmployeeTimeEntries } from '../../services/supabase'
+import { useAppStore } from '../../store/appStore'
+import type { TimesheetEntry } from '../../types'
 
 interface TimeEntryData {
   id: string
@@ -31,7 +33,50 @@ interface EmployeeWeekData {
   weekOvertime: number
 }
 
+// Helper to get current user's timecards from both localStorage and Supabase
+async function getCurrentUserTimeEntries(
+  userId: string | undefined,
+  days = 30
+): Promise<any[]> {
+  if (!userId) return []
+
+  try {
+    // Get localStorage timecards for current user
+    const storageKey = `richco-completed-timecards-${userId}`
+    const stored = localStorage.getItem(storageKey)
+    const localTimecards: TimesheetEntry[] = stored ? JSON.parse(stored) : []
+
+    // Convert localStorage timecards to time_entries format for consistency
+    const localEntries = localTimecards.map(tc => ({
+      id: tc.id,
+      employee_id: userId,
+      employee_name: 'Current User',
+      site_id: tc.siteId,
+      site_name: tc.siteName,
+      clock_in_time: new Date(tc.clockInTime).toISOString(),
+      clock_out_time: tc.clockOutTime ? new Date(tc.clockOutTime).toISOString() : undefined,
+      total_hours: tc.totalHours || 0,
+      break_taken: tc.breakTaken,
+      break_hours: (tc.breakMinutes || 0) / 60,
+    }))
+
+    // Also fetch from Supabase in case there's data there
+    const supabaseEntries = await getEmployeeTimeEntries(userId.toString(), days)
+
+    // Merge and deduplicate: prefer localStorage for today's entries
+    const entryMap = new Map()
+    supabaseEntries.forEach(e => entryMap.set(e.id, e))
+    localEntries.forEach(e => entryMap.set(e.id, e)) // This overwrites Supabase with localStorage
+
+    return Array.from(entryMap.values())
+  } catch (err) {
+    console.error('[EmployeeTimecardsGrid] Failed to get current user entries:', err)
+    return []
+  }
+}
+
 export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimecardsGridProps) {
+  const { currentUserEmail, currentUserId } = useAppStore()
   const [employeeData, setEmployeeData] = useState<EmployeeWeekData[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -62,7 +107,12 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
           employees.map(async (employee) => {
             try {
               const employeeId = employee.id || employee.employee_id
-              const allEntries = await getEmployeeTimeEntries(employeeId.toString(), 30)
+              const isCurrentUser = employee.email === currentUserEmail
+
+              // Use hybrid fetch for current user (localStorage + Supabase), Supabase-only for others
+              const allEntries = isCurrentUser
+                ? await getCurrentUserTimeEntries(currentUserId, 30)
+                : await getEmployeeTimeEntries(employeeId.toString(), 30)
 
               // Filter to selected week (Sat-Fri)
               const weekEntries = allEntries.filter((entry: any) => {
@@ -101,7 +151,7 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
     }
 
     loadAllEmployeeTimecards()
-  }, [employees, selectedWeek])
+  }, [employees, selectedWeek, currentUserEmail, currentUserId])
 
   if (isLoading) {
     return (

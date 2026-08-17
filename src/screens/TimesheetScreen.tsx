@@ -7,6 +7,7 @@ import { ClockOutModal } from '../components/timesheet/ClockOutModal'
 import { TimecardGrid } from '../components/timesheet/TimecardGrid'
 import { TimeOffCard } from '../components/timesheet/TimeOffCard'
 import { EditTimecardModal } from '../components/timesheet/EditTimecardModal'
+import { TimeCardDetailModal } from '../components/timesheet/TimeCardDetailModal'
 import { ManualTimecardModal } from '../components/crew/ManualTimecardModal'
 import { UpcomingShiftCard } from '../components/shifts/UpcomingShiftCard'
 import { DailyChecklistCard } from '../components/shifts/DailyChecklistCard'
@@ -41,6 +42,7 @@ export function TimesheetScreen({ onNavigate }: Props) {
   const [showClockOut, setShowClockOut] = useState(false)
   const [showManualTimecard, setShowManualTimecard] = useState(false)
   const [editingTimecard, setEditingTimecard] = useState<TimesheetEntry | null>(null)
+  const [viewingTimecard, setViewingTimecard] = useState<TimesheetEntry | null>(null)
   const [timecardRefresh, setTimecardRefresh] = useState(0)
   const [completedTodayHours, setCompletedTodayHours] = useState(0)
   const [weekStats, setWeekStats] = useState<WeekStats>({ today: 0, week: 0, remaining: 0, overtimeWeek: 0, month: 0 })
@@ -68,9 +70,15 @@ export function TimesheetScreen({ onNavigate }: Props) {
         setCrewMemberId(crewMember.id as number)
       }
 
-      // Load all employees if admin
+      // Load all employees if admin (including self at the top)
       if (admin) {
         const allEmployees = await getAllCrewMembers()
+        // Ensure current user is in the list for Team Timecards display
+        const currentUserInList = allEmployees.find(e => e.email === currentUserEmail)
+        if (!currentUserInList && crewMember) {
+          // Add current user at the top if not already present
+          allEmployees.unshift(crewMember)
+        }
         setEmployees(allEmployees)
       }
     }
@@ -331,7 +339,13 @@ export function TimesheetScreen({ onNavigate }: Props) {
             )}
           </div>
           <div className="mt-0">
-            <TimecardGrid key={timecardRefresh} isAdmin={isAdmin} onEditTimecard={setEditingTimecard} selectedDate={selectedWeek} />
+            <TimecardGrid
+              key={timecardRefresh}
+              isAdmin={isAdmin}
+              onEditTimecard={setEditingTimecard}
+              onViewTimecard={setViewingTimecard}
+              selectedDate={selectedWeek}
+            />
           </div>
         </motion.div>
 
@@ -446,6 +460,12 @@ export function TimesheetScreen({ onNavigate }: Props) {
             timecard={editingTimecard}
             onClose={() => setEditingTimecard(null)}
             onSave={handleSaveEditedTimecard}
+          />
+        )}
+        {viewingTimecard && (
+          <TimeCardDetailModal
+            timecard={viewingTimecard}
+            onClose={() => setViewingTimecard(null)}
           />
         )}
       </AnimatePresence>

@@ -407,7 +407,8 @@ export async function getCrewMemberByEmail(email: string): Promise<CrewMemberDat
 
 export async function getAllCrewMembers(): Promise<CrewMemberData[]> {
   try {
-    const result = await crewRequest('GET', '/crew_members?order=id.asc')
+    // Filter out deleted users (status != 'deleted')
+    const result = await crewRequest('GET', '/crew_members?status=neq.deleted&order=id.asc')
     if (result && Array.isArray(result)) {
       return result.map((member: any) => ({
         id: member.id,

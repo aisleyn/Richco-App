@@ -30,10 +30,11 @@ function saveTimecards(timecards: TimesheetEntry[], userId: string) {
 interface TimecardGridProps {
   isAdmin?: boolean
   onEditTimecard?: (timecard: TimesheetEntry) => void
+  onViewTimecard?: (timecard: TimesheetEntry) => void
   selectedDate?: Date
 }
 
-export function TimecardGrid({ isAdmin = false, onEditTimecard, selectedDate }: TimecardGridProps) {
+export function TimecardGrid({ isAdmin = false, onEditTimecard, onViewTimecard, selectedDate }: TimecardGridProps) {
   const { currentUserId } = useAppStore()
   const [allTimecards, setAllTimecards] = useState<TimesheetEntry[]>([])
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -116,7 +117,13 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard, selectedDate }: 
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => setExpandedId(expandedId === tc.id ? null : tc.id)}
+              onClick={() => {
+                if (onViewTimecard) {
+                  onViewTimecard(tc)
+                } else {
+                  setExpandedId(expandedId === tc.id ? null : tc.id)
+                }
+              }}
               className="cursor-pointer"
             >
               <motion.div
