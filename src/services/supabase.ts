@@ -1162,18 +1162,18 @@ export async function uploadCrewFile(
   email: string,
   fileType: 'identification' | 'qualification' | 'employment_file',
   file: File
-): Promise<{ url: string; name: string } | null> {
+): Promise<{ url: string; name: string; path: string } | null> {
   try {
     if (!SUPABASE_URL) return null
 
     // Create unique file path
     const timestamp = Date.now()
     const fileExt = file.name.split('.').pop() || 'bin'
-    const filePath = `crew-files/${email}/${fileType}/${timestamp}.${fileExt}`
+    const filePath = `crew/${email}/${fileType}/${timestamp}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`
 
-    // Upload to Supabase Storage
+    // Upload to the 'documents' bucket (exists and is configured)
     const { error: uploadError } = await supabase.storage
-      .from('crew-documents')
+      .from('documents')
       .upload(filePath, file, { upsert: false })
 
     if (uploadError) {
@@ -1181,12 +1181,15 @@ export async function uploadCrewFile(
       return null
     }
 
-    // Get public URL
-    const { data } = supabase.storage.from('crew-documents').getPublicUrl(filePath)
-    const publicUrl = data.publicUrl
+    // Generate signed URL for private documents (1 hour expiry)
+    const { data: signedData } = await supabase.storage
+      .from('documents')
+      .createSignedUrl(filePath, 3600)
 
-    console.log('[Supabase] File uploaded:', publicUrl)
-    return { url: publicUrl, name: file.name }
+    const signedUrl = signedData?.signedUrl || ''
+
+    console.log('[Supabase] File uploaded:', filePath)
+    return { url: signedUrl, name: file.name, path: filePath }
   } catch (err) {
     console.error('[Supabase] File upload error:', err)
     return null

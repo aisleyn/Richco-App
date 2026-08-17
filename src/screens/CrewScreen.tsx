@@ -8,6 +8,7 @@ import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
 import { uploadCrewFile, updateCrewMemberFiles } from '../services/supabase'
 import { AddCrewModal } from '../components/crew/AddCrewModal'
 import { EditCrewModal } from '../components/crew/EditCrewModal'
+import { DocumentUploadPreview } from '../components/crew/DocumentUploadPreview'
 import type { Message } from '../types'
 import type { StoredCrewMember } from '../services/crew'
 
@@ -849,51 +850,51 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                         className="border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-6"
                       >
                         <div className="text-3xl mb-3 text-center">🪪</div>
-                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-1 text-center">Identification</h4>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 text-center">
-                          {viewingProfile.identification
-                            ? `${viewingProfile.identification.type.replace('_', ' ')}`
-                            : "Passport, Driver's License, etc."}
-                        </p>
+                        <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-4 text-center">Identification</h4>
 
-                        {viewingProfile.identification?.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(viewingProfile.identification.url) && (
-                          <img
-                            src={viewingProfile.identification.url}
-                            alt="ID"
-                            className="w-full h-40 object-cover rounded-lg mb-3 border border-slate-300 dark:border-slate-600"
+                        {isAdmin ? (
+                          <DocumentUploadPreview
+                            email={viewingProfile.email}
+                            fileType="identification"
+                            initialDocument={viewingProfile.identification ? {
+                              name: `${viewingProfile.identification.type} Document`,
+                              url: viewingProfile.identification.url,
+                              path: '',
+                              uploadedDate: 0
+                            } : null}
+                            onDocumentAdded={(doc) => {
+                              const idType = viewingProfile.identification?.type || 'passport'
+                              viewingProfile.identification = {
+                                type: idType,
+                                url: doc.url,
+                                uploadedDate: doc.uploadedDate,
+                              }
+                              updateCrewMemberFiles(viewingProfile.email, { identification: viewingProfile.identification })
+                            }}
+                            onDocumentRemoved={() => {
+                              viewingProfile.identification = undefined
+                              updateCrewMemberFiles(viewingProfile.email, { identification: undefined })
+                            }}
                           />
-                        )}
-
-                        <div className="flex gap-2 justify-center">
-                          {viewingProfile.identification ? (
+                        ) : viewingProfile.identification?.url ? (
+                          <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-center">
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                              {viewingProfile.identification.type.replace('_', ' ')}
+                            </p>
                             <a
                               href={viewingProfile.identification.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-semibold hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                              className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors"
                             >
-                              View
+                              View Document
                             </a>
-                          ) : null}
-                          {isAdmin && (
-                            <>
-                              <button
-                                onClick={() => identificationInputRef.current?.click()}
-                                disabled={uploadingFile === 'identification'}
-                                className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-semibold hover:bg-green-200 dark:hover:bg-green-800 transition-colors disabled:opacity-50 flex items-center gap-1"
-                              >
-                                <FileUp size={12} /> Upload
-                              </button>
-                              <input
-                                ref={identificationInputRef}
-                                type="file"
-                                accept="image/*,.pdf"
-                                onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'identification')}
-                                className="hidden"
-                              />
-                            </>
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-4">
+                            No identification document uploaded
+                          </p>
+                        )}
                       </motion.div>
 
                       {/* Qualifications */}
