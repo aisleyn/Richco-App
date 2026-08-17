@@ -1281,21 +1281,23 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
             member={editingMember}
             onClose={() => setEditingMember(null)}
             onUpdated={async () => {
-              // Immediately remove the user from current crew state
-              // This ensures UI updates even if API call is slow
-              const filteredCrew = crew.filter(m => m.email !== editingMember.email)
-              setCrew(filteredCrew)
+              console.log('[Crew] onUpdated - forcibly removing:', editingMember.email)
+
+              // IMMEDIATELY remove from state - no waiting, no async
+              setCrew(prev => {
+                const updated = prev.filter(m => m.email !== editingMember.email)
+                console.log('[Crew] Filtered crew, removed user. Remaining:', updated.length)
+                return updated
+              })
+
+              // Clear all related UI state
               setViewingProfile(null)
               setEditingMember(null)
-              setSearch('') // Clear search to show full list
+              setSearch('')
+              setActiveThreadId(null) // Close any open threads
 
-              // Then do a full refresh to confirm with server
-              try {
-                const members = await getAllCrew()
-                setCrew(members)
-              } catch (err) {
-                console.error('[Crew] Failed to refresh crew list:', err)
-              }
+              // Force a visual update by triggering state change
+              setCrewRefresh(prev => prev + 1)
             }}
           />
         )}
