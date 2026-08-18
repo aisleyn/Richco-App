@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, X, ChevronLeft, AlertTriangle, CheckCircle, Upload, Edit2, Trash2 } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
-import { mockPhotos, jobSites } from '../data/mockData'
+import { jobSites } from '../data/mockData'
 import { format } from 'date-fns'
 import type { Photo, PhotoCategory } from '../types'
 import { getStoredPhotos, deletePhoto } from '../services/photoDatabase'
@@ -39,7 +39,8 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
   useEffect(() => {
     const loadPhotos = async () => {
       const stored = await getStoredPhotos(currentUserEmail)
-      setAllPhotos([...stored, ...mockPhotos])
+      // Only use stored photos - mockPhotos were causing deleted items to reappear
+      setAllPhotos(stored)
     }
     loadPhotos()
   }, [refresh, currentUserEmail])
