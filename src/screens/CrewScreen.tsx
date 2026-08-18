@@ -5,7 +5,7 @@ import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
 import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
-import { uploadCrewFile, updateCrewMemberFiles } from '../services/supabase'
+import { uploadCrewFile, updateCrewMemberFiles, getEmployeeDocuments } from '../services/supabase'
 import { supabase } from '../services/supabaseAuth'
 import { AddCrewModal } from '../components/crew/AddCrewModal'
 import { EditCrewModal } from '../components/crew/EditCrewModal'
@@ -393,6 +393,51 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
       markThreadAsRead(activeThreadId)
     }
   }, [activeThreadId])
+
+  // Load employee documents when viewing a profile
+  useEffect(() => {
+    async function loadDocuments() {
+      if (!viewingProfile) return
+      try {
+        const docs = await getEmployeeDocuments(viewingProfile.email)
+
+        // Convert documents to the expected format
+        const identification = docs.find(d => d.document_type === 'identification')
+        const qualifications = docs.filter(d => d.document_type === 'qualification')
+        const employmentFiles = docs.filter(d => d.document_type === 'employment_file')
+
+        // Update viewingProfile with loaded documents
+        if (viewingProfile) {
+          const updatedProfile: StoredCrewMember = {
+            ...viewingProfile,
+            identification: identification ? {
+              type: (identification.file_name.toLowerCase().includes('passport') ? 'passport' : 'drivers_license') as 'passport' | 'drivers_license' | 'other',
+              url: identification.file_url,
+              uploadedDate: identification.uploaded_date,
+            } : undefined,
+            qualifications: qualifications.map(q => ({
+              name: q.file_name,
+              url: q.file_url,
+              uploadedDate: q.uploaded_date,
+            })),
+            employmentFiles: employmentFiles.map(f => ({
+              id: String(f.id),
+              name: f.file_name,
+              type: 'contract' as const,
+              uploadedDate: f.uploaded_date,
+              url: f.file_url,
+            })),
+          }
+          setViewingProfile(updatedProfile)
+        }
+        console.log('[Crew] Loaded', docs.length, 'documents for', viewingProfile.email)
+      } catch (err) {
+        console.error('[Crew] Failed to load documents:', err)
+      }
+    }
+
+    loadDocuments()
+  }, [viewingProfile?.email])
 
   const currentThreadMsgs = activeThreadId ? getThreadMessages(activeThreadId) : []
   const currentUserIdStr = String(currentUserMember?.id ?? 'user')
