@@ -72,21 +72,23 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
             <p className="text-lg font-bold text-slate-900 dark:text-white">{timecard.siteName}</p>
           </div>
 
-          {/* Clock In/Out Times */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Clock In</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white mt-2">
-                {formatTime(timecard.clockInTime)}
-              </p>
-            </div>
-            <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Clock Out</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white mt-2">
-                {timecard.clockOutTime ? formatTime(timecard.clockOutTime) : 'N/A'}
-              </p>
-            </div>
+          {/* Clock In Time */}
+          <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2">Clock In</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {formatDate(timecard.date)} at {formatTime(timecard.clockInTime)}
+            </p>
           </div>
+
+          {/* Clock Out Time */}
+          {timecard.clockOutTime && (
+            <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2">Clock Out</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {formatDate(timecard.date)} at {formatTime(timecard.clockOutTime)}
+              </p>
+            </div>
+          )}
 
           {/* Hours */}
           <div className="grid grid-cols-2 gap-4">
@@ -108,24 +110,17 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
 
           {/* Break */}
           <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg border border-slate-300 dark:border-slate-600">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <Clock size={16} className="text-slate-600 dark:text-slate-400" />
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Break</p>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Mandatory Break</p>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-700 dark:text-slate-300">
-                  {timecard.breakTaken ? '✓ Break Taken' : '✗ No Break'}
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  Duration: {(timecard.breakMinutes || 0)} min
-                </p>
-              </div>
-              {timecard.breakTaken ? (
-                <CheckCircle size={24} className="text-green-600 dark:text-green-400" />
-              ) : (
-                <AlertCircle size={24} className="text-red-600 dark:text-red-400" />
-              )}
+            <div>
+              <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                {timecard.breakTaken ? 'Yes' : 'No'}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Duration: {(timecard.breakMinutes || 0)} minutes
+              </p>
             </div>
           </div>
 
