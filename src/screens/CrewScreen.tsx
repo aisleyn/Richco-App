@@ -176,6 +176,7 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
   const [editingMember, setEditingMember] = useState<StoredCrewMember | null>(null)
   const [viewingProfile, setViewingProfile] = useState<StoredCrewMember | null>(null)
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
+  const [expandedImage, setExpandedImage] = useState<{ url: string; name?: string } | null>(null)
   const [refresh, setRefresh] = useState(0)
   const [commRefresh, setCommRefresh] = useState(0)
   const [ppeRefresh, setPpeRefresh] = useState(0)
@@ -503,7 +504,8 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                           <img
                             src={msg.attachmentUrl}
                             alt={msg.attachmentName}
-                            className="max-w-[200px] rounded-lg mt-2"
+                            className="max-w-[200px] rounded-lg mt-2 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setExpandedImage({ url: msg.attachmentUrl!, name: msg.attachmentName })}
                           />
                         )}
                         {msg.attachmentUrl && !isImage && (
@@ -1345,6 +1347,51 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
               setCrewRefresh(prev => prev + 1)
             }}
           />
+        )}
+
+        {/* Image Viewer Modal */}
+        {expandedImage && (
+          <div
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setExpandedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="relative max-w-3xl max-h-[80vh] bg-slate-900 rounded-2xl overflow-hidden flex flex-col"
+            >
+              {/* Image */}
+              <div className="flex-1 flex items-center justify-center bg-black/50 overflow-auto">
+                <img
+                  src={expandedImage.url}
+                  alt={expandedImage.name || 'Expanded image'}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-t border-slate-700">
+                <p className="text-sm text-slate-300">{expandedImage.name || 'Image'}</p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={expandedImage.url}
+                    download={expandedImage.name || 'image'}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+                  >
+                    <Download size={14} /> Download
+                  </a>
+                  <button
+                    onClick={() => setExpandedImage(null)}
+                    className="flex items-center justify-center w-8 h-8 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </AppLayout>
