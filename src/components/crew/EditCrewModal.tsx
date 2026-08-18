@@ -20,6 +20,10 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
     phone: member.phone,
     role: member.role,
     isAdmin: member.isAdmin,
+    hireDate: member.hireDate || '',
+    paymentType: member.paymentType || 'hourly',
+    hourlyRate: member.hourlyRate || 0,
+    salary: member.salary || 0,
   })
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,6 +48,10 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
         role: formData.role,
         roleLabel: roleLabels[formData.role] || formData.role,
         isAdmin: formData.isAdmin,
+        hireDate: formData.hireDate,
+        paymentType: formData.paymentType,
+        hourlyRate: formData.paymentType === 'hourly' ? formData.hourlyRate : undefined,
+        salary: formData.paymentType === 'salary' ? formData.salary : undefined,
       })
 
       if (!result) {
@@ -203,6 +211,67 @@ export function EditCrewModal({ member, onClose, onUpdated }: Props) {
               <label htmlFor="isAdmin" className="flex-1 text-slate-800 text-sm font-medium cursor-pointer">
                 Grant admin privileges
               </label>
+            </div>
+
+            {/* Employment Details Section */}
+            <div className="border-t border-slate-200 pt-4 mt-4">
+              <h3 className="text-slate-700 text-xs font-bold uppercase tracking-wider mb-3">Employment Details</h3>
+
+              <div>
+                <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
+                  Hire Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.hireDate}
+                  onChange={e => setFormData({ ...formData, hireDate: e.target.value })}
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block mt-3">
+                  Payment Type
+                </label>
+                <select
+                  value={formData.paymentType}
+                  onChange={e => setFormData({ ...formData, paymentType: e.target.value as any })}
+                  className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-green-600"
+                >
+                  <option value="hourly">Hourly</option>
+                  <option value="salary">Salary</option>
+                </select>
+              </div>
+
+              {formData.paymentType === 'hourly' ? (
+                <div>
+                  <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block mt-3">
+                    Hourly Rate ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.hourlyRate}
+                    onChange={e => setFormData({ ...formData, hourlyRate: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
+                    className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block mt-3">
+                    Annual Salary ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={formData.salary}
+                    onChange={e => setFormData({ ...formData, salary: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
+                    className="w-full bg-bg-surface border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 text-sm placeholder:text-slate-600 focus:outline-none focus:border-green-600"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
