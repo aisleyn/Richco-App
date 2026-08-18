@@ -1197,6 +1197,130 @@ export async function uploadCrewFile(
   }
 }
 
+// ─── Employee Documents (Identification, Qualifications, Employment Files) ────────────────────
+
+export interface EmployeeDocument {
+  id?: number
+  crew_member_email: string
+  document_type: 'identification' | 'qualification' | 'employment_file'
+  file_name: string
+  file_url: string
+  uploaded_date: number
+}
+
+/**
+ * Add an employee document (identification, qualification, or employment file)
+ */
+export async function addEmployeeDocument(
+  email: string,
+  docType: 'identification' | 'qualification' | 'employment_file',
+  fileName: string,
+  fileUrl: string,
+  uploadedDate: number
+): Promise<EmployeeDocument | null> {
+  try {
+    const { data, error } = await supabase
+      .from('employee_documents')
+      .insert([
+        {
+          crew_member_email: email,
+          document_type: docType,
+          file_name: fileName,
+          file_url: fileUrl,
+          uploaded_date: uploadedDate,
+        },
+      ])
+      .select()
+
+    if (error) {
+      console.error('[Supabase] Failed to add employee document:', error.message)
+      return null
+    }
+
+    console.log('[Supabase] Added employee document:', email, docType)
+    return data?.[0] || null
+  } catch (err) {
+    console.error('[Supabase] Error adding employee document:', err)
+    return null
+  }
+}
+
+/**
+ * Get all documents for an employee
+ */
+export async function getEmployeeDocuments(email: string): Promise<EmployeeDocument[]> {
+  try {
+    const { data, error } = await supabase
+      .from('employee_documents')
+      .select('*')
+      .eq('crew_member_email', email)
+
+    if (error) {
+      console.error('[Supabase] Failed to fetch employee documents:', error.message)
+      return []
+    }
+
+    return data || []
+  } catch (err) {
+    console.error('[Supabase] Error fetching employee documents:', err)
+    return []
+  }
+}
+
+/**
+ * Delete an employee document
+ */
+export async function deleteEmployeeDocument(documentId: number): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('employee_documents')
+      .delete()
+      .eq('id', documentId)
+
+    if (error) {
+      console.error('[Supabase] Failed to delete employee document:', error.message)
+      return false
+    }
+
+    console.log('[Supabase] Deleted employee document:', documentId)
+    return true
+  } catch (err) {
+    console.error('[Supabase] Error deleting employee document:', err)
+    return false
+  }
+}
+
+/**
+ * Delete all documents of a specific type for an employee
+ */
+export async function deleteEmployeeDocumentsByType(
+  email: string,
+  docType: 'identification' | 'qualification' | 'employment_file'
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('employee_documents')
+      .delete()
+      .eq('crew_member_email', email)
+      .eq('document_type', docType)
+
+    if (error) {
+      console.error('[Supabase] Failed to delete documents by type:', error.message)
+      return false
+    }
+
+    console.log('[Supabase] Deleted employee documents by type:', email, docType)
+    return true
+  } catch (err) {
+    console.error('[Supabase] Error deleting documents by type:', err)
+    return false
+  }
+}
+
+/**
+ * Legacy function - deprecated
+ * Use addEmployeeDocument() instead
+ */
 export async function updateCrewMemberFiles(
   email: string,
   updates: {
@@ -1206,18 +1330,34 @@ export async function updateCrewMemberFiles(
   }
 ): Promise<boolean> {
   try {
-    // Note: identification, qualifications, employment_files columns don't exist in crew_members table
-    // These updates are skipped to avoid schema mismatch errors
-    // TODO: Either add these columns to crew_members table or store in separate tables
-    console.warn('[Supabase] updateCrewMemberFiles: Skipping file updates (columns not in crew_members schema)')
-    console.warn('[Supabase] TODO: Add identification, qualifications, employment_files columns to crew_members or use separate tables')
+    console.warn('[Supabase] updateCrewMemberFiles is deprecated - use addEmployeeDocument() instead')
 
-    // For now, just return success without updating non-existent columns
-    console.log('[Supabase] Skipped crew member file update for:', email)
+    // Try to add documents to the new table
+    if (updates.identification) {
+      await addEmployeeDocument(email, 'identification', 'identification', updates.identification.url, updates.identification.uploadedDate)
+    }
+
+    if (updates.qualifications && updates.qualifications.length > 0) {
+      for (const qual of updates.qualifications) {
+        if (qual.url) {
+          await addEmployeeDocument(email, 'qualification', qual.name, qual.url, qual.uploadedDate || Date.now())
+        }
+      }
+    }
+
+    if (updates.employmentFiles && updates.employmentFiles.length > 0) {
+      for (const file of updates.employmentFiles) {
+        if (file.url) {
+          await addEmployeeDocument(email, 'employment_file', file.name, file.url, file.uploadedDate || Date.now())
+        }
+      }
+    }
+
+    console.log('[Supabase] Migrated crew member files for:', email)
     return true
   } catch (err) {
-    console.error('[Supabase] Failed to update crew member files:', err)
-    return true  // Return true anyway - these columns don't exist, so errors are expected
+    console.error('[Supabase] Error migrating crew member files:', err)
+    return true
   }
 }
 
