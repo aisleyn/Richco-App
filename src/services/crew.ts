@@ -219,7 +219,23 @@ export async function removeCrewMember(email: string): Promise<boolean> {
     // This ensures complete removal from the system
     await cleanupUserData(email, userId)
 
-    // If we have userId, use the auth deletion process
+    // Always delete from users table (RLS might prevent read but not delete)
+    try {
+      const { error: usersError } = await supabase
+        .from('users')
+        .delete()
+        .eq('email', email)
+
+      if (usersError) {
+        console.warn('[Crew] Warning deleting from users table:', usersError.message)
+      } else {
+        console.log('[Crew] ✅ Deleted from users table:', email)
+      }
+    } catch (err) {
+      console.warn('[Crew] Exception deleting from users table:', err)
+    }
+
+    // If we have userId, also use the auth deletion process
     if (userId) {
       const result = await authDeleteCrewMember(userId)
       if (result.success) {
@@ -228,17 +244,6 @@ export async function removeCrewMember(email: string): Promise<boolean> {
       } else {
         console.error('[Crew] Failed to delete auth user:', result.message)
         // Continue anyway - crew member is deleted even if auth cleanup failed
-      }
-    } else {
-      // No userId - just delete from crew_members table
-      const { error: crewError } = await supabase
-        .from('crew_members')
-        .delete()
-        .eq('email', email)
-
-      if (crewError) {
-        console.error('[Crew] Failed to delete from crew_members:', crewError.message)
-        return false
       }
     }
 
