@@ -97,11 +97,11 @@ export async function updateTimeEntry(
   updates: Partial<TimeEntry>
 ): Promise<boolean> {
   try {
-    await timeEntriesRequest('PATCH', `/time_entries?id=eq.${entryId}`, updates, true)
-    console.log('[Supabase] Updated time entry:', entryId)
+    const result = await timeEntriesRequest('PATCH', `/time_entries?id=eq.${entryId}`, updates, true)
+    console.log('[Supabase] Updated time entry:', entryId, 'result:', result)
     return true
   } catch (err) {
-    console.error('[Supabase] Failed to update time entry:', err)
+    console.error('[Supabase] Failed to update time entry:', entryId, err instanceof Error ? err.message : err)
     return false
   }
 }
