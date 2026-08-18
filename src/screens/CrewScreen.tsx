@@ -934,15 +934,23 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                             } : null}
                             onDocumentAdded={(doc) => {
                               const idType = viewingProfile.identification?.type || 'passport'
-                              viewingProfile.identification = {
-                                type: idType,
-                                url: doc.url,
-                                uploadedDate: doc.uploadedDate,
+                              const updatedProfile = {
+                                ...viewingProfile,
+                                identification: {
+                                  type: idType,
+                                  url: doc.url,
+                                  uploadedDate: doc.uploadedDate,
+                                }
                               }
-                              updateCrewMemberFiles(viewingProfile.email, { identification: viewingProfile.identification })
+                              setViewingProfile(updatedProfile)
+                              updateCrewMemberFiles(viewingProfile.email, { identification: updatedProfile.identification })
                             }}
                             onDocumentRemoved={() => {
-                              viewingProfile.identification = undefined
+                              const updatedProfile = {
+                                ...viewingProfile,
+                                identification: undefined
+                              }
+                              setViewingProfile(updatedProfile)
                               updateCrewMemberFiles(viewingProfile.email, { identification: undefined })
                             }}
                           />
