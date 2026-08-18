@@ -20,15 +20,18 @@ interface AppState {
   // Clock state
   clockedIn: boolean
   clockInTime: number | null
+  clockInLocation?: { lat: number; lng: number; address: string } | null
   breakActive: boolean
   breakStartTime: number | null
   totalBreakMs: number
+  breaks: Array<{ startTime: number; endTime: number; duration: number }> // Track multiple breaks
   activeTimesheetId: string | null
   activeBreakPeriodId: string | null
   activeSheetEntry: Partial<TimesheetEntry> | null
   currentShiftIsOvernight: boolean // Track for break deduction
   currentProjectId?: string
   currentProjectName?: string
+  isClockingOut: boolean // Flag to prevent sync race conditions
 
   // Alerts
   alerts: Alert[]
@@ -99,12 +102,15 @@ export const useAppStore = create<AppState>()(
           // Reset per-user data when a new user logs in
           clockedIn: false,
           clockInTime: null,
+          clockInLocation: null,
+          breaks: [],
           breakActive: false,
           breakStartTime: null,
           totalBreakMs: 0,
           activeTimesheetId: null,
           activeBreakPeriodId: null,
           activeSheetEntry: null,
+          isClockingOut: false,
         })
       },
 
@@ -131,6 +137,8 @@ export const useAppStore = create<AppState>()(
       // Clock state (initialized per-user in initializeUser)
       clockedIn: false,
       clockInTime: null,
+      clockInLocation: null,
+      breaks: [],
       breakActive: false,
       breakStartTime: null,
       totalBreakMs: 0,
@@ -138,6 +146,7 @@ export const useAppStore = create<AppState>()(
       activeBreakPeriodId: null,
       activeSheetEntry: null,
       currentShiftIsOvernight: false,
+      isClockingOut: false,
       alerts: [...mockAlerts, ...generateLeaveRequestAlerts()] as Alert[],
       unreadAlertCount: [...mockAlerts, ...generateLeaveRequestAlerts()].filter(a => !a.read).length,
       unreadMessageCount: (() => {
@@ -184,6 +193,8 @@ export const useAppStore = create<AppState>()(
         set({
           clockedIn: true,
           clockInTime: now,
+          clockInLocation: gps || null,
+          breaks: [],
           breakActive: false,
           breakStartTime: null,
           totalBreakMs: 0,
@@ -191,6 +202,7 @@ export const useAppStore = create<AppState>()(
           currentShiftIsOvernight: isOvernight,
           currentProjectId: projectId,
           currentProjectName: projectName,
+          isClockingOut: false,
           activeSheetEntry: {
             id: entryId || id,
             date: new Date().toISOString().split('T')[0],
@@ -232,12 +244,25 @@ export const useAppStore = create<AppState>()(
       },
 
       clockOut: async (data) => {
-        const { clockInTime, breakStartTime, totalBreakMs, activeTimesheetId, currentShiftIsOvernight, currentUserId, currentUserEmail, currentUserName, currentProjectId, currentProjectName } = get()
+        // Set flag to prevent sync from overwriting state during clock-out
+        set({ isClockingOut: true })
+
+        const { clockInTime, breakStartTime, totalBreakMs, activeTimesheetId, currentShiftIsOvernight, currentUserId, currentUserEmail, currentUserName, currentProjectId, currentProjectName, breaks } = get()
         const now = Date.now()
 
         // Calculate total elapsed time and break duration
         const totalElapsedMs = now - (clockInTime ?? now)
         const breakDurationMs = totalBreakMs + (breakStartTime ? now - breakStartTime : 0)
+
+        // Track final break if one is active
+        let finalBreaks = [...breaks]
+        if (breakStartTime) {
+          finalBreaks.push({
+            startTime: breakStartTime,
+            endTime: now,
+            duration: now - breakStartTime
+          })
+        }
 
         // Work time = total elapsed - breaks
         const workMs = Math.max(0, totalElapsedMs - breakDurationMs)
@@ -310,6 +335,8 @@ export const useAppStore = create<AppState>()(
         set({
           clockedIn: false,
           clockInTime: null,
+          clockInLocation: null,
+          breaks: [],
           breakActive: false,
           breakStartTime: null,
           totalBreakMs: 0,
@@ -319,7 +346,13 @@ export const useAppStore = create<AppState>()(
           currentShiftIsOvernight: false,
           currentProjectId: undefined,
           currentProjectName: undefined,
+          isClockingOut: false, // Clear flag after state update
         })
+
+        // Prevent sync from overwriting the clocked-out state for 3 seconds
+        setTimeout(() => {
+          set({ isClockingOut: false })
+        }, 3000)
 
         // Also send to Power Automate for compatibility
         // NOTE: Overtime is calculated WEEKLY; here we pass paid hours as regular
@@ -378,7 +411,7 @@ export const useAppStore = create<AppState>()(
       },
 
       endBreak: async () => {
-        const { breakStartTime, totalBreakMs, activeTimesheetId, activeBreakPeriodId, currentUserId } = get()
+        const { breakStartTime, totalBreakMs, activeTimesheetId, activeBreakPeriodId, currentUserId, breaks } = get()
         const now = Date.now()
         const nowIso = new Date(now).toISOString()
         const additionalBreak = breakStartTime ? now - breakStartTime : 0
@@ -390,11 +423,22 @@ export const useAppStore = create<AppState>()(
           await endBreakPeriod(activeBreakPeriodId, nowIso, breakDurationMinutes)
         }
 
+        // Track this break in the breaks array
+        const newBreaks = [...breaks]
+        if (breakStartTime) {
+          newBreaks.push({
+            startTime: breakStartTime,
+            endTime: now,
+            duration: additionalBreak
+          })
+        }
+
         set({
           breakActive: false,
           breakStartTime: null,
           activeBreakPeriodId: null,
           totalBreakMs: newTotal,
+          breaks: newBreaks,
         })
 
         // Also notify Power Automate
@@ -472,11 +516,21 @@ export const useAppStore = create<AppState>()(
 
       // Multi-device clock sync
       syncClockState: (timeEntry) => {
+        const { isClockingOut } = get()
+
+        // Don't sync if we're currently clocking out (prevent race condition)
+        if (isClockingOut) {
+          console.log('[Store] Skipping sync during clock-out to prevent race condition')
+          return
+        }
+
         if (!timeEntry) {
           console.log('[Store] Syncing clock state: user clocked out')
           set({
             clockedIn: false,
             clockInTime: null,
+            clockInLocation: null,
+            breaks: [],
             activeTimesheetId: null,
             activeSheetEntry: null,
           })
@@ -488,7 +542,12 @@ export const useAppStore = create<AppState>()(
 
         set({
           clockedIn: !timeEntry.clock_out_time,
-          clockInTime: clockInMs,
+          clockInTime: timeEntry.clock_out_time ? null : clockInMs,
+          clockInLocation: timeEntry.clock_out_time ? null : {
+            lat: timeEntry.clock_in_latitude || 0,
+            lng: timeEntry.clock_in_longitude || 0,
+            address: timeEntry.clock_in_address || 'Unknown'
+          },
           activeTimesheetId: timeEntry.id,
           activeSheetEntry: {
             id: timeEntry.id,
@@ -511,9 +570,11 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         clockedIn: state.clockedIn,
         clockInTime: state.clockInTime,
+        clockInLocation: state.clockInLocation,
         breakActive: state.breakActive,
         breakStartTime: state.breakStartTime,
         totalBreakMs: state.totalBreakMs,
+        breaks: state.breaks,
         activeTimesheetId: state.activeTimesheetId,
         activeBreakPeriodId: state.activeBreakPeriodId,
         activeSheetEntry: state.activeSheetEntry,
