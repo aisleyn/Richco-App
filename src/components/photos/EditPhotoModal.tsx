@@ -39,7 +39,7 @@ export function EditPhotoModal({ photo, onClose, onUpdated, onDeleted }: Props) 
   }
 
   async function handleDelete() {
-    const success = await deletePhoto(photo.id)
+    const success = await deletePhoto(photo.id, photo)
     if (success) {
       onDeleted()
       onClose()

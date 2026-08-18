@@ -167,8 +167,31 @@ export async function updatePhoto(id: string, updates: Partial<Photo>): Promise<
   }
 }
 
-export async function deletePhoto(id: string): Promise<boolean> {
+export async function deletePhoto(id: string, photo?: Photo): Promise<boolean> {
   try {
+    // Delete from Supabase Storage if photo object and URL provided
+    if (photo?.url) {
+      try {
+        const { deleteStorageFile } = await import('./storageService')
+        // Extract path from Supabase URL
+        // URL format: https://xxx.supabase.co/storage/v1/object/public/project-photos/projects/projectId/photos/timestamp-filename
+        const urlParts = photo.url.split('/object/public/')
+        if (urlParts.length > 1) {
+          const fullPath = urlParts[1]
+          const pathMatch = fullPath.match(/^([^/]+)\/(.+)$/)
+          if (pathMatch) {
+            const bucket = pathMatch[1]
+            const path = pathMatch[2]
+            console.log('[PhotoDB] Deleting from Supabase:', bucket, path)
+            await deleteStorageFile(bucket, path)
+          }
+        }
+      } catch (storageErr) {
+        console.warn('[PhotoDB] Failed to delete from Supabase Storage:', storageErr)
+        // Continue with local deletion even if Supabase fails
+      }
+    }
+
     const db = await openDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite')

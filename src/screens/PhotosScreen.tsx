@@ -101,7 +101,8 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
 
   function handleBulkDelete() {
     selectedForDelete.forEach(id => {
-      deletePhoto(id)
+      const photo = allPhotos.find(p => p.id === id)
+      deletePhoto(id, photo)
     })
     setSelectedForDelete(new Set())
     setDeleteMode(false)

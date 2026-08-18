@@ -104,11 +104,20 @@ export async function uploadProjectPhoto(
     )
 
     if (result && result.Key) {
-      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/project-photos/${result.Key}`
-      console.log('[Storage] Uploaded photo:', path)
-      return { url: publicUrl, path: result.Key }
+      // Construct public URL - result.Key should contain the full path
+      const decodedKey = decodeURIComponent(result.Key)
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/project-photos/${decodedKey}`
+      console.log('[Storage] Uploaded photo:', {
+        inputPath: path,
+        returnedKey: result.Key,
+        decodedKey,
+        constructedUrl: publicUrl,
+        timestamp
+      })
+      return { url: publicUrl, path: decodedKey }
     }
 
+    console.error('[Storage] Upload response missing Key:', result)
     return null
   } catch (err) {
     console.error('[Storage] Photo upload failed:', err)

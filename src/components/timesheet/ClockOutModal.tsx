@@ -92,8 +92,9 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
         category: 'Site Conditions',
       }))
       try {
+        console.log('[ClockOut] Saving photos with URLs:', photoObjects.map(p => ({ id: p.id, url: p.url })))
         await addPhotos(photoObjects, currentUserEmail)
-        console.log('[ClockOut] Saved', uploadedPhotos.length, 'photos to Supabase')
+        console.log('[ClockOut] Saved', uploadedPhotos.length, 'photos for user', currentUserEmail)
       } catch (err) {
         console.error('[ClockOut] Failed to save photos:', err)
       }
