@@ -7,6 +7,7 @@ import { RequestTimeOffModal } from '../components/timeoff/RequestTimeOffModal'
 import { getEmployeeRequests, getAllPendingRequests } from '../services/timeoff'
 import { isUserAdmin, getAllCrew } from '../services/crew'
 import { ApproveLeaveModal } from '../components/timeoff/ApproveLeaveModal'
+import { TimeOffDetailModal } from '../components/timeoff/TimeOffDetailModal'
 import type { LeaveRequest } from '../services/timeoff'
 
 export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: string) => void }) {
@@ -19,6 +20,7 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
   const [refreshKey, setRefreshKey] = useState(0)
   const [isAdminUser, setIsAdminUser] = useState(false)
   const [isCEO, setIsCEO] = useState(false)
+  const [selectedRequestDetail, setSelectedRequestDetail] = useState<LeaveRequest | null>(null)
   const canApprove = isAdminUser || isCEO
 
   useEffect(() => {
@@ -154,12 +156,13 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
               const config = statusConfig[request.status]
               const Icon = config.icon
               return (
-                <motion.div
+                <motion.button
                   key={request.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className={`bg-bg-surface rounded-xl border border-slate-200 p-4 ${config.color}`}
+                  onClick={() => setSelectedRequestDetail(request)}
+                  className={`w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 ${config.color} hover:shadow-md transition-shadow cursor-pointer`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-start gap-3 flex-1">
@@ -212,13 +215,16 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
 
                   {isAdminUser && request.status === 'pending' && (
                     <button
-                      onClick={() => setApproveModal(request)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setApproveModal(request)
+                      }}
                       className="w-full mt-3 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-600 text-xs font-semibold transition-colors"
                     >
                       Review Request
                     </button>
                   )}
-                </motion.div>
+                </motion.button>
               )
             })}
           </div>
@@ -312,6 +318,12 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
               setShowRequestModal(false)
               setRefreshKey(prev => prev + 1)
             }}
+          />
+        )}
+        {selectedRequestDetail && (
+          <TimeOffDetailModal
+            request={selectedRequestDetail}
+            onClose={() => setSelectedRequestDetail(null)}
           />
         )}
         {approveModal && (

@@ -364,41 +364,57 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
               {photos.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1.5">
-                  {photos.map((photo, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setExpandedPhotoIndex(i)}
-                      className="w-14 h-14 rounded-lg overflow-hidden shrink-0 relative group cursor-pointer hover:opacity-75 transition-opacity"
-                    >
-                      <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+                  {photos.map((photo, i) => {
+                    const isUploading = uploadingPhotoIndex === i
+                    const isUploaded = !!photo.url && !isUploading
+                    const canExpand = isUploaded
 
-                      {/* Upload progress overlay */}
-                      {uploadingPhotoIndex === i && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <Loader size={16} className="text-white animate-spin" />
+                    return (
+                      <div key={i} className="relative group">
+                        {/* Photo thumbnail */}
+                        <div
+                          onClick={() => canExpand && setExpandedPhotoIndex(i)}
+                          className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative ${canExpand ? 'cursor-pointer hover:opacity-75' : 'cursor-not-allowed opacity-60'} transition-opacity`}
+                          title={isUploading ? 'Photo uploading...' : !isUploaded ? 'Waiting to upload...' : 'Click to expand'}
+                        >
+                          <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+
+                          {/* Upload progress overlay */}
+                          {isUploading && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                              <Loader size={16} className="text-white animate-spin" />
+                            </div>
+                          )}
+
+                          {/* Uploaded checkmark */}
+                          {isUploaded && (
+                            <div className="absolute inset-0 bg-success-base/20 border border-success-base/40 flex items-center justify-center">
+                              <CheckCircle size={12} className="text-success-base" />
+                            </div>
+                          )}
+
+                          {/* Waiting to upload indicator */}
+                          {!isUploading && !isUploaded && (
+                            <div className="absolute inset-0 bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
+                              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                            </div>
+                          )}
                         </div>
-                      )}
 
-                      {/* Uploaded checkmark */}
-                      {photo.url && uploadingPhotoIndex !== i && (
-                        <div className="absolute inset-0 bg-success-base/20 border border-success-base/40 flex items-center justify-center">
-                          <CheckCircle size={12} className="text-success-base" />
-                        </div>
-                      )}
-
-                      {/* Delete button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setPhotos(prev => prev.filter((_, j) => j !== i))
-                          setExpandedPhotoIndex(null)
-                        }}
-                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X size={9} className="text-primary" />
-                      </button>
-                    </div>
-                  ))}
+                        {/* Delete button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPhotos(prev => prev.filter((_, j) => j !== i))
+                            setExpandedPhotoIndex(null)
+                          }}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                        >
+                          <X size={10} className="text-white" />
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
 

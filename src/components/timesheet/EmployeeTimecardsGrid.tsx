@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, X, ChevronRight } from 'lucide-react'
+import { Zap, X, ChevronRight, ImageIcon } from 'lucide-react'
 import { getEmployeeTimeEntries } from '../../services/supabase'
 import { useAppStore } from '../../store/appStore'
+import { ImageViewerModal } from '../ImageViewerModal'
 import type { TimesheetEntry } from '../../types'
 
 interface TimeEntryData {
@@ -81,6 +82,9 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
   const [isLoading, setIsLoading] = useState(true)
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeWeekData | null>(null)
   const [selectedTimecard, setSelectedTimecard] = useState<any | null>(null)
+  const [expandedPhotoUrl, setExpandedPhotoUrl] = useState<string | null>(null)
+  const [expandedPhotoIndex, setExpandedPhotoIndex] = useState<number | null>(null)
+  const [expandedTimecard, setExpandedTimecard] = useState<any | null>(null)
 
   // Calculate week boundaries (Saturday to Friday)
   const getWeekBoundaries = (date: Date) => {
@@ -345,46 +349,85 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
               <div className="p-6 space-y-3">
                 {selectedEmployee.timecards.length > 0 ? (
                   selectedEmployee.timecards.map((tc) => (
-                    <button
+                    <div
                       key={tc.id}
-                      onClick={() => setSelectedTimecard(tc)}
-                      className="w-full bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg p-4 text-left transition-colors"
+                      className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg overflow-hidden"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white">
-                            {new Date(tc.clock_in_time).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                            {tc.site_name}
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
-                            {new Date(tc.clock_in_time).toLocaleTimeString('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })} - {tc.clock_out_time ? new Date(tc.clock_out_time).toLocaleTimeString('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            }) : 'Ongoing'}
-                          </p>
-                        </div>
-                        <div className="text-right flex items-center gap-3">
-                          <div>
-                            <p className="text-lg font-bold text-slate-900 dark:text-white">
-                              {(tc.total_hours || 0).toFixed(2)}h
+                      {/* Main timecard info */}
+                      <button
+                        onClick={() => setSelectedTimecard(tc)}
+                        className="w-full p-4 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors text-left"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-900 dark:text-white">
+                              {new Date(tc.clock_in_time).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {tc.break_taken ? 'Break taken' : 'No break'}
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                              {tc.site_name}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                              {new Date(tc.clock_in_time).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })} - {tc.clock_out_time ? new Date(tc.clock_out_time).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              }) : 'Ongoing'}
                             </p>
                           </div>
-                          <ChevronRight size={18} className="text-slate-400" />
+                          <div className="text-right flex items-center gap-3">
+                            <div>
+                              <p className="text-lg font-bold text-slate-900 dark:text-white">
+                                {(tc.total_hours || 0).toFixed(2)}h
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {tc.break_taken ? 'Break taken' : 'No break'}
+                              </p>
+                            </div>
+                            <ChevronRight size={18} className="text-slate-400" />
+                          </div>
                         </div>
-                      </div>
-                    </button>
+                      </button>
+
+                      {/* Photos section */}
+                      {tc.photos && tc.photos.length > 0 && (
+                        <div className="border-t border-slate-200 dark:border-slate-600 px-4 py-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <ImageIcon size={14} className="text-slate-600 dark:text-slate-400" />
+                            <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+                              Photos ({tc.photos.length})
+                            </p>
+                          </div>
+                          <div className="flex gap-2 overflow-x-auto pb-2">
+                            {(tc.photos as any[]).map((photo, idx) => {
+                              const photoUrl = typeof photo === 'string' ? photo : photo?.url || ''
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => {
+                                    setExpandedTimecard(tc)
+                                    setExpandedPhotoUrl(photoUrl)
+                                    setExpandedPhotoIndex(idx)
+                                  }}
+                                  className="w-12 h-12 rounded-lg overflow-hidden shrink-0 hover:opacity-80 transition-opacity border border-slate-300 dark:border-slate-500"
+                                >
+                                  <img
+                                    src={photoUrl}
+                                    alt={`Photo ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))
                 ) : (
                   <p className="text-slate-500 dark:text-slate-400 text-center py-8">
@@ -510,6 +553,42 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Photo Viewer Modal */}
+      {expandedTimecard && expandedTimecard.photos && (
+        <ImageViewerModal
+          isOpen={expandedPhotoUrl !== null}
+          imageUrl={expandedPhotoUrl || ''}
+          fileName={`photo-${(expandedPhotoIndex || 0) + 1}`}
+          onClose={() => {
+            setExpandedPhotoUrl(null)
+            setExpandedPhotoIndex(null)
+            setExpandedTimecard(null)
+          }}
+          currentIndex={expandedPhotoIndex || 0}
+          totalImages={expandedTimecard.photos.length}
+          onPrev={() => {
+            if (expandedPhotoIndex !== null && expandedPhotoIndex > 0) {
+              const newIndex = expandedPhotoIndex - 1
+              setExpandedPhotoIndex(newIndex)
+              const photoUrl = typeof expandedTimecard.photos[newIndex] === 'string'
+                ? expandedTimecard.photos[newIndex]
+                : expandedTimecard.photos[newIndex]?.url || ''
+              setExpandedPhotoUrl(photoUrl)
+            }
+          }}
+          onNext={() => {
+            if (expandedPhotoIndex !== null && expandedPhotoIndex < expandedTimecard.photos.length - 1) {
+              const newIndex = expandedPhotoIndex + 1
+              setExpandedPhotoIndex(newIndex)
+              const photoUrl = typeof expandedTimecard.photos[newIndex] === 'string'
+                ? expandedTimecard.photos[newIndex]
+                : expandedTimecard.photos[newIndex]?.url || ''
+              setExpandedPhotoUrl(photoUrl)
+            }
+          }}
+        />
+      )}
     </>
   )
 }
