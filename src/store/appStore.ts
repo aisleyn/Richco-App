@@ -294,6 +294,7 @@ export const useAppStore = create<AppState>()(
           vehicleUsed: data.vehicleUsed,
           photos: data.photos,
           gpsIn: data.gpsIn,
+          gpsOut: data.gpsOut,
         }
 
         try {

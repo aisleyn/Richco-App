@@ -56,7 +56,6 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Site</p>
               <p className="text-lg font-bold text-slate-900 dark:text-white">
                 {timecard.siteName}
               </p>
