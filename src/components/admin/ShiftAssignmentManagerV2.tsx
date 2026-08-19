@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Trash2, Plus, Check } from 'lucide-react'
 import { getUpcomingShifts, getShiftAssignments, getAllCrewMembers, assignCrewToShift, removeCrewFromShift } from '../../services/supabase'
+import { supabase } from '../../services/supabaseAuth'
 import type { ShiftData, ShiftAssignmentData, CrewMemberData } from '../../services/supabase'
 
 export function ShiftAssignmentManagerV2() {
@@ -14,6 +15,27 @@ export function ShiftAssignmentManagerV2() {
 
   useEffect(() => {
     fetchData()
+
+    // Subscribe to real-time crew member changes
+    const subscription = supabase
+      .channel('shift_assignment_crew_changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'crew_members' },
+        (payload) => {
+          console.log('[ShiftAssignmentManagerV2] Crew change detected:', payload.eventType)
+          // Just reload crews - shifts will be refreshed too
+          fetchData()
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[ShiftAssignmentManagerV2] Real-time subscribed to crew changes')
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(subscription)
+    }
   }, [])
 
   const fetchData = async () => {

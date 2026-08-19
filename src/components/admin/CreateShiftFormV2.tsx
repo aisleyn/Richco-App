@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, Trash2, Check } from 'lucide-react'
 import { createShift, getAllCrewMembers, getProjects, assignCrewToShift } from '../../services/supabase'
+import { supabase } from '../../services/supabaseAuth'
 import type { ShiftLocationData, CrewMemberData, Project } from '../../services/supabase'
 
 interface Props {
@@ -39,6 +40,26 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (isOpen) {
       loadData()
+
+      // Subscribe to real-time crew member changes
+      const subscription = supabase
+        .channel('shift_form_v2_crew_changes')
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'crew_members' },
+          (payload) => {
+            console.log('[CreateShiftFormV2] Crew change detected:', payload.eventType)
+            loadData()
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('[CreateShiftFormV2] Real-time subscribed to crew changes')
+          }
+        })
+
+      return () => {
+        supabase.removeChannel(subscription)
+      }
     }
   }, [isOpen])
 
@@ -48,10 +69,11 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
         getAllCrewMembers(),
         getProjects(),
       ])
+      console.log('[CreateShiftFormV2] Loaded crew members:', crewsData.length)
       setCrews(crewsData)
       setProjects(projectsData)
     } catch (err) {
-      console.error('Error loading data:', err)
+      console.error('[CreateShiftFormV2] Error loading data:', err)
       setError('Failed to load data')
     }
   }

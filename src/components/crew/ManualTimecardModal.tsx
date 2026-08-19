@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { X, Loader } from 'lucide-react'
 import { getAllCrew } from '../../services/crew'
+import { supabase } from '../../services/supabaseAuth'
 import { jobSites } from '../../data/mockData'
 import type { TimesheetEntry, CrewMember } from '../../types'
 
@@ -17,10 +18,31 @@ export function ManualTimecardModal({ onClose, onTimecardCreated }: Props) {
   useEffect(() => {
     const loadCrew = async () => {
       const members = await getAllCrew()
+      console.log('[ManualTimecardModal] Loaded crew members:', members.length)
       setCrew(members)
       setLoadingCrew(false)
     }
     loadCrew()
+
+    // Subscribe to real-time crew member changes
+    const subscription = supabase
+      .channel('manual_timecard_crew_changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'crew_members' },
+        (payload) => {
+          console.log('[ManualTimecardModal] Crew change detected:', payload.eventType)
+          loadCrew()
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[ManualTimecardModal] Real-time subscribed to crew changes')
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(subscription)
+    }
   }, [])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

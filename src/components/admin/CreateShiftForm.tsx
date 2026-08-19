@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, Trash2 } from 'lucide-react'
 import { createShift, getAllCrewMembers } from '../../services/supabase'
+import { supabase } from '../../services/supabaseAuth'
 import type { ShiftLocationData, CrewMemberData } from '../../services/supabase'
 
 interface Props {
@@ -24,15 +25,37 @@ export function CreateShiftForm({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (isOpen) {
       loadCrews()
+
+      // Subscribe to real-time crew member changes (deletions, additions, updates)
+      const subscription = supabase
+        .channel('shift_form_crew_changes')
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'crew_members' },
+          (payload) => {
+            console.log('[CreateShiftForm] Crew member change detected:', payload.eventType)
+            // Reload crew list on any change
+            loadCrews()
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('[CreateShiftForm] Real-time subscribed to crew changes')
+          }
+        })
+
+      return () => {
+        supabase.removeChannel(subscription)
+      }
     }
   }, [isOpen])
 
   const loadCrews = async () => {
     try {
       const crewList = await getAllCrewMembers()
+      console.log('[CreateShiftForm] Loaded crew members:', crewList.length)
       setCrews(crewList)
     } catch (err) {
-      console.error('Error loading crews:', err)
+      console.error('[CreateShiftForm] Error loading crews:', err)
       setError('Failed to load crew members')
     }
   }
