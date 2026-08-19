@@ -91,11 +91,12 @@ export function TimesheetScreen({ onNavigate }: Props) {
     const now = new Date()
 
     // Calculate week start: Saturday of the current/previous week
-    // If today is Saturday (0), weekStart is today
-    // Otherwise, go back to the last Saturday
+    // Saturday (6) = 0 days back
+    // Sunday (0) = 1 day back
+    // Monday (1) = 2 days back, etc.
     const dayOfWeek = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const daysToSaturday = dayOfWeek === 6 ? 0 : (dayOfWeek === 0 ? -1 : (7 - dayOfWeek - 1))
-    const weekStart = new Date(now.getTime() + daysToSaturday * 24 * 60 * 60 * 1000)
+    const daysBack = dayOfWeek === 6 ? 0 : (dayOfWeek === 0 ? 1 : dayOfWeek + 1)
+    const weekStart = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000)
     weekStart.setHours(0, 0, 0, 0)
     const weekStartStr = weekStart.toISOString().split('T')[0]
 

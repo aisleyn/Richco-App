@@ -83,13 +83,19 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
   // Calculate week boundaries (Saturday to Friday)
   const getWeekBoundaries = (date: Date) => {
     const d = new Date(date)
-    const dayOfWeek = d.getDay()
-    const daysToSaturday = dayOfWeek === 6 ? 0 : (dayOfWeek === 0 ? -1 : (7 - dayOfWeek - 1))
-    const weekStart = new Date(d.getTime() + daysToSaturday * 24 * 60 * 60 * 1000)
+    const dayOfWeek = d.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+    // Calculate days to go BACK to reach Saturday
+    // Saturday (6) = 0 days back
+    // Sunday (0) = 1 day back
+    // Monday (1) = 2 days back
+    // etc.
+    const daysBack = dayOfWeek === 6 ? 0 : (dayOfWeek === 0 ? 1 : dayOfWeek + 1)
+    const weekStart = new Date(d.getTime() - daysBack * 24 * 60 * 60 * 1000)
     weekStart.setHours(0, 0, 0, 0)
 
     const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekEnd.getDate() + 6)
+    weekEnd.setDate(weekEnd.getDate() + 6) // Saturday to Friday = 6 days
     weekEnd.setHours(23, 59, 59, 999)
 
     return { weekStart, weekEnd }
