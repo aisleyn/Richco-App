@@ -77,27 +77,59 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
 
     // Save uploaded photos to database with Supabase URLs
     const uploadedPhotos = photos.filter(p => p.url)
-    if (uploadedPhotos.length > 0 && currentProjectId) {
-      const photoObjects: Photo[] = uploadedPhotos.map((p, idx) => ({
-        id: `photo-${Date.now()}-${idx}`,
-        url: p.url!,  // Use Supabase URL (not preview)
-        thumbnailUrl: p.url!,
-        siteId,
-        siteName: site?.name || '',
-        projectId: currentProjectId,
-        projectName: currentProjectName,
-        submittedBy: currentUserName || 'Clock Out',
-        submittedById: currentUserId || 'system',
-        timestamp: Date.now(),
-        category: 'Site Conditions',
-      }))
-      try {
-        console.log('[ClockOut] Saving photos with URLs:', photoObjects.map(p => ({ id: p.id, url: p.url })))
-        await addPhotos(photoObjects, currentUserEmail)
-        console.log('[ClockOut] Saved', uploadedPhotos.length, 'photos for user', currentUserEmail)
-      } catch (err) {
-        console.error('[ClockOut] Failed to save photos:', err)
+    console.log('[ClockOut] Clock out submitted with photos:', {
+      totalPhotos: photos.length,
+      uploadedPhotos: uploadedPhotos.length,
+      currentProjectId,
+      currentUserEmail
+    })
+
+    if (uploadedPhotos.length > 0) {
+      if (!currentProjectId) {
+        console.error('[ClockOut] ❌ Cannot save photos: no currentProjectId')
+        // Continue without saving photos - they're already uploaded to storage
+      } else {
+        const photoObjects: Photo[] = uploadedPhotos.map((p, idx) => {
+          const photoObj: Photo = {
+            id: `photo-${Date.now()}-${idx}`,
+            url: p.url!,  // Use Supabase URL (not preview)
+            thumbnailUrl: p.url!,
+            siteId,
+            siteName: site?.name || '',
+            projectId: currentProjectId,
+            projectName: currentProjectName,
+            submittedBy: currentUserName || 'Clock Out',
+            submittedById: currentUserId || 'system',
+            timestamp: Date.now(),
+            category: 'Site Conditions',
+          }
+          return photoObj
+        })
+
+        try {
+          console.log('[ClockOut] Saving photos to database:', {
+            count: photoObjects.length,
+            photos: photoObjects.map(p => ({
+              id: p.id,
+              url: p.url,
+              siteId: p.siteId,
+              siteName: p.siteName,
+              projectId: p.projectId,
+              projectName: p.projectName,
+              category: p.category
+            })),
+            userEmail: currentUserEmail
+          })
+          await addPhotos(photoObjects, currentUserEmail)
+          console.log('[ClockOut] ✅ Saved', uploadedPhotos.length, 'photos for user', currentUserEmail)
+        } catch (err) {
+          console.error('[ClockOut] ❌ Failed to save photos to database:', err)
+          // Don't throw - photos are already in Supabase storage, just not in local database
+          // User should still be able to continue
+        }
       }
+    } else {
+      console.warn('[ClockOut] ⚠️  No uploaded photos to save (validation should have caught this)')
     }
 
     await clockOut({
@@ -135,19 +167,33 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
       const { currentProjectId } = useAppStore.getState()
       const projectFolder = currentProjectId || siteId
 
+      console.log('[ClockOut] Uploading photo to cloud:', {
+        index,
+        file: file.name,
+        projectFolder,
+        currentProjectId
+      })
+
       const result = await uploadProjectPhoto(projectFolder, file)
       if (result) {
         setPhotos(prev => {
           const updated = [...prev]
           if (updated[index]) {
             updated[index].url = result.url
+            console.log('[ClockOut] Photo URL set:', {
+              index,
+              url: result.url,
+              path: result.path
+            })
           }
           return updated
         })
-        console.log('[ClockOut] Photo uploaded:', result.url)
+        console.log('[ClockOut] ✅ Photo uploaded:', result.url)
+      } else {
+        console.error('[ClockOut] ❌ Upload returned null result')
       }
     } catch (err) {
-      console.error('[ClockOut] Failed to upload photo:', err)
+      console.error('[ClockOut] ❌ Failed to upload photo:', err)
     } finally {
       setUploadingPhotoIndex(null)
     }
@@ -402,7 +448,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
         {/* Image viewer modal for expanded photo preview */}
         <ImageViewerModal
           isOpen={expandedPhotoIndex !== null}
-          imageUrl={expandedPhotoIndex !== null ? photos[expandedPhotoIndex]?.preview || '' : ''}
+          imageUrl={expandedPhotoIndex !== null ? (photos[expandedPhotoIndex]?.url || photos[expandedPhotoIndex]?.preview || '') : ''}
           fileName={`photo-${(expandedPhotoIndex || 0) + 1}`}
           onClose={() => setExpandedPhotoIndex(null)}
           currentIndex={expandedPhotoIndex || 0}

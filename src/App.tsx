@@ -18,7 +18,7 @@ import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supaba
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
 import { useClockSync } from './hooks/useClockSync'
-import { initializeCrew } from './services/crew'
+import { initializeCrew, syncRegisteredUsersWithCrew } from './services/crew'
 import { syncEmployeeTimesheets, getActiveTimeEntry } from './services/supabase'
 import { SetPasswordModal } from './components/crew/SetPasswordModal'
 import type { Notification } from './services/notificationService'
@@ -188,6 +188,13 @@ export default function App() {
 
           // Initialize crew system
           initializeCrew()
+
+          // Ensure newly registered users are synced to crew_members table
+          // This handles the case where registration created a user but crew_member wasn't created
+          const syncResult = await syncRegisteredUsersWithCrew()
+          if (syncResult.synced > 0) {
+            console.log('[App] 🔄 Synced registered users to crew_members')
+          }
 
           setAuthenticated(true)
         } else {

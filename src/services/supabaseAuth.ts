@@ -75,6 +75,7 @@ export async function register(
     }
 
     // Also create a crew member entry so the user appears in the employee hub
+    // This is essential — users should auto-populate without manual admin action
     const { error: crewError } = await supabase.from('crew_members').insert({
       email,
       first_name: firstName,
@@ -85,8 +86,16 @@ export async function register(
     })
 
     if (crewError) {
-      console.error('[Auth] Failed to create crew member:', crewError.message)
-      // Don't fail the whole registration, crew member will be created by the user
+      console.error('[Auth] ❌ Failed to create crew member entry:', {
+        message: crewError.message,
+        code: (crewError as any).code,
+        details: (crewError as any).details,
+        hint: (crewError as any).hint,
+      })
+      // Log but don't fail — crew member will auto-sync on next app load
+      console.warn('[Auth] ⚠️  Crew member creation failed during registration. Will be synced on next load.')
+    } else {
+      console.log('[Auth] ✅ Crew member created automatically on registration:', email)
     }
 
     const user: User = {

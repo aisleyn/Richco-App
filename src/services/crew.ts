@@ -342,3 +342,72 @@ async function cleanupUserData(email: string, userId: string | null): Promise<vo
 export async function clearAllCrew(): Promise<void> {
   console.warn('[Crew] clearAllCrew not implemented for Supabase backend')
 }
+
+/**
+ * Sync users table with crew_members table
+ * Automatically creates crew member entries for registered users without one
+ * This ensures newly registered users show up in the employee hub immediately
+ */
+export async function syncRegisteredUsersWithCrew(): Promise<{ synced: number; errors: number }> {
+  try {
+    console.log('[Crew] 🔄 Starting sync of registered users with crew_members...')
+
+    // Get all users from the users table
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, email, firstName, lastName, name, role')
+      .eq('role', 'crew')
+
+    if (usersError) {
+      console.error('[Crew] Error fetching users:', usersError.message)
+      return { synced: 0, errors: 1 }
+    }
+
+    if (!users || users.length === 0) {
+      console.log('[Crew] ✅ No users to sync')
+      return { synced: 0, errors: 0 }
+    }
+
+    console.log(`[Crew] Found ${users.length} registered crew users to check`)
+
+    let synced = 0
+    let errors = 0
+
+    // Check each user and create crew member if missing
+    for (const user of users) {
+      try {
+        // Check if crew member exists for this email
+        const existing = await getCrewMemberByEmail(user.email)
+
+        if (!existing) {
+          // User registered but doesn't have a crew member entry — create it
+          console.log('[Crew] 🔄 Creating missing crew member for:', user.email)
+
+          const firstName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0]
+          const lastName = user.lastName || user.name?.split(' ')[1] || 'User'
+
+          const result = await addCrewMember({
+            firstName,
+            lastName,
+            email: user.email,
+            role: 'site_employee',
+          })
+
+          if (result) {
+            console.log('[Crew] ✅ Synced user to crew member:', user.email)
+            synced++
+          }
+        }
+      } catch (err) {
+        console.error('[Crew] Error syncing user:', user.email, err)
+        errors++
+      }
+    }
+
+    console.log(`[Crew] ✅ Sync complete: ${synced} users synced, ${errors} errors`)
+    return { synced, errors }
+  } catch (err) {
+    console.error('[Crew] Exception during sync:', err)
+    return { synced: 0, errors: 1 }
+  }
+}

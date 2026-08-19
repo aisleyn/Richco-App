@@ -93,8 +93,15 @@ export async function uploadProjectPhoto(
 ): Promise<UploadResult | null> {
   try {
     const timestamp = Date.now()
-    const filename = file.name.replace(/[^a-z0-9.-]/gi, '_')
+    const filename = file.name.replace(/[^a-z0-9.-]/gi, '_').toLowerCase()
     const path = `projects/${projectId}/photos/${timestamp}-${filename}`
+
+    console.log('[Storage] Uploading photo to bucket "project-photos":', {
+      path,
+      filename,
+      fileSize: file.size,
+      fileType: file.type
+    })
 
     // Use Supabase JS client for upload (more reliable than REST API)
     const { data, error } = await supabase.storage
@@ -105,7 +112,10 @@ export async function uploadProjectPhoto(
       })
 
     if (error) {
-      console.error('[Storage] Photo upload failed:', error.message)
+      console.error('[Storage] ❌ Photo upload failed:', {
+        message: error.message,
+        status: (error as any).status
+      })
       return null
     }
 
@@ -115,15 +125,22 @@ export async function uploadProjectPhoto(
         path: data.path,
         url: publicUrl,
         size: file.size,
-        type: file.type
+        type: file.type,
+        bucketUrl: SUPABASE_URL
       })
+
+      // Verify URL is valid before returning
+      if (!publicUrl.includes('storage/v1/object/public')) {
+        console.warn('[Storage] ⚠️  Generated URL may be invalid:', publicUrl)
+      }
+
       return { url: publicUrl, path: data.path }
     }
 
     console.error('[Storage] Upload succeeded but no path returned:', data)
     return null
   } catch (err) {
-    console.error('[Storage] Photo upload failed:', err)
+    console.error('[Storage] ❌ Photo upload exception:', err)
     return null
   }
 }
@@ -342,5 +359,24 @@ export async function getFileMetadata(
   } catch (err) {
     console.error('[Storage] Metadata fetch failed:', err)
     return null
+  }
+}
+
+// ─── URL Validation ────────────────────────────────────────────────────
+
+/**
+ * Validate that a photo URL is accessible (not returning 404)
+ */
+export async function validatePhotoUrl(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'HEAD' })
+    const isValid = response.ok && response.status !== 404
+    if (!isValid) {
+      console.warn('[Storage] Photo URL returned status', response.status, ':', url)
+    }
+    return isValid
+  } catch (err) {
+    console.warn('[Storage] Failed to validate photo URL:', url, err)
+    return false
   }
 }

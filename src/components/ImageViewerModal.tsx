@@ -24,6 +24,7 @@ export function ImageViewerModal({
   onNext,
 }: Props) {
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const handleDownload = async () => {
     try {
@@ -47,6 +48,12 @@ export function ImageViewerModal({
   const hasNavigation = totalImages && totalImages > 1
   const showPrev = currentIndex !== undefined && currentIndex > 0 && onPrev
   const showNext = currentIndex !== undefined && totalImages && currentIndex < totalImages - 1 && onNext
+
+  // Reset loading state when URL changes
+  useEffect(() => {
+    setIsLoading(true)
+    setLoadError(null)
+  }, [imageUrl])
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -100,17 +107,38 @@ export function ImageViewerModal({
 
           {/* Image */}
           <div className="flex items-center justify-center w-full h-full">
-            {isLoading && (
+            {isLoading && !loadError && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               </div>
             )}
-            <img
-              src={imageUrl}
-              alt={fileName || 'Image preview'}
-              onLoad={() => setIsLoading(false)}
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
+            {loadError && (
+              <div className="text-center text-white">
+                <p className="text-lg font-semibold mb-2">Unable to Load Image</p>
+                <p className="text-sm text-white/70 mb-4">{loadError}</p>
+                <p className="text-xs text-white/50">{imageUrl}</p>
+              </div>
+            )}
+            {!loadError && (
+              <img
+                src={imageUrl}
+                alt={fileName || 'Image preview'}
+                onLoad={() => {
+                  setIsLoading(false)
+                  setLoadError(null)
+                }}
+                onError={(e) => {
+                  setIsLoading(false)
+                  const status = (e.target as HTMLImageElement).naturalWidth === 0 ? '404 Not Found' : 'Failed to load'
+                  setLoadError(`Image ${status}. The file may have been deleted or the URL is invalid.`)
+                  console.error('[ImageViewer] Failed to load image:', {
+                    url: imageUrl,
+                    error: status
+                  })
+                }}
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            )}
           </div>
 
           {/* Navigation arrows */}
