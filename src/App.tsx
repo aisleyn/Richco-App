@@ -14,6 +14,7 @@ import { AIHelpScreen } from './screens/AIHelpScreen'
 import { ShiftRosterScreen } from './screens/ShiftRosterScreen'
 import { NotificationDetailScreen } from './screens/NotificationDetailScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
+import { MessagesScreen } from './screens/MessagesScreen'
 import { getCurrentUser, logout, isUserAdmin, supabase } from './services/supabaseAuth'
 import { useAppStore } from './store/appStore'
 import { useDarkMode } from './hooks/useDarkMode'
@@ -254,6 +255,7 @@ export default function App() {
       case 'alerts':  return <AlertsScreen onNavigate={setActive} onAlertClick={handleAlertClick} />
       case 'roster':  return isAdmin ? <ShiftRosterScreen /> : <HomeScreen onNavigate={setActive} />
       case 'crew':    return isAdmin ? <AdminCrewScreen onNavigate={setActive} /> : <CrewScreen onNavigate={setActive} />
+      case 'messages': return <MessagesScreen onNavigate={setActive} />
       case 'profile': return <ProfileScreen onNavigate={setActive} />
       case 'ai':      return <AIHelpScreen onNavigate={setActive} />
       default:        return <HomeScreen onNavigate={setActive} />

@@ -85,7 +85,7 @@ export function HomeScreen({ onNavigate }: Props) {
         </motion.div>
         <div className="flex items-center gap-2 pt-0">
           <ThemeToggle />
-          <button onClick={() => onNavigate('crew')} className="relative">
+          <button onClick={() => onNavigate('messages')} className="relative">
             <MessageSquare size={22} className="text-slate-400 dark:text-slate-500" />
             {unreadMessageCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-md w-4 h-4 flex items-center justify-center">
