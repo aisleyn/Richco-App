@@ -109,11 +109,28 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
         const weekStartStr = weekStart.toISOString().split('T')[0]
         const weekEndStr = weekEnd.toISOString().split('T')[0]
 
+        // Check if selected week is in the future (end date is in the future)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const isFutureWeek = weekStart > today
+
+        console.log('[EmployeeTimecardsGrid] Week boundaries:', { weekStartStr, weekEndStr, isFutureWeek })
+
         const data: EmployeeWeekData[] = await Promise.all(
           employees.map(async (employee) => {
             try {
               const employeeId = employee.id || employee.employee_id
               const isCurrentUser = employee.email === currentUserEmail
+
+              // For future weeks, don't fetch any entries
+              if (isFutureWeek) {
+                return {
+                  employee,
+                  timecards: [],
+                  weekHours: 0,
+                  weekOvertime: 0,
+                }
+              }
 
               // Use hybrid fetch for current user (localStorage + Supabase), Supabase-only for others
               const allEntries = isCurrentUser
