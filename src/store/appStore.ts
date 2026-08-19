@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { TimesheetEntry, Alert, ChatMessage, Message } from '../types'
 import { mockAlerts, mockMessages } from '../data/mockData'
 import { sendClockIn, sendClockOut, sendBreakEvent } from '../services/powerAutomate'
-import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod, getCrewMemberByEmail } from '../services/supabase'
+import { createTimeEntry, updateTimeEntry, createBreakPeriod, endBreakPeriod, getCrewMemberByEmail, getActiveTimeEntry } from '../services/supabase'
 import { getMandatoryBreakHours } from '../services/dataverse'
 import { generateLeaveRequestAlerts } from '../services/timeoff'
 import { getProjectIdFromLocation } from '../services/projectLocationMap'
@@ -310,8 +310,11 @@ export const useAppStore = create<AppState>()(
         // Update Supabase entry with final data (source of truth)
         // Only update if we have a real UUID (not a fallback local ID)
         if (activeTimesheetId && !activeTimesheetId.startsWith('ts-')) {
+          console.log('[Store] Clocking out entry:', activeTimesheetId)
+
+          const clockOutTime = new Date(now).toISOString()
           const updated = await updateTimeEntry(activeTimesheetId, {
-            clock_out_time: new Date(now).toISOString(),
+            clock_out_time: clockOutTime,
             clock_out_latitude: data.gpsOut?.lat,
             clock_out_longitude: data.gpsOut?.lng,
             clock_out_address: data.gpsOut?.address,
@@ -325,11 +328,34 @@ export const useAppStore = create<AppState>()(
             break_taken: data.breakTaken ?? false,
             photos_count: data.photos?.length ?? 0,
           })
+
           if (!updated) {
-            console.warn('[Store] Failed to update time entry in Supabase:', activeTimesheetId)
+            console.error('[Store] ❌ FAILED to update time entry in Supabase:', activeTimesheetId)
+          } else {
+            console.log('[Store] ✅ Successfully clocked out:', activeTimesheetId, 'at', clockOutTime)
+
+            // CLEANUP: Check for and close any other active entries for this user (stale entries)
+            if (currentUserId) {
+              try {
+                const otherActive = await getActiveTimeEntry(currentUserId)
+                if (otherActive && otherActive.id && otherActive.id !== activeTimesheetId) {
+                  console.warn('[Store] ⚠️ Found stale active entry:', otherActive.id, '- closing it')
+                  // Close the stale entry with the same time (to prevent further issues)
+                  await updateTimeEntry(otherActive.id, {
+                    clock_out_time: clockOutTime,
+                    total_hours: (otherActive.total_hours ?? 0) as number,
+                  } as any)
+                  console.log('[Store] ✅ Closed stale entry:', otherActive.id)
+                }
+              } catch (err) {
+                console.warn('[Store] Could not check for stale entries:', err)
+              }
+            }
           }
         } else if (activeTimesheetId?.startsWith('ts-')) {
           console.warn('[Store] Fallback ID used, not updating Supabase:', activeTimesheetId)
+        } else {
+          console.warn('[Store] ⚠️ No activeTimesheetId set - clock-out might not be recorded')
         }
 
         set({
