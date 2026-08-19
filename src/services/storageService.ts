@@ -96,28 +96,31 @@ export async function uploadProjectPhoto(
     const filename = file.name.replace(/[^a-z0-9.-]/gi, '_')
     const path = `projects/${projectId}/photos/${timestamp}-${filename}`
 
-    const result = await storageRequest(
-      'POST',
-      `/object/project-photos/${encodeURIComponent(path)}`,
-      file,
-      { 'Content-Type': file.type }
-    )
-
-    if (result && result.Key) {
-      // Construct public URL - result.Key should contain the full path
-      const decodedKey = decodeURIComponent(result.Key)
-      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/project-photos/${decodedKey}`
-      console.log('[Storage] Uploaded photo:', {
-        inputPath: path,
-        returnedKey: result.Key,
-        decodedKey,
-        constructedUrl: publicUrl,
-        timestamp
+    // Use Supabase JS client for upload (more reliable than REST API)
+    const { data, error } = await supabase.storage
+      .from('project-photos')
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
       })
-      return { url: publicUrl, path: decodedKey }
+
+    if (error) {
+      console.error('[Storage] Photo upload failed:', error.message)
+      return null
     }
 
-    console.error('[Storage] Upload response missing Key:', result)
+    if (data?.path) {
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/project-photos/${data.path}`
+      console.log('[Storage] ✅ Uploaded photo:', {
+        path: data.path,
+        url: publicUrl,
+        size: file.size,
+        type: file.type
+      })
+      return { url: publicUrl, path: data.path }
+    }
+
+    console.error('[Storage] Upload succeeded but no path returned:', data)
     return null
   } catch (err) {
     console.error('[Storage] Photo upload failed:', err)
