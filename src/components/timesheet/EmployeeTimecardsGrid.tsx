@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Zap } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Zap, X, ChevronRight } from 'lucide-react'
 import { getEmployeeTimeEntries } from '../../services/supabase'
 import { useAppStore } from '../../store/appStore'
 import type { TimesheetEntry } from '../../types'
@@ -79,6 +79,8 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
   const { currentUserEmail, currentUserId } = useAppStore()
   const [employeeData, setEmployeeData] = useState<EmployeeWeekData[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeWeekData | null>(null)
+  const [selectedTimecard, setSelectedTimecard] = useState<any | null>(null)
 
   // Calculate week boundaries (Saturday to Friday)
   const getWeekBoundaries = (date: Date) => {
@@ -192,25 +194,37 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
     )
   }
 
+  const getEmployeeName = (employee: any) => {
+    // Try different name field combinations
+    if (employee.firstName && employee.lastName) {
+      return `${employee.firstName} ${employee.lastName}`
+    }
+    if (employee.name) return employee.name
+    if (employee.employee_name) return employee.employee_name
+    return 'Unknown'
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {employeeData.map((data, idx) => (
-        <motion.div
-          key={data.employee.id || data.employee.employee_id}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: idx * 0.05 }}
-          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
-        >
-          {/* Employee header */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 p-4 border-b border-slate-200 dark:border-slate-600">
-            <p className="font-bold text-slate-900 dark:text-white text-sm">
-              {data.employee.name || data.employee.employee_name || 'Unknown'}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {data.employee.email || data.employee.employee_email}
-            </p>
-          </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {employeeData.map((data, idx) => (
+          <motion.button
+            key={data.employee.id || data.employee.employee_id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            onClick={() => setSelectedEmployee(data)}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-md hover:border-green-400 transition-all text-left"
+          >
+            {/* Employee header */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 p-4 border-b border-slate-200 dark:border-slate-600">
+              <p className="font-bold text-slate-900 dark:text-white text-sm">
+                {getEmployeeName(data.employee)}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {data.employee.email || data.employee.employee_email}
+              </p>
+            </div>
 
           {/* Week summary */}
           <div className="p-4 border-b border-slate-100 dark:border-slate-700">
@@ -262,8 +276,240 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
               <p className="text-slate-400 dark:text-slate-500 text-xs py-2">No timecards this week</p>
             )}
           </div>
-        </motion.div>
+        </motion.button>
       ))}
-    </div>
+      </div>
+
+      {/* Employee Timecards Modal */}
+      <AnimatePresence>
+        {selectedEmployee && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedEmployee(null)}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {getEmployeeName(selectedEmployee.employee)}
+                  </h2>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    {selectedEmployee.employee.email}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedEmployee(null)}
+                  className="p-2 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X size={20} className="text-slate-600 dark:text-slate-400" />
+                </button>
+              </div>
+
+              {/* Week Summary */}
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Total Hours</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
+                      {selectedEmployee.weekHours.toFixed(2)}h
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Overtime</p>
+                    <p className={`text-2xl font-bold mt-2 ${
+                      selectedEmployee.weekOvertime > 0 ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'
+                    }`}>
+                      {selectedEmployee.weekOvertime.toFixed(2)}h
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Days</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">
+                      {selectedEmployee.timecards.length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timecards List */}
+              <div className="p-6 space-y-3">
+                {selectedEmployee.timecards.length > 0 ? (
+                  selectedEmployee.timecards.map((tc) => (
+                    <button
+                      key={tc.id}
+                      onClick={() => setSelectedTimecard(tc)}
+                      className="w-full bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg p-4 text-left transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-900 dark:text-white">
+                            {new Date(tc.clock_in_time).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                            {tc.site_name}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                            {new Date(tc.clock_in_time).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })} - {tc.clock_out_time ? new Date(tc.clock_out_time).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            }) : 'Ongoing'}
+                          </p>
+                        </div>
+                        <div className="text-right flex items-center gap-3">
+                          <div>
+                            <p className="text-lg font-bold text-slate-900 dark:text-white">
+                              {(tc.total_hours || 0).toFixed(2)}h
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {tc.break_taken ? 'Break taken' : 'No break'}
+                            </p>
+                          </div>
+                          <ChevronRight size={18} className="text-slate-400" />
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">
+                    No timecards for this week
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Individual Timecard Detail Modal */}
+      <AnimatePresence>
+        {selectedTimecard && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedTimecard(null)}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Shift Details</h3>
+                <button
+                  onClick={() => setSelectedTimecard(null)}
+                  className="p-2 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X size={20} className="text-slate-600 dark:text-slate-400" />
+                </button>
+              </div>
+
+              {/* Details */}
+              <div className="p-6 space-y-4">
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Date</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                    {new Date(selectedTimecard.clock_in_time).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Site</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                    {selectedTimecard.site_name}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Clock In</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                      {new Date(selectedTimecard.clock_in_time).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Clock Out</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                      {selectedTimecard.clock_out_time ? new Date(selectedTimecard.clock_out_time).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      }) : 'Ongoing'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Total Hours</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                      {(selectedTimecard.total_hours || 0).toFixed(2)}h
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Break Hours</p>
+                    <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                      {(selectedTimecard.break_hours || 0).toFixed(2)}h
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Status</p>
+                    <p className="text-lg font-bold text-green-600 dark:text-green-400 mt-1">
+                      Complete
+                    </p>
+                  </div>
+                </div>
+
+                {selectedTimecard.shift_notes && (
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Notes</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 mt-2">
+                      {selectedTimecard.shift_notes}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setSelectedTimecard(null)}
+                  className="w-full mt-6 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-900 dark:text-white font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
