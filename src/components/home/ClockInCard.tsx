@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Clock, Play, Pause, Square, ChevronDown, AlertCircle } from 'lucide-react'
+import { Clock, Play, Pause, Square, AlertCircle } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
 import { useElapsedTime, formatElapsed } from '../../hooks/useTimer'
-import { getCrewShiftAssignment, getCrewMemberByEmail, checkActiveClockIn } from '../../services/supabase'
-import type { ShiftData, ShiftLocationData } from '../../services/supabase'
+import { checkActiveClockIn } from '../../services/supabase'
 
 interface Props {
   onClockIn: (isOvernight: boolean, siteId?: string, siteName?: string) => void
@@ -13,47 +12,19 @@ interface Props {
   isOvernightShift?: boolean
 }
 
-export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernightShift = false }: Props) {
+export function ClockInCard({ onClockIn, onClockOut, isOvernightShift = false }: Props) {
   const { clockedIn, clockInTime, breakActive, breakStartTime, totalBreakMs, startBreak, endBreak, currentUserEmail, currentUserId } = useAppStore()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
-  const [assignedShift, setAssignedShift] = useState<(ShiftData & { locations: ShiftLocationData[] }) | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState<ShiftLocationData | null>(null)
-  const [locationsExpanded, setLocationsExpanded] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [validatingClockIn, setValidatingClockIn] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchAssignedShift()
-  }, [currentUserEmail])
-
-  const fetchAssignedShift = async () => {
-    setLoading(true)
-    try {
-      const crew = await getCrewMemberByEmail(currentUserEmail)
-      if (crew?.id) {
-        const today = new Date().toISOString().split('T')[0]
-        const shift = await getCrewShiftAssignment(crew.id as number, today)
-        setAssignedShift(shift)
-
-        if (shift?.locations && shift.locations.length > 0) {
-          setSelectedLocation(shift.locations[0])
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching assigned shift:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleClockIn = async () => {
     setValidatingClockIn(true)
     setValidationError(null)
 
     try {
-      // Layer 3: Prevent duplicate clock-ins
-      // Check if user is already clocked in on another device
+      // Layer 3: Prevent duplicate clock-ins - Check if user is already clocked in on another device
       const activeEntry = await checkActiveClockIn(currentUserId)
 
       if (activeEntry) {
@@ -64,19 +35,12 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
       }
 
       // All checks passed, proceed with clock-in
-      if (assignedShift && selectedLocation) {
-        onClockIn(isOvernightShift, selectedLocation.location_name, selectedLocation.location_name)
-      } else {
-        onClockIn(isOvernightShift, 'shift', 'Shift')
-      }
+      // Use a default site - the site picker modal will handle site selection
+      onClockIn(isOvernightShift, 'job-site', 'Job Site')
     } catch (err) {
       console.error('[ClockInCard] Validation error:', err)
       // Allow clock-in if validation fails (assume offline)
-      if (assignedShift && selectedLocation) {
-        onClockIn(isOvernightShift, selectedLocation.location_name, selectedLocation.location_name)
-      } else {
-        onClockIn(isOvernightShift, 'shift', 'Shift')
-      }
+      onClockIn(isOvernightShift, 'job-site', 'Job Site')
     } finally {
       setValidatingClockIn(false)
     }
@@ -114,12 +78,7 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
               )}
             </div>
             <div className="text-right">
-              <p className="text-white text-sm font-semibold">{selectedLocation?.location_name ?? 'Shift'}</p>
-              {selectedLocation?.address && (
-                <p className="text-white/70 text-xs flex items-center gap-1 justify-end">
-                  <MapPin size={10} /> {selectedLocation.address}
-                </p>
-              )}
+              <p className="text-white text-sm font-semibold">Active</p>
             </div>
           </div>
         </div>
@@ -145,18 +104,6 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
     )
   }
 
-  if (loading) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-surface rounded-2xl border border-border-light overflow-hidden p-4"
-      >
-        <div className="text-center py-8 text-muted">Loading...</div>
-      </motion.div>
-    )
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -166,95 +113,20 @@ export function ClockInCard({ onClockIn, onClockOut, onNavigateTime, isOvernight
       <div className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-muted text-xs uppercase tracking-wider font-medium mb-1">Shift</p>
+            <p className="text-muted text-xs uppercase tracking-wider font-medium mb-1">Ready to Clock In</p>
             <p className="text-primary font-semibold">
-              {selectedLocation?.location_name ?? 'Shift'}
+              Start Your Shift
             </p>
-            {assignedShift && (
-              <p className="text-secondary text-sm flex items-center gap-1 mt-0.5">
-                <Clock size={12} />
-                {assignedShift.start_time} – {assignedShift.end_time}
-              </p>
-            )}
           </div>
           <div className="bg-primary-base/10 border border-primary-base/30 rounded-xl px-3 py-1.5">
             <p className="text-primary-base text-xs font-semibold">
-              {assignedShift ? 'Scheduled' : 'No Shift'}
+              Ready
             </p>
           </div>
         </div>
       </div>
 
       <AnimatePresence>
-        {assignedShift && assignedShift.locations && assignedShift.locations.length > 1 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <button
-              onClick={() => setLocationsExpanded(!locationsExpanded)}
-              className="w-full flex items-center gap-2 px-4 py-3 border-t border-border-light text-secondary hover:bg-elevated transition-colors group"
-            >
-              <motion.div animate={{ rotate: locationsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown size={14} className="text-muted group-hover:text-secondary" />
-              </motion.div>
-              <span className="text-xs font-semibold">
-                Shift Locations ({assignedShift.locations.length})
-              </span>
-            </button>
-
-            <AnimatePresence>
-              {locationsExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden border-t border-border-light"
-                >
-                  <div className="p-3 space-y-2 bg-elevated/30">
-                    {assignedShift.locations.map((loc) => (
-                      <button
-                        key={loc.id}
-                        onClick={() => {
-                          setSelectedLocation(loc)
-                          setLocationsExpanded(false)
-                        }}
-                        className={`w-full text-left p-2 rounded-lg border transition-colors ${
-                          selectedLocation?.id === loc.id
-                            ? 'bg-primary-base/10 border-primary-base/30'
-                            : 'bg-surface border-border-light hover:bg-elevated'
-                        }`}
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className="flex-1">
-                            <p className="text-primary font-medium text-xs">
-                              {loc.sequence_order}. {loc.location_name}
-                            </p>
-                            {loc.address && (
-                              <p className="text-secondary text-xs flex items-center gap-1 mt-0.5">
-                                <MapPin size={10} />
-                                {loc.address}
-                              </p>
-                            )}
-                            {loc.start_time && (
-                              <p className="text-secondary text-xs flex items-center gap-1 mt-0.5">
-                                <Clock size={10} />
-                                {loc.start_time} – {loc.end_time}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
       </AnimatePresence>
 
       {validationError && (

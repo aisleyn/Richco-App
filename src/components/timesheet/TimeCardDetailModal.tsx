@@ -47,43 +47,35 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Date & Time Section */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Date & Time & Site Section */}
+          <div className="grid grid-cols-1 gap-4">
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Date</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Date</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">
                 {formatDate(timecard.date)}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Status</p>
-              <p className="text-lg font-bold text-green-600 dark:text-green-400 mt-1 capitalize">
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Site</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">
+                {timecard.siteName}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Status</p>
+              <p className="text-lg font-bold text-green-600 dark:text-green-400 capitalize">
                 {timecard.status}
               </p>
             </div>
           </div>
 
-          {/* Site */}
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin size={16} className="text-blue-600 dark:text-blue-400" />
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase">Site</p>
-            </div>
-            <p className="text-lg font-bold text-slate-900 dark:text-white">{timecard.siteName}</p>
-          </div>
-
-          {/* Clock In Time */}
+          {/* Clock In Time & Address */}
           <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2">Clock In</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {formatDate(timecard.date)} at {formatTime(timecard.clockInTime)}
-            </p>
             {timecard.gpsIn?.address && (
-              <div className="mt-3 flex items-start gap-2 pt-3 border-t border-slate-300 dark:border-slate-600">
+              <div className="flex items-start gap-2 pb-3 mb-3 border-b border-slate-300 dark:border-slate-600">
                 <MapPin size={14} className="text-slate-600 dark:text-slate-400 mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-slate-500 dark:text-slate-500 mb-1">GPS Address:</p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 break-words">{timecard.gpsIn.address}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 break-words font-medium">{timecard.gpsIn.address}</p>
                   {timecard.gpsIn.lat && timecard.gpsIn.lng && (
                     <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
                       {timecard.gpsIn.lat.toFixed(4)}, {timecard.gpsIn.lng.toFixed(4)}
@@ -92,21 +84,24 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
                 </div>
               </div>
             )}
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2">Clock In</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {formatDate(timecard.date)} at {formatTime(timecard.clockInTime)}
+            </p>
           </div>
 
-          {/* Clock Out Time */}
+          {/* Clock Out Time & Address */}
           {timecard.clockOutTime && (
             <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
               <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2">Clock Out</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
                 {formatDate(timecard.date)} at {formatTime(timecard.clockOutTime)}
               </p>
               {timecard.gpsOut?.address && (
-                <div className="mt-3 flex items-start gap-2 pt-3 border-t border-slate-300 dark:border-slate-600">
+                <div className="flex items-start gap-2 pt-3 border-t border-slate-300 dark:border-slate-600">
                   <MapPin size={14} className="text-slate-600 dark:text-slate-400 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-500 dark:text-slate-500 mb-1">GPS Address:</p>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 break-words">{timecard.gpsOut.address}</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 break-words font-medium">{timecard.gpsOut.address}</p>
                     {timecard.gpsOut.lat && timecard.gpsOut.lng && (
                       <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
                         {timecard.gpsOut.lat.toFixed(4)}, {timecard.gpsOut.lng.toFixed(4)}
@@ -137,19 +132,19 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
           </div>
 
           {/* Break */}
-          <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg border border-slate-300 dark:border-slate-600">
-            <div className="flex items-center gap-2 mb-3">
-              <Clock size={16} className="text-slate-600 dark:text-slate-400" />
-              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Mandatory Break</p>
-            </div>
-            <div>
-              <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                {timecard.breakTaken ? 'Yes' : 'No'}
-              </p>
+          <div className="p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-2">
+              Mandatory Break - {timecard.breakTaken ? 'Taken' : 'Not Taken'}
+            </p>
+            {timecard.breakTaken ? (
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 Duration: {(timecard.breakMinutes || 0)} minutes
               </p>
-            </div>
+            ) : (
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                No break recorded
+              </p>
+            )}
           </div>
 
           {/* Shift Summary */}
