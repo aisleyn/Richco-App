@@ -66,7 +66,6 @@ export async function getAllNotifications(): Promise<Notification[]> {
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
-      .is('dismissed_at', null)  // Only show non-dismissed notifications in the panel
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -75,8 +74,11 @@ export async function getAllNotifications(): Promise<Notification[]> {
       return []
     }
 
-    console.log('[Notifications] ✅ Fetched', (data || []).length, 'notifications')
-    return (data || []).map((n: any) => ({
+    // Filter out dismissed notifications on the client side
+    const undismissed = (data || []).filter((n: any) => !n.dismissed_at)
+    console.log('[Notifications] ✅ Fetched', undismissed.length, 'undismissed of', (data || []).length, 'total notifications')
+
+    return undismissed.map((n: any) => ({
       id: n.id,
       title: n.title,
       message: n.message,
@@ -92,23 +94,26 @@ export async function getAllNotifications(): Promise<Notification[]> {
 
 export async function dismissNotification(id: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    console.log('[Notifications] Dismissing notification:', id)
+    const dismissedAt = new Date().toISOString()
+    const { data, error } = await supabase
       .from('notifications')
-      .update({ dismissed_at: new Date().toISOString() })
+      .update({ dismissed_at: dismissedAt })
       .eq('id', id)
+      .select()
 
     if (error) {
-      console.error('[Notifications] Failed to dismiss:', error.message)
+      console.error('[Notifications] ❌ Failed to dismiss:', error.message, error.details)
       return false
     }
 
+    console.log('[Notifications] ✅ Dismissed successfully:', id, data)
     window.dispatchEvent(
       new CustomEvent('notification:dismissed', { detail: { id } })
     )
-    console.log('[Notifications] Dismissed:', id)
     return true
   } catch (err) {
-    console.error('[Notifications] Error dismissing:', err)
+    console.error('[Notifications] ❌ Error dismissing:', err)
     return false
   }
 }
