@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Download, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Props {
   isOpen: boolean
@@ -48,13 +48,29 @@ export function ImageViewerModal({
   const showPrev = currentIndex !== undefined && currentIndex > 0 && onPrev
   const showNext = currentIndex !== undefined && totalImages && currentIndex < totalImages - 1 && onNext
 
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      } else if (e.key === 'ArrowLeft' && showPrev) {
+        onPrev?.()
+      } else if (e.key === 'ArrowRight' && showNext) {
+        onNext?.()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, onPrev, onNext, showPrev, showNext])
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+        className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
@@ -62,7 +78,7 @@ export function ImageViewerModal({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           onClick={e => e.stopPropagation()}
-          className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center"
+          className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center pointer-events-auto"
         >
           {/* Close button - top right */}
           <button
