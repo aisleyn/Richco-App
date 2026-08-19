@@ -34,6 +34,9 @@ export function AdminCrewScreen({ onNavigate }: Props) {
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState<'update' | 'alert' | 'announcement'>('update')
   const [postingNotification, setPostingNotification] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     loadCrewMembers()
@@ -69,21 +72,38 @@ export function AdminCrewScreen({ onNavigate }: Props) {
     }
   }
 
-  async function handleDeleteCrew(crew: User) {
-    if (!window.confirm(`Are you sure you want to permanently delete ${crew.name}? This will remove all their records, time entries, and data.`)) return
+  function openDeleteConfirm(crew: User) {
+    setDeleteTarget(crew)
+    setShowDeleteConfirm(true)
+  }
 
+  async function confirmDeleteCrew() {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
     try {
-      const success = await removeCrewMember(crew.email)
+      console.log('[AdminCrew] Deleting crew member:', deleteTarget.email)
+      const success = await removeCrewMember(deleteTarget.email)
+
       if (success) {
-        setMessage({ type: 'success', text: `${crew.name} has been deleted successfully` })
+        setMessage({ type: 'success', text: `✅ ${deleteTarget.name} has been permanently deleted` })
+        setShowDeleteConfirm(false)
+        setDeleteTarget(null)
         await loadCrewMembers()
       } else {
-        setMessage({ type: 'error', text: `Failed to delete ${crew.name}` })
+        setMessage({ type: 'error', text: `❌ Failed to delete ${deleteTarget.name}` })
       }
     } catch (err) {
       console.error('[AdminCrew] Error deleting crew member:', err)
-      setMessage({ type: 'error', text: `Error: ${err instanceof Error ? err.message : 'Unknown error'}` })
+      setMessage({ type: 'error', text: `❌ Error: ${err instanceof Error ? err.message : 'Unknown error'}` })
+    } finally {
+      setIsDeleting(false)
     }
+  }
+
+  function cancelDeleteCrew() {
+    setShowDeleteConfirm(false)
+    setDeleteTarget(null)
   }
 
   function openPasswordModal(crew: User) {
@@ -315,7 +335,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                       <Lock size={12} /> Set Password
                     </button>
                     <button
-                      onClick={() => handleDeleteCrew(crew)}
+                      onClick={() => openDeleteConfirm(crew)}
                       className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
                     >
                       <Trash2 size={12} /> Delete
@@ -458,6 +478,67 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                 </button>
               </div>
             </motion.form>
+          )}
+        </AnimatePresence>
+
+        {/* Delete Confirmation Modal */}
+        <AnimatePresence>
+          {showDeleteConfirm && deleteTarget && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-bg-base dark:bg-bg-base-dark rounded-xl border border-red-200 dark:border-red-800 max-w-sm w-full p-6"
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                    <AlertCircle className="text-red-500" size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                      Delete {deleteTarget.name}?
+                    </h2>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
+                      This will permanently remove all their records, time entries, photos, and data.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+                    ⚠️ This action <strong>cannot be undone</strong>
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelDeleteCrew}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 text-slate-800 dark:text-slate-100 rounded-lg font-semibold text-sm transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeleteCrew}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 size={14} />
+                        Delete Permanently
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 
