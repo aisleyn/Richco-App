@@ -166,7 +166,7 @@ export interface Photo {
   sharepointUrl?: string
 }
 
-export type PhotoCategory = 'Foundation' | 'Framing' | 'Electrical' | 'Site Conditions' | 'Finish Work' | 'Other'
+export type PhotoCategory = 'Prep' | 'Application' | 'Cleanup' | 'Site Conditions' | 'Finish Work' | 'Other'
 
 export interface Vehicle {
   id: string

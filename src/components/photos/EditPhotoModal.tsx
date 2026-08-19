@@ -5,7 +5,7 @@ import { updatePhoto, deletePhoto } from '../../services/photoDatabase'
 import type { Photo, PhotoCategory } from '../../types'
 import { format } from 'date-fns'
 
-const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
+const categories: PhotoCategory[] = ['Prep', 'Application', 'Cleanup', 'Site Conditions', 'Finish Work', 'Other']
 
 interface Props {
   photo: Photo

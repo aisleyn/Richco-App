@@ -7,7 +7,7 @@ import { uploadProjectPhoto } from '../../services/storageService'
 import { ImagePreviewModal } from '../ImagePreviewModal'
 import type { Photo, PhotoCategory } from '../../types'
 
-const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
+const categories: PhotoCategory[] = ['Prep', 'Application', 'Cleanup', 'Site Conditions', 'Finish Work', 'Other']
 
 interface PendingPhoto {
   file: File

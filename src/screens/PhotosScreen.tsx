@@ -12,7 +12,7 @@ import { EditPhotoModal } from '../components/photos/EditPhotoModal'
 import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
 import { ImageViewerModal } from '../components/ImageViewerModal'
 
-const categories: PhotoCategory[] = ['Foundation', 'Framing', 'Electrical', 'Site Conditions', 'Finish Work', 'Other']
+const categories: PhotoCategory[] = ['Prep', 'Application', 'Cleanup', 'Site Conditions', 'Finish Work', 'Other']
 
 export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s: string) => void; initialProjectId?: string }) {
   const { currentUserEmail } = useAppStore()
@@ -35,6 +35,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
   const [caption, setCaption] = useState('')
   const [allPhotos, setAllPhotos] = useState<Photo[]>([])
   const [refresh, setRefresh] = useState(0)
+  const [showDeleteSiteConfirm, setShowDeleteSiteConfirm] = useState(false)
 
   useEffect(() => {
     const loadPhotos = async () => {
@@ -110,6 +111,20 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
     setRefresh(prev => prev + 1)
   }
 
+  function handleDeleteSite() {
+    if (activeSite) {
+      const sitePhotos = allPhotos.filter(p => p.siteId === activeSite)
+      sitePhotos.forEach(photo => {
+        deletePhoto(photo.id, photo)
+      })
+      setActiveSite(null)
+      setDeleteMode(false)
+      setSelectedForDelete(new Set())
+      setShowDeleteSiteConfirm(false)
+      setRefresh(prev => prev + 1)
+    }
+  }
+
   return (
     <AppLayout noPad onNavigate={onNavigate}>
       <div className="pt-14 px-4">
@@ -119,6 +134,8 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
               onClick={() => {
                 setActiveSite(null)
                 setActiveProject(null)
+                setDeleteMode(false)
+                setSelectedForDelete(new Set())
               }}
               className="flex items-center gap-1 text-green-600 text-sm -ml-1"
             >
@@ -137,13 +154,22 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
           </div>
           <div className="flex gap-2">
             {activeSite && !deleteMode && (
-              <button
-                onClick={() => setDeleteMode(true)}
-                className="flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-xl text-red-500 text-sm font-semibold transition-colors"
-                title="Delete photos"
-              >
-                <Trash2 size={15} />
-              </button>
+              <>
+                <button
+                  onClick={() => setShowDeleteSiteConfirm(true)}
+                  className="flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-xl text-red-500 text-sm font-semibold transition-colors"
+                  title="Delete entire site category and all photos"
+                >
+                  <Trash2 size={15} /> Site
+                </button>
+                <button
+                  onClick={() => setDeleteMode(true)}
+                  className="flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-xl text-red-500 text-sm font-semibold transition-colors"
+                  title="Delete individual photos"
+                >
+                  <Trash2 size={15} /> Photos
+                </button>
+              </>
             )}
             {activeSite && !deleteMode && (
               <button
@@ -190,44 +216,17 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
       </div>
 
       {!activeSite && !activeProject ? (
-        /* View mode toggle and gallery */
+        /* Gallery */
         <>
-          <div className="px-4 mt-5 flex gap-2 mb-4">
-            <button
-              onClick={() => {
-                setViewMode('sites')
-                setActiveProject(null)
-              }}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-                viewMode === 'sites'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-bg-surface dark:bg-bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-              }`}
-            >
-              Sites
-            </button>
-            <button
-              onClick={() => {
-                setViewMode('projects')
-                setActiveSite(null)
-              }}
-              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-                viewMode === 'projects'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-bg-surface dark:bg-bg-surface-dark text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-              }`}
-            >
-              Projects
-            </button>
+          <div className="px-4 mt-5 mb-4">
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Click any site to view and manage photos</p>
           </div>
 
           {/* Gallery cards */}
           <div className="px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(viewMode === 'sites' ? sites : projects).map((item, i) => {
-                const itemPhotos = viewMode === 'sites'
-                  ? allPhotos.filter(p => p.siteId === item.id)
-                  : allPhotos.filter(p => p.projectId === item.id)
+              {sites.map((item, i) => {
+                const itemPhotos = allPhotos.filter(p => p.siteId === item.id)
                 const flagged = itemPhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
                 return (
                   <motion.button
@@ -235,10 +234,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08 }}
-                    onClick={() => {
-                      if (viewMode === 'sites') setActiveSite(item.id)
-                      else setActiveProject(item.id)
-                    }}
+                    onClick={() => setActiveSite(item.id)}
                     className="text-left bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors shadow-md"
                   >
                     {/* Photo strip preview */}
@@ -520,6 +516,53 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
             onClose={() => setShowBulkUpload(false)}
             onPhotosAdded={() => setRefresh(prev => prev + 1)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Delete site confirmation modal */}
+      <AnimatePresence>
+        {showDeleteSiteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDeleteSiteConfirm(false)}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-6"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+                  <AlertTriangle size={24} className="text-red-500" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete Site Category?</h3>
+              </div>
+
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
+                This will permanently delete the entire <strong>{currentSite?.name}</strong> site category and all {allPhotos.filter(p => p.siteId === activeSite).length} photos within it. This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteSiteConfirm(false)}
+                  className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-900 dark:text-white font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteSite}
+                  className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 rounded-lg text-white font-medium transition-colors"
+                >
+                  Delete All
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </AppLayout>
