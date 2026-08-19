@@ -22,7 +22,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
     setIsModalOpen(true)
     return () => setIsModalOpen(false)
   }, [])
-  const { clockInTime, clockedIn, breakActive, breakStartTime, totalBreakMs, currentShiftIsOvernight, clockOut } = useAppStore()
+  const { clockInTime, clockedIn, breakActive, breakStartTime, totalBreakMs, currentShiftIsOvernight, clockInLocation, clockOut } = useAppStore()
   const { requestLocation, isLoading: isGeoLoading } = useGeolocation()
   const elapsed = useElapsedTime(clockedIn ? clockInTime : null, breakActive, breakStartTime, totalBreakMs)
 
@@ -108,7 +108,8 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
       concerns,
       shiftSummary: summary,
       photos: uploadedPhotos.map(p => p.url!),  // Extract Supabase URLs
-      gpsOut: gpsOut || undefined,
+      gpsIn: clockInLocation || undefined,  // Include clock-in location
+      gpsOut: gpsOut || undefined,  // Include clock-out location
     })
     setSubmitted(true)
     setTimeout(onConfirm, 1800)
