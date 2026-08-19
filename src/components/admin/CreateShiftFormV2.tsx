@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, Trash2, Check } from 'lucide-react'
 import { createShift, getAllCrewMembers, getProjects, assignCrewToShift } from '../../services/supabase'
+import { postNotification } from '../../services/notificationService'
 import { supabase } from '../../services/supabaseAuth'
+import { useAppStore } from '../../store/appStore'
 import type { ShiftLocationData, CrewMemberData, Project } from '../../services/supabase'
 
 interface Props {
@@ -15,6 +17,7 @@ interface FormLocation extends ShiftLocationData {
 }
 
 export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
+  const { currentUserName } = useAppStore()
   const [crews, setCrews] = useState<CrewMemberData[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedCrews, setSelectedCrews] = useState<Set<number>>(new Set())
@@ -144,9 +147,36 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
       )
 
       if (result?.id) {
-        // Assign all selected crews to this shift
+        // Assign all selected crews to this shift and send notifications
         for (const crewId of selectedCrews) {
           await assignCrewToShift(crewId, result.id, scheduledDate)
+
+          // Find crew member details for notification
+          const crewMember = crews.find(c => c.id === crewId)
+          if (crewMember) {
+            const crewName = `${crewMember.firstName} ${crewMember.lastName}`
+            const shiftDate = new Date(scheduledDate).toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })
+            const shiftTime = `${startHour}:${startMinute} - ${endHour}:${endMinute}`
+            const notificationTitle = `Shift Assignment: ${shiftDate}`
+            const notificationMessage = `You have been scheduled for a ${shiftType} shift on ${shiftDate} from ${shiftTime}${notes ? `. ${notes}` : ''}`
+
+            try {
+              await postNotification(
+                notificationTitle,
+                notificationMessage,
+                currentUserName || 'Admin',
+                'update'
+              )
+              console.log(`[CreateShiftFormV2] Notified ${crewName} of shift assignment`)
+            } catch (err) {
+              console.error(`[CreateShiftFormV2] Failed to notify ${crewName}:`, err)
+            }
+          }
         }
 
         // Reset form
