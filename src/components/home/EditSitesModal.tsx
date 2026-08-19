@@ -85,11 +85,11 @@ export function EditSitesModal({ isOpen, onClose, sites, onAddSite, onEditSite, 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="w-full max-w-2xl bg-surface rounded-2xl max-h-[90vh] overflow-y-auto shadow-lg"
+          className="w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl max-h-[90vh] overflow-y-auto shadow-lg"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="sticky top-0 bg-surface border-b border-border-light p-6 flex items-center justify-between">
+          <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-border-light p-6 flex items-center justify-between">
             <h2 className="text-primary font-bold text-xl">Manage Sites</h2>
             <button
               onClick={onClose}
@@ -100,7 +100,7 @@ export function EditSitesModal({ isOpen, onClose, sites, onAddSite, onEditSite, 
           </div>
 
           {/* Tabs */}
-          <div className="sticky top-16 bg-surface border-b border-border-light flex">
+          <div className="sticky top-16 bg-white dark:bg-slate-800 border-b border-border-light flex">
             <button
               onClick={() => setActiveTab('edit')}
               className={`flex-1 py-3 px-4 text-sm font-semibold border-b-2 transition-colors ${

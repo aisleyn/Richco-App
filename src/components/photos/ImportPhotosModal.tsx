@@ -104,7 +104,7 @@ export function ImportPhotosModal({ siteId, userEmail, siteName, onClose, onPhot
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-md bg-surface rounded-2xl p-6 shadow-md"
+        className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md"
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-primary font-bold">Import Photos</h2>
