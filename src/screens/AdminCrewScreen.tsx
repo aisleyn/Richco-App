@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, AlertCircle, CheckCircle, Mail, Lock, Calendar, CheckSquare, Bell } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
-import { createCrewMember, getAllCrewMembers, deleteCrewMember, setPasswordDirect, User } from '../services/supabaseAuth'
+import { createCrewMember, getAllCrewMembers, setPasswordDirect, User } from '../services/supabaseAuth'
+import { removeCrewMember } from '../services/crew'
 import { CreateShiftForm } from '../components/admin/CreateShiftForm'
 import { CreateChecklistForm } from '../components/admin/CreateChecklistForm'
 import { postNotification } from '../services/notificationService'
@@ -68,15 +69,20 @@ export function AdminCrewScreen({ onNavigate }: Props) {
     }
   }
 
-  async function handleDeleteCrew(userId: string) {
-    if (!window.confirm('Are you sure you want to delete this crew member?')) return
+  async function handleDeleteCrew(crew: User) {
+    if (!window.confirm(`Are you sure you want to permanently delete ${crew.name}? This will remove all their records, time entries, and data.`)) return
 
-    const result = await deleteCrewMember(userId)
-    if (result.success) {
-      setMessage({ type: 'success', text: result.message })
-      await loadCrewMembers()
-    } else {
-      setMessage({ type: 'error', text: result.message })
+    try {
+      const success = await removeCrewMember(crew.email)
+      if (success) {
+        setMessage({ type: 'success', text: `${crew.name} has been deleted successfully` })
+        await loadCrewMembers()
+      } else {
+        setMessage({ type: 'error', text: `Failed to delete ${crew.name}` })
+      }
+    } catch (err) {
+      console.error('[AdminCrew] Error deleting crew member:', err)
+      setMessage({ type: 'error', text: `Error: ${err instanceof Error ? err.message : 'Unknown error'}` })
     }
   }
 
@@ -309,7 +315,7 @@ export function AdminCrewScreen({ onNavigate }: Props) {
                       <Lock size={12} /> Set Password
                     </button>
                     <button
-                      onClick={() => handleDeleteCrew(crew.id)}
+                      onClick={() => handleDeleteCrew(crew)}
                       className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
                     >
                       <Trash2 size={12} /> Delete

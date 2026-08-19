@@ -198,59 +198,76 @@ export async function hasUserCompletedRegistration(email: string): Promise<boole
 // Remove a crew member completely - deletes from all tables and data
 export async function removeCrewMember(email: string): Promise<boolean> {
   try {
-    console.log('[Crew] Removing crew member:', email)
+    console.log('[Crew] Starting removal process for:', email)
 
     // First try to get user_id from users table by email
     let userId: string | null = null
-    const { data: userData } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
       .maybeSingle()
 
+    if (userError) {
+      console.warn('[Crew] Error querying users table:', userError.message)
+    }
+
     if (userData?.id) {
       userId = userData.id
-      console.log('[Crew] Found user in users table:', userId)
+      console.log('[Crew] Found user_id in users table:', userId)
     } else {
-      console.warn('[Crew] User not found in users table, will do full cleanup by email')
+      console.warn('[Crew] User not found in users table, will proceed with email-based cleanup')
     }
 
     // Clean up all related data regardless of whether user is in users table
     // This ensures complete removal from the system
+    console.log('[Crew] Starting data cleanup for:', email)
     await cleanupUserData(email, userId)
 
+    // Delete from crew_members table first (by email)
+    console.log('[Crew] Deleting from crew_members table:', email)
+    const { error: crewError } = await supabase
+      .from('crew_members')
+      .delete()
+      .eq('email', email)
+
+    if (crewError) {
+      console.error('[Crew] ❌ Error deleting from crew_members:', crewError.message)
+      return false
+    }
+    console.log('[Crew] ✅ Successfully deleted from crew_members table:', email)
+
     // Always delete from users table (RLS might prevent read but not delete)
-    try {
+    if (userId) {
+      console.log('[Crew] Deleting from users table:', userId)
       const { error: usersError } = await supabase
         .from('users')
         .delete()
-        .eq('email', email)
+        .eq('id', userId)
 
       if (usersError) {
-        console.warn('[Crew] Warning deleting from users table:', usersError.message)
+        console.error('[Crew] ❌ Error deleting from users table:', usersError.message)
+        // Don't fail here - crew_members is what matters for the UI
       } else {
-        console.log('[Crew] ✅ Deleted from users table:', email)
+        console.log('[Crew] ✅ Successfully deleted from users table:', userId)
       }
-    } catch (err) {
-      console.warn('[Crew] Exception deleting from users table:', err)
     }
 
     // If we have userId, also use the auth deletion process
     if (userId) {
+      console.log('[Crew] Calling auth deletion for userId:', userId)
       const result = await authDeleteCrewMember(userId)
       if (result.success) {
-        console.log('[Crew] ✅ Crew member fully removed (with auth):', email)
-        return true
+        console.log('[Crew] ✅ Auth deletion successful:', email)
       } else {
-        console.error('[Crew] Failed to delete auth user:', result.message)
-        // Continue anyway - crew member is deleted even if auth cleanup failed
+        console.warn('[Crew] ⚠️ Auth deletion failed (continuing anyway):', result.message)
       }
     }
 
-    console.log('[Crew] ✅ Crew member fully removed:', email)
+    console.log('[Crew] ✅✅ CREW MEMBER FULLY REMOVED:', email)
     return true
   } catch (err) {
-    console.error('[Crew] Error removing crew member:', err)
+    console.error('[Crew] ❌ Exception during removal:', err)
     return false
   }
 }
@@ -258,37 +275,65 @@ export async function removeCrewMember(email: string): Promise<boolean> {
 // Helper function to clean up all user-related data
 async function cleanupUserData(email: string, userId: string | null): Promise<void> {
   try {
-    console.log('[Crew] Cleaning up data for:', email)
+    console.log('[Crew] Cleaning up all related data for:', email, userId ? `(${userId})` : '')
+
+    if (!userId) {
+      console.warn('[Crew] ⚠️ No userId provided - skipping user_id-based deletions')
+    }
 
     // Delete time entries (timesheets)
     if (userId) {
-      await supabase.from('time_entries').delete().eq('user_id', userId)
-      console.log('[Crew] Deleted time entries for:', email)
+      const { error: timeErr } = await supabase.from('time_entries').delete().eq('user_id', userId)
+      if (timeErr) {
+        console.warn('[Crew] Warning deleting time entries:', timeErr.message)
+      } else {
+        console.log('[Crew] ✅ Deleted time entries')
+      }
 
       // Delete break periods
-      await supabase.from('break_periods').delete().eq('user_id', userId)
-      console.log('[Crew] Deleted break periods for:', email)
+      const { error: breakErr } = await supabase.from('break_periods').delete().eq('user_id', userId)
+      if (breakErr) {
+        console.warn('[Crew] Warning deleting break periods:', breakErr.message)
+      } else {
+        console.log('[Crew] ✅ Deleted break periods')
+      }
 
       // Delete shift assignments
-      await supabase.from('shift_assignments').delete().eq('crew_member_id', userId)
-      console.log('[Crew] Deleted shift assignments for:', email)
+      const { error: shiftErr } = await supabase.from('shift_assignments').delete().eq('crew_member_id', userId)
+      if (shiftErr) {
+        console.warn('[Crew] Warning deleting shift assignments:', shiftErr.message)
+      } else {
+        console.log('[Crew] ✅ Deleted shift assignments')
+      }
 
       // Delete photos uploaded by this user
-      await supabase.from('photos').delete().eq('submitted_by_id', userId)
-      console.log('[Crew] Deleted photos for:', email)
+      const { error: photoErr } = await supabase.from('photos').delete().eq('submitted_by_id', userId)
+      if (photoErr) {
+        console.warn('[Crew] Warning deleting photos:', photoErr.message)
+      } else {
+        console.log('[Crew] ✅ Deleted photos')
+      }
 
       // Delete messages from this user
-      await supabase.from('messages').delete().eq('sender_id', userId)
-      console.log('[Crew] Deleted messages for:', email)
+      const { error: msgErr } = await supabase.from('messages').delete().eq('sender_id', userId)
+      if (msgErr) {
+        console.warn('[Crew] Warning deleting messages:', msgErr.message)
+      } else {
+        console.log('[Crew] ✅ Deleted messages')
+      }
+
+      // Delete employee documents
+      const { error: docErr } = await supabase.from('employee_documents').delete().eq('crew_member_email', email)
+      if (docErr) {
+        console.warn('[Crew] Warning deleting employee documents:', docErr.message)
+      } else {
+        console.log('[Crew] ✅ Deleted employee documents')
+      }
     }
 
-    // Delete crew member record (by email, works regardless of userId)
-    await supabase.from('crew_members').delete().eq('email', email)
-    console.log('[Crew] Deleted crew member record for:', email)
-
-    console.log('[Crew] ✅ All data cleaned up for:', email)
+    console.log('[Crew] ✅ Data cleanup completed for:', email)
   } catch (err) {
-    console.error('[Crew] Error during cleanup:', err)
+    console.error('[Crew] Exception during data cleanup:', err)
     // Don't throw - continue with deletion even if cleanup partially fails
   }
 }
