@@ -238,57 +238,66 @@ export function TimeOffScreen({ onNavigate: _onNavigate }: { onNavigate?: (s: st
                 <p className="text-slate-500 text-sm mt-1">No pending time-off requests</p>
               </motion.div>
             ) : (
-              <div className="space-y-3">
-                {pendingRequests.map((request, i) => (
-                  <motion.div
-                    key={request.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="bg-bg-surface rounded-xl border-2 border-amber-500/30 p-4 bg-amber-500/5"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-slate-900 font-semibold">
-                            {request.employeeName}
-                          </h3>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600">
-                            PENDING
-                          </span>
-                        </div>
-                        <p className="text-slate-600 text-sm">{leaveTypeLabels[request.leaveType]}</p>
-                        <p className="text-slate-600 text-sm mt-1">{request.reason}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 mb-4 pt-3 border-t border-slate-200">
-                      <div>
-                        <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">From</p>
-                        <p className="text-slate-800 font-medium text-sm mt-1">
-                          {new Date(request.startDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">To</p>
-                        <p className="text-slate-800 font-medium text-sm mt-1">
-                          {new Date(request.endDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Days</p>
-                        <p className="text-slate-800 font-bold text-sm mt-1">{request.totalDays}</p>
-                      </div>
-                    </div>
-
-                    <button
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pendingRequests.map((request, i) => {
+                  const startDate = new Date(request.startDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                  const endDate = new Date(request.endDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                  return (
+                    <motion.button
+                      key={request.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
                       onClick={() => setApproveModal(request)}
-                      className="w-full px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-lg text-amber-600 text-xs font-semibold transition-colors"
+                      className="bg-white dark:bg-slate-800 rounded-xl border-2 border-amber-500/30 p-5 bg-amber-500/5 hover:border-amber-500/60 hover:bg-amber-500/10 transition-all text-left shadow-sm hover:shadow-md"
                     >
-                      Review & Approve/Deny
-                    </button>
-                  </motion.div>
-                ))}
+                      {/* Employee Name - Title */}
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                        {request.employeeName}
+                      </h3>
+
+                      {/* Dates - Right Below Name */}
+                      <div className="mb-4">
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          {startDate} → {endDate}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                          {request.totalDays} day{request.totalDays !== 1 ? 's' : ''} off
+                        </p>
+                      </div>
+
+                      {/* Leave Type */}
+                      <div className="mb-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
+                          Type
+                        </p>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">
+                          {leaveTypeLabels[request.leaveType]}
+                        </p>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="mb-3">
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/30 text-amber-700 dark:text-amber-300">
+                          PENDING APPROVAL
+                        </span>
+                      </div>
+
+                      {/* Click Prompt */}
+                      <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                        Click to view reason & approve/deny →
+                      </p>
+                    </motion.button>
+                  )
+                })}
               </div>
             )}
           </>
