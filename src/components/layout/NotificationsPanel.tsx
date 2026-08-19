@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { getAllNotifications, deleteNotification, type Notification } from '../../services/notificationService'
+import { getAllNotifications, dismissNotification, type Notification } from '../../services/notificationService'
 
 interface Props {
   onNotificationClick?: (notification: Notification) => void
@@ -31,13 +31,13 @@ export function NotificationsPanel({ onNotificationClick }: Props) {
       setNotifications([])
     }
 
-    const handleNotificationDeleted = () => {
+    const handleNotificationDismissed = () => {
       loadNotifications()
     }
 
     window.addEventListener('notification:posted', handleNotificationPosted)
     window.addEventListener('notification:cleared', handleNotificationCleared)
-    window.addEventListener('notification:deleted', handleNotificationDeleted)
+    window.addEventListener('notification:dismissed', handleNotificationDismissed)
 
     // Poll for updates every 10 seconds to catch changes from other tabs
     const pollInterval = setInterval(loadNotifications, 10000)
@@ -45,13 +45,13 @@ export function NotificationsPanel({ onNotificationClick }: Props) {
     return () => {
       window.removeEventListener('notification:posted', handleNotificationPosted)
       window.removeEventListener('notification:cleared', handleNotificationCleared)
-      window.removeEventListener('notification:deleted', handleNotificationDeleted)
+      window.removeEventListener('notification:dismissed', handleNotificationDismissed)
       clearInterval(pollInterval)
     }
   }, [])
 
   const removeNotification = async (id: string) => {
-    const success = await deleteNotification(id)
+    const success = await dismissNotification(id)
     if (success) {
       setNotifications(notifications.filter(n => n.id !== id))
     }

@@ -66,6 +66,7 @@ export async function getAllNotifications(): Promise<Notification[]> {
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
+      .is('dismissed_at', null)  // Only show non-dismissed notifications in the panel
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -86,6 +87,29 @@ export async function getAllNotifications(): Promise<Notification[]> {
   } catch (err) {
     console.error('[Notifications] Error fetching:', err)
     return []
+  }
+}
+
+export async function dismissNotification(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ dismissed_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) {
+      console.error('[Notifications] Failed to dismiss:', error.message)
+      return false
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('notification:dismissed', { detail: { id } })
+    )
+    console.log('[Notifications] Dismissed:', id)
+    return true
+  } catch (err) {
+    console.error('[Notifications] Error dismissing:', err)
+    return false
   }
 }
 
@@ -153,6 +177,7 @@ export async function getAlertsFromSupabase(): Promise<Notification[]> {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(100)
+      // NOTE: Fetch ALL alerts including dismissed ones for the AlertsScreen
 
     if (error) {
       console.error('[Notifications] Failed to fetch alerts:', error.message)

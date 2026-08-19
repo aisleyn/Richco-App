@@ -64,14 +64,22 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
     loadAlertsFromSupabase()
   }, [])
 
-  // Reload alerts when new one is posted
+  // Reload alerts when new one is posted or dismissed
   useEffect(() => {
     const handleNotificationPosted = () => {
       console.log('[AlertsScreen] New notification posted, reloading alerts')
       loadAlertsFromSupabase()
     }
+    const handleNotificationDismissed = () => {
+      console.log('[AlertsScreen] Notification dismissed, reloading alerts')
+      loadAlertsFromSupabase()
+    }
     window.addEventListener('notification:posted', handleNotificationPosted)
-    return () => window.removeEventListener('notification:posted', handleNotificationPosted)
+    window.addEventListener('notification:dismissed', handleNotificationDismissed)
+    return () => {
+      window.removeEventListener('notification:posted', handleNotificationPosted)
+      window.removeEventListener('notification:dismissed', handleNotificationDismissed)
+    }
   }, [])
 
   const canApprove = isAdmin || isCEO
