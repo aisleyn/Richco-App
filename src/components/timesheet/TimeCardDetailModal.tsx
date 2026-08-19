@@ -78,6 +78,20 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {formatDate(timecard.date)} at {formatTime(timecard.clockInTime)}
             </p>
+            {timecard.gpsIn?.address && (
+              <div className="mt-3 flex items-start gap-2 pt-3 border-t border-slate-300 dark:border-slate-600">
+                <MapPin size={14} className="text-slate-600 dark:text-slate-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-500 dark:text-slate-500 mb-1">GPS Address:</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 break-words">{timecard.gpsIn.address}</p>
+                  {timecard.gpsIn.lat && timecard.gpsIn.lng && (
+                    <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                      {timecard.gpsIn.lat.toFixed(4)}, {timecard.gpsIn.lng.toFixed(4)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Clock Out Time */}
@@ -87,6 +101,20 @@ export function TimeCardDetailModal({ timecard, onClose }: TimeCardDetailModalPr
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 {formatDate(timecard.date)} at {formatTime(timecard.clockOutTime)}
               </p>
+              {timecard.gpsOut?.address && (
+                <div className="mt-3 flex items-start gap-2 pt-3 border-t border-slate-300 dark:border-slate-600">
+                  <MapPin size={14} className="text-slate-600 dark:text-slate-400 mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-slate-500 dark:text-slate-500 mb-1">GPS Address:</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 break-words">{timecard.gpsOut.address}</p>
+                    {timecard.gpsOut.lat && timecard.gpsOut.lng && (
+                      <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                        {timecard.gpsOut.lat.toFixed(4)}, {timecard.gpsOut.lng.toFixed(4)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
