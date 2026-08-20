@@ -59,7 +59,7 @@ export function EditPhotoModal({ photo, onClose, onUpdated, onDeleted }: Props) 
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 400, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full sm:w-full sm:max-w-md bg-bg-base rounded-t-3xl sm:rounded-2xl p-6 border border-slate-200"
+        className="w-full sm:w-full sm:max-w-4xl bg-bg-base rounded-t-3xl sm:rounded-2xl p-6 border border-slate-200"
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-slate-900 text-xl font-bold">Edit Photo</h2>

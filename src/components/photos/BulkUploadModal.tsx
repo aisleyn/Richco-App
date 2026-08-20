@@ -155,7 +155,7 @@ export function BulkUploadModal({ siteId, projectId, userEmail, onClose, onPhoto
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-4xl bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md max-h-[90vh] overflow-y-auto"
       >
         {editingPhoto ? (
           <>
