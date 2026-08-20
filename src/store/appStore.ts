@@ -275,9 +275,10 @@ export const useAppStore = create<AppState>()(
 
         // Save completed timecard to localStorage
         // NOTE: Overtime is calculated WEEKLY (not daily) - see TimesheetScreen for weekly calculation
+        // Use clock-out date for the timecard (handles overnight shifts correctly)
         const completedTimecard: TimesheetEntry = {
           id: activeTimesheetId ?? `ts-${now}`,
-          date: new Date(clockInTime ?? now).toISOString().split('T')[0],
+          date: new Date(now).toISOString().split('T')[0],
           siteName: data.siteName ?? '',
           siteId: data.siteId ?? '',
           projectId: currentProjectId,
