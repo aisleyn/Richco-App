@@ -289,7 +289,7 @@ export async function createDirectThread(
     console.log('[Messaging] Fetching recipient user_id for:', recipientEmail)
     const { data: recipientData, error: recipientError } = await supabase
       .from('users')
-      .select('id')
+      .select('id, email')
       .eq('email', recipientEmail)
       .maybeSingle()
 
@@ -300,15 +300,42 @@ export async function createDirectThread(
 
     if (!recipientData?.id) {
       console.error('[Messaging] Recipient not found in users table for email:', recipientEmail)
-      // Try to fetch all users to debug
+
+      // Get all users for debugging and typo detection
       const { data: allUsers } = await supabase
         .from('users')
         .select('email, id')
-      console.log('[Messaging] Available users:', allUsers?.map(u => `${u.email} (${u.id})`))
-      return null
+
+      if (allUsers && allUsers.length > 0) {
+        const usersList = allUsers.map(u => `${u.email}`)
+        console.error('[Messaging] Available users:', usersList)
+
+        // Check for case-insensitive match
+        const caseMatch = allUsers.find(u => u.email.toLowerCase() === recipientEmail.toLowerCase())
+        if (caseMatch) {
+          console.error('[Messaging] ⚠️ Found case-insensitive match:', caseMatch.email, '- did you mean this?')
+          throw new Error(`Email not found. Did you mean: ${caseMatch.email}?`)
+        }
+
+        // Check for similar emails (typo detection like joannat vs joanna)
+        const similarEmails = allUsers.filter(u => {
+          const recName = recipientEmail.split('@')[0].toLowerCase()
+          const userName = u.email.split('@')[0].toLowerCase()
+          // Simple similarity check for common typos
+          return (recName.includes(userName) || userName.includes(recName)) && recName !== userName
+        })
+
+        if (similarEmails.length > 0) {
+          const suggestions = similarEmails.map(u => u.email).join(', ')
+          console.error('[Messaging] ⚠️ Did you mean one of these?:', suggestions)
+          throw new Error(`Email "${recipientEmail}" not found. Did you mean: ${suggestions}?`)
+        }
+      }
+
+      throw new Error(`Recipient email "${recipientEmail}" not found in system`)
     }
 
-    console.log('[Messaging] ✅ Found recipient:', recipientEmail, 'id:', recipientData.id)
+    console.log('[Messaging] ✅ Found recipient:', recipientData.email, 'id:', recipientData.id)
     const recipientUserId = recipientData.id
 
     // Create new thread
