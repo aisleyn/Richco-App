@@ -355,7 +355,7 @@ export async function syncRegisteredUsersWithCrew(): Promise<{ synced: number; e
     // Get all users from the users table
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select('id, email, firstName, lastName, name, role')
+      .select('id, email, first_name, last_name, name, role')
       .eq('role', 'crew')
 
     if (usersError) {
@@ -383,8 +383,8 @@ export async function syncRegisteredUsersWithCrew(): Promise<{ synced: number; e
           // User registered but doesn't have a crew member entry — create it
           console.log('[Crew] 🔄 Creating missing crew member for:', user.email)
 
-          const firstName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0]
-          const lastName = user.lastName || user.name?.split(' ')[1] || 'User'
+          const firstName = (user.first_name as string) || user.name?.split(' ')[0] || user.email.split('@')[0]
+          const lastName = (user.last_name as string) || user.name?.split(' ')[1] || 'User'
 
           const result = await addCrewMember({
             firstName,
