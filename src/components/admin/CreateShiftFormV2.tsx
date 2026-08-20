@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Plus, Trash2, Check } from 'lucide-react'
 import { createShift, getAllCrewMembers, getProjects, assignCrewToShift } from '../../services/supabase'
 import { postNotification } from '../../services/notificationService'
+import { notifyShiftAssignment } from '../../services/shiftNotifications'
 import { supabase } from '../../services/supabaseAuth'
 import { useAppStore } from '../../store/appStore'
 import type { ShiftLocationData, CrewMemberData, Project } from '../../services/supabase'
@@ -166,13 +167,23 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
             const notificationMessage = `You have been scheduled for a ${shiftType} shift on ${shiftDate} from ${shiftTime}${notes ? `. ${notes}` : ''}`
 
             try {
+              // Send local notification
               await postNotification(
                 notificationTitle,
                 notificationMessage,
                 currentUserName || 'Admin',
                 'update'
               )
-              console.log(`[CreateShiftFormV2] Notified ${crewName} of shift assignment`)
+              console.log(`[CreateShiftFormV2] Notified ${crewName} of shift assignment (local)`)
+
+              // Send push notification
+              await notifyShiftAssignment({
+                userEmail: crewMember.email,
+                shiftName: `${shiftType} Shift`,
+                date: shiftDate,
+                startTime: shiftTime,
+              })
+              console.log(`[CreateShiftFormV2] Sent push notification to ${crewName}`)
             } catch (err) {
               console.error(`[CreateShiftFormV2] Failed to notify ${crewName}:`, err)
             }

@@ -23,6 +23,7 @@ import { initializeCrew, syncRegisteredUsersWithCrew } from './services/crew'
 import { syncEmployeeTimesheets, getActiveTimeEntry } from './services/supabase'
 import { SetPasswordModal } from './components/crew/SetPasswordModal'
 import { subscribeToPushNotifications, isPushNotificationSupported } from './services/pushNotifications'
+import { checkAndSendShiftAlerts } from './services/shiftNotifications'
 import type { Notification } from './services/notificationService'
 import type { Alert } from './types'
 
@@ -158,6 +159,26 @@ export default function App() {
 
     setupPushNotifications()
   }, [authenticated, currentUserId])
+
+  // Check for upcoming shift alerts periodically (every minute)
+  useEffect(() => {
+    if (!authenticated) return
+
+    const checkShiftAlerts = async () => {
+      try {
+        await checkAndSendShiftAlerts()
+      } catch (err) {
+        console.warn('[App] Error checking shift alerts:', err)
+      }
+    }
+
+    // Check immediately
+    checkShiftAlerts()
+
+    // Then check every minute
+    const interval = setInterval(checkShiftAlerts, 60000)
+    return () => clearInterval(interval)
+  }, [authenticated])
 
   // Handle email confirmation from Supabase
   useEffect(() => {

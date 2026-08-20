@@ -4,22 +4,27 @@ import { notifyShiftAlert, notifyRosterChange } from './notificationSender'
 import { supabase } from './supabaseAuth'
 
 /**
- * Schedule shift start alerts for all assigned users
+ * Check for upcoming shifts and send alerts 15 minutes before start
  * Should be called periodically (e.g., every minute) by a background task
  */
 export async function checkAndSendShiftAlerts(): Promise<void> {
   try {
-    console.log('[ShiftNotifications] Checking for upcoming shifts...')
-
-    // Get shifts starting in the next 20 minutes
     const now = new Date()
     const in20Minutes = new Date(now.getTime() + 20 * 60000)
 
+    // Get shifts starting in the next 20 minutes
     const { data: shifts, error: shiftsError } = await supabase
-      .from('shifts')
-      .select('id, name, start_time, shift_assignments(user_email)')
-      .gte('start_time', now.toISOString())
-      .lte('start_time', in20Minutes.toISOString())
+      .from('shift_assignments')
+      .select(`
+        shift_id,
+        user_email,
+        shifts(
+          id,
+          name,
+          start_time,
+          end_time
+        )
+      `)
 
     if (shiftsError) {
       console.error('[ShiftNotifications] Error fetching shifts:', shiftsError.message)
@@ -27,32 +32,60 @@ export async function checkAndSendShiftAlerts(): Promise<void> {
     }
 
     if (!shifts || shifts.length === 0) {
-      console.log('[ShiftNotifications] No upcoming shifts')
       return
     }
 
-    // Send notifications
-    for (const shift of shifts) {
-      const assignments = (shift.shift_assignments as any[]) || []
+    // Track which alerts we've already sent (by shift_id + email)
+    const sentAlerts = new Set<string>()
+
+    // Check each assignment
+    for (const assignment of shifts) {
+      const shift = (assignment as any).shifts
+      if (!shift || !shift.start_time) continue
+
       const startTime = new Date(shift.start_time)
       const minutesUntilStart = Math.round((startTime.getTime() - now.getTime()) / 60000)
 
-      for (const assignment of assignments) {
-        await notifyShiftAlert({
-          userEmail: assignment.user_email,
-          shiftName: shift.name,
-          message: `Shift starts at ${startTime.toLocaleTimeString()}`,
-          shiftId: shift.id,
-          minutesUntilStart,
-        })
-      }
+      // Send alert if shift starts in 15-20 minutes (avoid duplicates)
+      if (minutesUntilStart >= 15 && minutesUntilStart <= 20) {
+        const alertKey = `${shift.id}-${assignment.user_email}`
+        if (!sentAlerts.has(alertKey)) {
+          sentAlerts.add(alertKey)
 
-      console.log(
-        `[ShiftNotifications] ✅ Sent alerts for shift: ${shift.name} (${minutesUntilStart}min)`
-      )
+          try {
+            const shiftDate = startTime.toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })
+            const shiftTime = startTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+
+            await notifyShiftAlert({
+              userEmail: assignment.user_email,
+              shiftName: shift.name,
+              message: `Shift starts in ${minutesUntilStart} minutes at ${shiftTime}`,
+              shiftId: shift.id,
+              minutesUntilStart,
+            })
+
+            console.log(
+              `[ShiftNotifications] ✅ Sent ${minutesUntilStart}min alert for: ${shift.name} to ${assignment.user_email}`
+            )
+          } catch (err) {
+            console.error(
+              `[ShiftNotifications] Error sending alert for ${shift.id}:`,
+              err
+            )
+          }
+        }
+      }
     }
   } catch (err) {
-    console.error('[ShiftNotifications] Exception:', err)
+    console.error('[ShiftNotifications] Exception checking shifts:', err)
   }
 }
 
