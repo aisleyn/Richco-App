@@ -10,6 +10,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
+      strategies: 'injectManifest',
+      injectManifest: {
+        swSrc: 'src/service-worker.ts',
+        swDest: 'sw.js',
+      },
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
