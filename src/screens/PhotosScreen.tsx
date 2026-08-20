@@ -403,13 +403,13 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
       {/* Upload modal */}
       <AnimatePresence>
         {showUpload && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end">
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center sm:justify-center">
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="bg-bg-base w-full rounded-t-3xl overflow-hidden"
+              className="bg-bg-base w-full sm:max-w-4xl rounded-t-3xl sm:rounded-2xl overflow-hidden"
             >
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-200">
                 <h2 className="text-slate-800 font-bold text-lg">Submit Site Photo</h2>
