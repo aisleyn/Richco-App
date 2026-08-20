@@ -256,19 +256,19 @@ export async function createDirectThread(
       }
     }
 
-    // Fetch recipient's user_id from users table
+    // Fetch recipient's user_id from crew_members table
     const { data: recipientData, error: recipientError } = await supabase
-      .from('users')
-      .select('id')
+      .from('crew_members')
+      .select('user_id')
       .eq('email', recipientEmail)
       .maybeSingle()
 
-    if (recipientError || !recipientData?.id) {
-      console.error('[Messaging] Error finding recipient:', recipientError?.message || 'not found')
+    if (recipientError || !recipientData?.user_id) {
+      console.error('[Messaging] Error finding recipient:', recipientError?.message || 'user not found in crew_members')
       return null
     }
 
-    const recipientUserId = recipientData.id
+    const recipientUserId = recipientData.user_id
 
     // Create new thread
     const { data: thread, error: threadError } = await supabase
@@ -354,22 +354,24 @@ export async function createGroupThread(
     // Add participants (including current user) with correct user IDs
     const allEmails = [...new Set([currentUserEmail, ...memberEmails])]
 
-    // Fetch user IDs for all participants
-    const { data: usersData, error: usersError } = await supabase
-      .from('users')
-      .select('id, email')
+    // Fetch user IDs for all participants from crew_members
+    const { data: crewData, error: crewError } = await supabase
+      .from('crew_members')
+      .select('email, user_id')
       .in('email', allEmails)
 
-    if (usersError || !usersData) {
-      console.error('[Messaging] Error fetching user IDs:', usersError?.message)
+    if (crewError || !crewData) {
+      console.error('[Messaging] Error fetching user IDs:', crewError?.message)
       await supabase.from('message_threads').delete().eq('id', thread.id)
       return null
     }
 
     // Map emails to user IDs
     const emailToUserId: Record<string, string> = {}
-    usersData.forEach(user => {
-      emailToUserId[user.email] = user.id
+    crewData.forEach(member => {
+      if (member.user_id) {
+        emailToUserId[member.email] = member.user_id
+      }
     })
 
     // Create participant records with correct user IDs
