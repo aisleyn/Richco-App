@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Camera, CheckCircle, ChevronDown, AlertCircle, MapPin, Loader } from 'lucide-react'
 import { jobSites, mockVehicles } from '../../data/mockData'
@@ -198,6 +198,19 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
       setUploadingPhotoIndex(null)
     }
   }
+
+  // Memoize navigation callbacks to prevent ImageViewerModal useEffect from constantly re-running
+  const handlePrevPhoto = useCallback(() => {
+    if (expandedPhotoIndex !== null && expandedPhotoIndex > 0) {
+      setExpandedPhotoIndex(expandedPhotoIndex - 1)
+    }
+  }, [expandedPhotoIndex])
+
+  const handleNextPhoto = useCallback(() => {
+    if (expandedPhotoIndex !== null && expandedPhotoIndex < photos.length - 1) {
+      setExpandedPhotoIndex(expandedPhotoIndex + 1)
+    }
+  }, [expandedPhotoIndex, photos.length])
 
   if (submitted) {
     return (
@@ -469,16 +482,8 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
           onClose={() => setExpandedPhotoIndex(null)}
           currentIndex={expandedPhotoIndex || 0}
           totalImages={photos.length}
-          onPrev={() => {
-            if (expandedPhotoIndex !== null && expandedPhotoIndex > 0) {
-              setExpandedPhotoIndex(expandedPhotoIndex - 1)
-            }
-          }}
-          onNext={() => {
-            if (expandedPhotoIndex !== null && expandedPhotoIndex < photos.length - 1) {
-              setExpandedPhotoIndex(expandedPhotoIndex + 1)
-            }
-          }}
+          onPrev={handlePrevPhoto}
+          onNext={handleNextPhoto}
         />
       </div>
     </AnimatePresence>
