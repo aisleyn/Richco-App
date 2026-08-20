@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { X, Loader, CheckCircle, XCircle } from 'lucide-react'
 import { approveRequest, denyRequest } from '../../services/timeoff'
+import { notifyLeaveRequestApproved, notifyLeaveRequestDenied } from '../../services/leaveRequestNotifications'
 import { useAppStore } from '../../store/appStore'
 import type { LeaveRequest } from '../../services/timeoff'
 
@@ -24,6 +25,32 @@ export function ApproveLeaveModal({ request, onClose, onApprovalProcessed }: Pro
 
     try {
       approveRequest(request.id, currentUserName)
+
+      // Send push notification to employee
+      const startDate = new Date(request.startDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+      const endDate = new Date(request.endDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+
+      try {
+        await notifyLeaveRequestApproved({
+          userEmail: request.employeeEmail,
+          startDate,
+          endDate,
+          requestId: request.id
+        })
+        console.log('[ApproveLeaveModal] Sent approval notification to', request.employeeEmail)
+      } catch (notifErr) {
+        console.warn('[ApproveLeaveModal] Error sending approval notification:', notifErr)
+        // Don't fail the approval if notification fails
+      }
+
       onApprovalProcessed()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to approve request')
@@ -43,6 +70,33 @@ export function ApproveLeaveModal({ request, onClose, onApprovalProcessed }: Pro
 
     try {
       denyRequest(request.id, denialReason.trim())
+
+      // Send push notification to employee
+      const startDate = new Date(request.startDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+      const endDate = new Date(request.endDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+
+      try {
+        await notifyLeaveRequestDenied({
+          userEmail: request.employeeEmail,
+          startDate,
+          endDate,
+          requestId: request.id,
+          reason: denialReason.trim()
+        })
+        console.log('[ApproveLeaveModal] Sent denial notification to', request.employeeEmail)
+      } catch (notifErr) {
+        console.warn('[ApproveLeaveModal] Error sending denial notification:', notifErr)
+        // Don't fail the denial if notification fails
+      }
+
       onApprovalProcessed()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to deny request')
