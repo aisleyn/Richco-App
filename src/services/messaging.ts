@@ -256,6 +256,20 @@ export async function createDirectThread(
       }
     }
 
+    // Fetch recipient's user_id from users table
+    const { data: recipientData, error: recipientError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', recipientEmail)
+      .maybeSingle()
+
+    if (recipientError || !recipientData?.id) {
+      console.error('[Messaging] Error finding recipient:', recipientError?.message || 'not found')
+      return null
+    }
+
+    const recipientUserId = recipientData.id
+
     // Create new thread
     const { data: thread, error: threadError } = await supabase
       .from('message_threads')
@@ -271,7 +285,7 @@ export async function createDirectThread(
       return null
     }
 
-    // Add both participants
+    // Add both participants with correct user IDs
     const { error: participantError } = await supabase
       .from('thread_participants')
       .insert([
@@ -282,7 +296,7 @@ export async function createDirectThread(
         },
         {
           thread_id: thread.id,
-          user_id: userId, // Would normally be recipient's ID, but we don't have it
+          user_id: recipientUserId,
           email: recipientEmail
         }
       ])
@@ -337,13 +351,41 @@ export async function createGroupThread(
       return null
     }
 
-    // Add participants (including current user)
+    // Add participants (including current user) with correct user IDs
     const allEmails = [...new Set([currentUserEmail, ...memberEmails])]
-    const participants = allEmails.map(email => ({
-      thread_id: thread.id,
-      user_id: userId,
-      email
-    }))
+
+    // Fetch user IDs for all participants
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('id, email')
+      .in('email', allEmails)
+
+    if (usersError || !usersData) {
+      console.error('[Messaging] Error fetching user IDs:', usersError?.message)
+      await supabase.from('message_threads').delete().eq('id', thread.id)
+      return null
+    }
+
+    // Map emails to user IDs
+    const emailToUserId: Record<string, string> = {}
+    usersData.forEach(user => {
+      emailToUserId[user.email] = user.id
+    })
+
+    // Create participant records with correct user IDs
+    const participants = allEmails
+      .filter(email => emailToUserId[email]) // Only include emails we found
+      .map(email => ({
+        thread_id: thread.id,
+        user_id: emailToUserId[email],
+        email
+      }))
+
+    if (participants.length === 0) {
+      console.error('[Messaging] No valid participants found for group')
+      await supabase.from('message_threads').delete().eq('id', thread.id)
+      return null
+    }
 
     const { error: participantError } = await supabase
       .from('thread_participants')
