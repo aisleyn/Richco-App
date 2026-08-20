@@ -5,6 +5,7 @@ import { postNotification } from '../../services/notificationService'
 import { notifyShiftAssignment } from '../../services/shiftNotifications'
 import { supabase } from '../../services/supabaseAuth'
 import { useAppStore } from '../../store/appStore'
+import { AddressAutocomplete } from '../AddressAutocomplete'
 import type { ShiftLocationData, CrewMemberData, Project } from '../../services/supabase'
 
 interface Props {
@@ -37,6 +38,8 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
 
   const [locations, setLocations] = useState<FormLocation[]>([])
   const [locationInput, setLocationInput] = useState('')
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,9 +105,13 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
       sequence_order: locations.length + 1,
       location_name: locationInput,
       address: locationInput,
+      latitude: locationLat || 0,
+      longitude: locationLng || 0,
     }
     setLocations([...locations, newLocation])
     setLocationInput('')
+    setLocationLat(null)
+    setLocationLng(null)
   }
 
   const handleRemoveLocation = (idx: number) => {
@@ -420,14 +427,20 @@ export function CreateShiftFormV2({ isOpen, onClose, onSuccess }: Props) {
               Locations
             </label>
             <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                placeholder="Enter address..."
-                value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLocation())}
-                className="flex-1 border border-slate-300 rounded p-2 bg-bg-base text-primary text-sm"
-              />
+              <div className="flex-1">
+                <AddressAutocomplete
+                  placeholder="Enter address..."
+                  defaultValue={locationInput}
+                  onAddressSelected={(address, lat, lng) => {
+                    setLocationInput(address)
+                    setLocationLat(lat)
+                    setLocationLng(lng)
+                  }}
+                  onInputChange={(input) => {
+                    setLocationInput(input)
+                  }}
+                />
+              </div>
               <button
                 type="button"
                 onClick={handleAddLocation}

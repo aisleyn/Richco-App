@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Trash2, Archive, AlertCircle } from 'lucide-react'
 import type { JobSite } from '../../types'
+import { AddressAutocomplete } from '../AddressAutocomplete'
 
 interface Props {
   isOpen: boolean
@@ -167,12 +168,20 @@ export function EditSitesModal({ isOpen, onClose, sites, onAddSite, onEditSite, 
 
                     <div>
                       <label className="block text-xs font-semibold text-secondary mb-2">Address</label>
-                      <input
-                        type="text"
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      <AddressAutocomplete
                         placeholder="e.g., 100 Universal City Plaza"
-                        className="w-full px-3 py-2 bg-surface border border-border-light rounded-lg text-primary placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary-base/50"
+                        defaultValue={formData.address}
+                        onAddressSelected={(address, lat, lng) => {
+                          setFormData({
+                            ...formData,
+                            address,
+                            lat: parseFloat(lat.toFixed(4)),
+                            lng: parseFloat(lng.toFixed(4))
+                          })
+                        }}
+                        onInputChange={(input) => {
+                          setFormData({ ...formData, address: input })
+                        }}
                       />
                     </div>
 
