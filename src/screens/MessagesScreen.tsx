@@ -127,11 +127,22 @@ export function MessagesScreen({ onNavigate }: Props) {
   }
 
   async function handleStartDirectMessage(email: string, name: string) {
-    const thread = await createDirectThread(email, name, currentUserEmail, currentUserName)
-    if (thread) {
-      setSelectedThread(thread)
-      setShowNewChat(false)
-      await loadConversations()
+    try {
+      console.log('[MessagesScreen] Starting DM with:', email)
+      const thread = await createDirectThread(email, name, currentUserEmail, currentUserName)
+      if (thread) {
+        console.log('[MessagesScreen] ✅ Thread created:', thread.id)
+        setSelectedThread(thread)
+        setShowNewChat(false)
+        setSearchQuery('')
+        await loadConversations()
+      } else {
+        console.error('[MessagesScreen] ❌ createDirectThread returned null')
+        alert('Failed to create message thread. Please try again.')
+      }
+    } catch (err) {
+      console.error('[MessagesScreen] ❌ Error starting DM:', err)
+      alert(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 

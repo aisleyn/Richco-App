@@ -476,10 +476,10 @@ export async function markThreadAsRead(
  */
 export async function getCrewEmails(): Promise<Array<{ email: string; name: string }>> {
   try {
+    console.log('[Messaging] Fetching crew members for DM list')
     const { data, error } = await supabase
       .from('crew_members')
       .select('email, first_name, last_name')
-      .neq('status', 'deleted')
       .order('first_name', { ascending: true })
 
     if (error) {
@@ -487,10 +487,13 @@ export async function getCrewEmails(): Promise<Array<{ email: string; name: stri
       return []
     }
 
-    return (data || []).map(member => ({
+    const result = (data || []).map(member => ({
       email: member.email,
       name: `${member.first_name} ${member.last_name}`
     }))
+
+    console.log('[Messaging] ✅ Fetched', result.length, 'crew members:', result.map(r => r.email).join(', '))
+    return result
   } catch (err) {
     console.error('[Messaging] Exception fetching crew:', err)
     return []
