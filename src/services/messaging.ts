@@ -1,5 +1,6 @@
 import { supabase } from './supabaseAuth'
 import { notifyNewMessage } from './notificationSender'
+import { uploadProjectPhoto } from './storageService'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface MessageThread {
@@ -31,6 +32,8 @@ export interface Message {
   sender_email: string
   sender_name: string | null
   content: string
+  media_urls?: string[] // URLs to images/videos
+  media_types?: string[] // MIME types (image/jpeg, video/mp4, etc.)
   created_at: string
   updated_at: string | null
   deleted_at: string | null
@@ -158,15 +161,17 @@ export async function sendMessage(
   threadId: string,
   content: string,
   senderEmail: string,
-  senderName: string
+  senderName: string,
+  mediaUrls?: string[],
+  mediaTypes?: string[]
 ): Promise<Message | null> {
   try {
-    if (!content.trim()) {
-      console.warn('[Messaging] Cannot send empty message')
+    if (!content.trim() && (!mediaUrls || mediaUrls.length === 0)) {
+      console.warn('[Messaging] Cannot send empty message without media')
       return null
     }
 
-    console.log('[Messaging] Sending message to thread:', threadId)
+    console.log('[Messaging] Sending message to thread:', threadId, { hasMedia: mediaUrls?.length || 0 })
 
     const { data: authData } = await supabase.auth.getSession()
     const userId = authData?.session?.user?.id
@@ -184,7 +189,9 @@ export async function sendMessage(
         sender_id: userId,
         sender_email: senderEmail,
         sender_name: senderName,
-        content: content.trim()
+        content: content.trim(),
+        media_urls: mediaUrls || [],
+        media_types: mediaTypes || []
       })
       .select()
       .single()
@@ -609,5 +616,36 @@ export async function getCrewEmails(): Promise<Array<{ email: string; name: stri
   } catch (err) {
     console.error('[Messaging] Exception fetching crew:', err)
     return []
+  }
+}
+
+// ============================================================================
+// MEDIA UPLOAD
+// ============================================================================
+
+/**
+ * Upload media file for a message
+ * Supports images (jpg, png, gif, webp) and videos (mp4, webm)
+ */
+export async function uploadMessageMedia(file: File, threadId: string): Promise<{ url: string; type: string } | null> {
+  try {
+    console.log('[Messaging] Uploading media:', { filename: file.name, size: file.size, type: file.type })
+
+    // Use the messages folder in storage
+    const result = await uploadProjectPhoto(`messages/${threadId}`, file)
+
+    if (result) {
+      console.log('[Messaging] ✅ Media uploaded:', result.url)
+      return {
+        url: result.url,
+        type: file.type
+      }
+    } else {
+      console.error('[Messaging] ❌ Upload returned null')
+      return null
+    }
+  } catch (err) {
+    console.error('[Messaging] ❌ Failed to upload media:', err)
+    return null
   }
 }

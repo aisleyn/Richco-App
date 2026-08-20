@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Plus, X, Users, Search, AlertCircle } from 'lucide-react'
+import { Send, Plus, X, Users, Search, AlertCircle, Paperclip, Download, Play, Loader, Image as ImageIcon } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import {
@@ -13,10 +13,12 @@ import {
   subscribeToConversations,
   markThreadAsRead,
   getCrewEmails,
+  uploadMessageMedia,
   type MessageThread,
   type Message
 } from '../services/messaging'
 import { postNotification } from '../services/notificationService'
+import { ImageViewerModal } from '../components/ImageViewerModal'
 
 interface Props {
   onNavigate: (screen: string) => void
@@ -37,6 +39,13 @@ export function MessagesScreen({ onNavigate }: Props) {
   const [groupName, setGroupName] = useState('')
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Media upload state
+  const [attachedMedia, setAttachedMedia] = useState<Array<{ file: File; preview: string; type: string }>>([])
+  const [uploadingMedia, setUploadingMedia] = useState(false)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
+  const [selectedMediaUrl, setSelectedMediaUrl] = useState<string | null>(null)
+  const [selectedMediaType, setSelectedMediaType] = useState<string | null>(null)
 
   // Load conversations on mount
   useEffect(() => {
@@ -107,23 +116,60 @@ export function MessagesScreen({ onNavigate }: Props) {
 
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedThread || !messageInput.trim()) return
+    if (!selectedThread || (!messageInput.trim() && attachedMedia.length === 0)) return
 
     setSending(true)
-    const result = await sendMessage(
-      selectedThread.id,
-      messageInput,
-      currentUserEmail,
-      currentUserName
-    )
+    setUploadingMedia(true)
 
-    if (result) {
-      setMessageInput('')
-      // Reload conversations to update last_message_at
-      await loadConversations()
+    try {
+      // Upload media files if any
+      const mediaUrls: string[] = []
+      const mediaTypes: string[] = []
+
+      for (const media of attachedMedia) {
+        const result = await uploadMessageMedia(media.file, selectedThread.id)
+        if (result) {
+          mediaUrls.push(result.url)
+          mediaTypes.push(result.type)
+        }
+      }
+
+      // Send message with media
+      const result = await sendMessage(
+        selectedThread.id,
+        messageInput,
+        currentUserEmail,
+        currentUserName,
+        mediaUrls.length > 0 ? mediaUrls : undefined,
+        mediaTypes.length > 0 ? mediaTypes : undefined
+      )
+
+      if (result) {
+        setMessageInput('')
+        setAttachedMedia([])
+        // Reload conversations to update last_message_at
+        await loadConversations()
+      }
+    } catch (err) {
+      console.error('[MessagesScreen] Error sending message with media:', err)
+    } finally {
+      setSending(false)
+      setUploadingMedia(false)
     }
+  }
 
-    setSending(false)
+  function handleMediaSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    files.forEach(f => {
+      // Validate file type (images and videos only)
+      if (!f.type.startsWith('image/') && !f.type.startsWith('video/')) {
+        alert('Only images and videos are supported')
+        return
+      }
+
+      const preview = URL.createObjectURL(f)
+      setAttachedMedia(prev => [...prev, { file: f, preview, type: f.type }])
+    })
   }
 
   async function handleStartDirectMessage(email: string, name: string) {
@@ -325,19 +371,87 @@ export function MessagesScreen({ onNavigate }: Props) {
                         }`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          className={`max-w-xs lg:max-w-md rounded-lg ${
                             msg.sender_email === currentUserEmail
                               ? 'bg-green-600 text-white'
                               : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
                           }`}
                         >
                           {selectedThread.is_group && msg.sender_email !== currentUserEmail && (
-                            <p className="text-xs font-semibold mb-1 opacity-75">
+                            <p className="text-xs font-semibold mb-1 opacity-75 px-4 pt-2">
                               {msg.sender_name || msg.sender_email.split('@')[0]}
                             </p>
                           )}
-                          <p className="text-sm break-words">{msg.content}</p>
-                          <p className="text-xs mt-1 opacity-70">
+
+                          {/* Media attachments */}
+                          {msg.media_urls && msg.media_urls.length > 0 && (
+                            <div className="grid grid-cols-2 gap-1 p-2">
+                              {msg.media_urls.map((url, idx) => {
+                                const type = msg.media_types?.[idx] || ''
+                                const isImage = type.startsWith('image/')
+                                const isVideo = type.startsWith('video/')
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="relative group cursor-pointer rounded-lg overflow-hidden bg-black/20"
+                                  >
+                                    {isImage ? (
+                                      <>
+                                        <img
+                                          src={url}
+                                          alt={`Media ${idx + 1}`}
+                                          onClick={() => {
+                                            setSelectedMediaUrl(url)
+                                            setSelectedMediaType(type)
+                                          }}
+                                          className="w-full h-32 object-cover hover:opacity-75 transition-opacity"
+                                        />
+                                        <ImageIcon
+                                          size={20}
+                                          className="absolute top-1 right-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                        />
+                                      </>
+                                    ) : isVideo ? (
+                                      <>
+                                        <video
+                                          src={url}
+                                          className="w-full h-32 object-cover hover:opacity-75 transition-opacity"
+                                        />
+                                        <Play
+                                          size={20}
+                                          className="absolute top-1 right-1 text-white opacity-0 group-hover:opacity-100 transition-opacity fill-white"
+                                        />
+                                      </>
+                                    ) : null}
+
+                                    {/* Download button */}
+                                    <button
+                                      onClick={() => {
+                                        const a = document.createElement('a')
+                                        a.href = url
+                                        a.download = `media-${Date.now()}`
+                                        a.click()
+                                      }}
+                                      className="absolute bottom-1 left-1 p-1 bg-black/70 hover:bg-black/90 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                      title="Download"
+                                    >
+                                      <Download size={14} className="text-white" />
+                                    </button>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+
+                          {/* Text content */}
+                          {msg.content.trim() && (
+                            <p className="text-sm break-words px-4 py-2">
+                              {msg.content}
+                            </p>
+                          )}
+
+                          <p className="text-xs opacity-70 px-4 pb-2">
                             {new Date(msg.created_at).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -351,6 +465,34 @@ export function MessagesScreen({ onNavigate }: Props) {
                   <div ref={messagesEndRef} />
                 </div>
 
+                {/* Attached media preview */}
+                {attachedMedia.length > 0 && (
+                  <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/30">
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
+                      Attached ({attachedMedia.length})
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {attachedMedia.map((media, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={media.preview}
+                            alt={`Attached ${idx + 1}`}
+                            className="w-16 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-600"
+                          />
+                          <button
+                            onClick={() =>
+                              setAttachedMedia(prev => prev.filter((_, i) => i !== idx))
+                            }
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={14} className="text-white" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Message Input */}
                 <form
                   onSubmit={handleSendMessage}
@@ -358,19 +500,43 @@ export function MessagesScreen({ onNavigate }: Props) {
                 >
                   <div className="flex gap-2">
                     <input
+                      ref={mediaInputRef}
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      onChange={handleMediaSelect}
+                      className="hidden"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => mediaInputRef.current?.click()}
+                      disabled={sending || uploadingMedia}
+                      className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
+                      title="Attach image or video"
+                    >
+                      <Paperclip size={20} />
+                    </button>
+
+                    <input
                       type="text"
                       placeholder="Type a message..."
                       value={messageInput}
                       onChange={(e) => setMessageInput(e.target.value)}
-                      disabled={sending}
+                      disabled={sending || uploadingMedia}
                       className="flex-1 px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-600 disabled:opacity-50"
                     />
+
                     <button
                       type="submit"
-                      disabled={sending || !messageInput.trim()}
+                      disabled={sending || uploadingMedia || (!messageInput.trim() && attachedMedia.length === 0)}
                       className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
                     >
-                      <Send size={16} />
+                      {uploadingMedia ? (
+                        <Loader size={16} className="animate-spin" />
+                      ) : (
+                        <Send size={16} />
+                      )}
                     </button>
                   </div>
                 </form>
@@ -383,6 +549,72 @@ export function MessagesScreen({ onNavigate }: Props) {
           </motion.div>
         </div>
       </div>
+
+      {/* Media Viewer Modal */}
+      {selectedMediaUrl && selectedMediaType?.startsWith('image/') && (
+        <ImageViewerModal
+          isOpen={selectedMediaUrl !== null}
+          imageUrl={selectedMediaUrl}
+          fileName={`message-media-${Date.now()}`}
+          onClose={() => {
+            setSelectedMediaUrl(null)
+            setSelectedMediaType(null)
+          }}
+        />
+      )}
+
+      {/* Video Viewer Modal */}
+      {selectedMediaUrl && selectedMediaType?.startsWith('video/') && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => {
+            setSelectedMediaUrl(null)
+            setSelectedMediaType(null)
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="relative w-full max-w-4xl max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setSelectedMediaUrl(null)
+                setSelectedMediaType(null)
+              }}
+              className="absolute -top-10 right-0 p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+              title="Close"
+            >
+              <X size={24} />
+            </button>
+
+            <video
+              src={selectedMediaUrl}
+              controls
+              autoPlay
+              className="w-full h-full max-h-[90vh] object-contain rounded-lg"
+            />
+
+            <button
+              onClick={() => {
+                const a = document.createElement('a')
+                a.href = selectedMediaUrl
+                a.download = `video-${Date.now()}`
+                a.click()
+              }}
+              className="absolute bottom-4 right-4 p-2 bg-black/70 hover:bg-black/90 rounded-full transition-colors"
+              title="Download"
+            >
+              <Download size={20} className="text-white" />
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
 
       {/* New Chat Modal */}
       <AnimatePresence>
