@@ -22,6 +22,7 @@ import { useClockSync } from './hooks/useClockSync'
 import { initializeCrew, syncRegisteredUsersWithCrew } from './services/crew'
 import { syncEmployeeTimesheets, getActiveTimeEntry } from './services/supabase'
 import { SetPasswordModal } from './components/crew/SetPasswordModal'
+import { subscribeToPushNotifications, isPushNotificationSupported } from './services/pushNotifications'
 import type { Notification } from './services/notificationService'
 import type { Alert } from './types'
 
@@ -118,6 +119,45 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [authenticated, currentUserId, updateActiveEntry])
+
+  // Request push notification permission and subscribe
+  useEffect(() => {
+    if (!authenticated) return
+
+    const setupPushNotifications = async () => {
+      if (!isPushNotificationSupported()) {
+        console.warn('[App] Push notifications not supported in this browser')
+        return
+      }
+
+      try {
+        // Request permission
+        const permission = await (async () => {
+          if ('Notification' in window) {
+            if (Notification.permission === 'granted') return 'granted'
+            if (Notification.permission === 'denied') return 'denied'
+            return await Notification.requestPermission()
+          }
+          return 'denied'
+        })()
+
+        if (permission === 'granted') {
+          console.log('[App] Notification permission granted, subscribing...')
+          const { currentUserEmail, currentUserName } = useAppStore.getState()
+          if (currentUserEmail && currentUserId) {
+            await subscribeToPushNotifications(currentUserEmail, currentUserId)
+            console.log('[App] ✅ Push notifications enabled')
+          }
+        } else {
+          console.log('[App] Notification permission denied')
+        }
+      } catch (err) {
+        console.warn('[App] Error setting up push notifications:', err)
+      }
+    }
+
+    setupPushNotifications()
+  }, [authenticated, currentUserId])
 
   // Handle email confirmation from Supabase
   useEffect(() => {

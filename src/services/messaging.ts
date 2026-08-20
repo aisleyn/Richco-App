@@ -1,4 +1,5 @@
 import { supabase } from './supabaseAuth'
+import { notifyNewMessage } from './notificationSender'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface MessageThread {
@@ -201,6 +202,34 @@ export async function sendMessage(
 
     if (updateError) {
       console.warn('[Messaging] Error updating thread timestamp:', updateError.message)
+    }
+
+    // Send push notifications to other participants
+    try {
+      const { data: thread } = await supabase
+        .from('message_threads')
+        .select('is_group, thread_participants(email)')
+        .eq('id', threadId)
+        .single()
+
+      if (thread?.thread_participants) {
+        const otherParticipants = (thread.thread_participants as any[]).filter(
+          p => p.email !== senderEmail
+        )
+
+        for (const participant of otherParticipants) {
+          await notifyNewMessage({
+            recipientEmail: participant.email,
+            senderName,
+            messagePreview: content.substring(0, 100),
+            threadId,
+            isGroupChat: thread.is_group,
+          })
+        }
+      }
+    } catch (notifErr) {
+      console.warn('[Messaging] Error sending notifications:', notifErr)
+      // Don't fail the message send if notification fails
     }
 
     console.log('[Messaging] ✅ Message sent:', message.id)
