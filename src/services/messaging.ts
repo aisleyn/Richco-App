@@ -257,17 +257,34 @@ export async function createDirectThread(
     }
 
     // Fetch recipient's user_id from crew_members table
+    console.log('[Messaging] Fetching recipient user_id for:', recipientEmail)
     const { data: recipientData, error: recipientError } = await supabase
       .from('crew_members')
-      .select('user_id')
+      .select('user_id, email')
       .eq('email', recipientEmail)
       .maybeSingle()
 
-    if (recipientError || !recipientData?.user_id) {
-      console.error('[Messaging] Error finding recipient:', recipientError?.message || 'user not found in crew_members')
+    if (recipientError) {
+      console.error('[Messaging] Error querying crew_members:', recipientError.message)
       return null
     }
 
+    if (!recipientData) {
+      console.error('[Messaging] Recipient not found in crew_members for email:', recipientEmail)
+      // Try to fetch all crew members to debug
+      const { data: allCrew } = await supabase
+        .from('crew_members')
+        .select('email, user_id')
+      console.log('[Messaging] Available crew members:', allCrew?.map(c => `${c.email} (${c.user_id})`))
+      return null
+    }
+
+    if (!recipientData.user_id) {
+      console.error('[Messaging] Recipient found but user_id is null:', recipientData.email)
+      return null
+    }
+
+    console.log('[Messaging] ✅ Found recipient:', recipientData.email, 'user_id:', recipientData.user_id)
     const recipientUserId = recipientData.user_id
 
     // Create new thread
