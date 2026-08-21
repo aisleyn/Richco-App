@@ -343,7 +343,28 @@ async function crewRequest(
 
 export async function addCrewMember(data: Omit<CrewMemberData, 'id'>): Promise<CrewMemberData | null> {
   try {
-    const payload = {
+    // Try to get the auth user ID to link with crew member
+    let userId: string | null = null
+    try {
+      const { data: { user }, error } = await supabase.auth.admin.getUserById(data.email)
+      if (!error && user) {
+        userId = user.id
+      } else {
+        // Try fetching by email from auth.users
+        const { data: authUsers } = await supabase
+          .from('auth.users')
+          .select('id')
+          .eq('email', data.email)
+          .maybeSingle()
+        if (authUsers) {
+          userId = authUsers.id
+        }
+      }
+    } catch (err) {
+      console.warn('[Supabase] Could not fetch auth user ID for:', data.email, err)
+    }
+
+    const payload: any = {
       email: data.email,
       first_name: data.firstName,
       last_name: data.lastName,
@@ -352,6 +373,11 @@ export async function addCrewMember(data: Omit<CrewMemberData, 'id'>): Promise<C
       role: data.role || 'site_employee',
       status: data.status || 'available',
       is_admin: data.isAdmin || false,
+    }
+
+    // Add user_id if we found it
+    if (userId) {
+      payload.user_id = userId
     }
 
     const result = await crewRequest('POST', '/crew_members', payload, true)
