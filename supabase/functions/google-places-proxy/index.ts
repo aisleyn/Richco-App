@@ -1,7 +1,9 @@
 // Supabase Edge Function to proxy Google Places API requests
 // This avoids CORS issues by making requests server-side
 
-const GOOGLE_PLACES_API_KEY = Deno.env.get('VITE_GOOGLE_PLACES_API_KEY')
+// Note: VITE_GOOGLE_PLACES_API_KEY needs to be set as a Supabase secret
+// Set it via: supabase secrets set GOOGLE_PLACES_API_KEY=<your-key>
+const GOOGLE_PLACES_API_KEY = Deno.env.get('GOOGLE_PLACES_API_KEY')
 
 interface PlacePrediction {
   place_id: string
