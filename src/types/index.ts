@@ -164,6 +164,7 @@ export interface Photo {
   aiConfidence?: number
   gps?: { lat: number; lng: number }
   sharepointUrl?: string
+  isClockOut?: boolean // Marks photos uploaded during clock-out
 }
 
 export type PhotoCategory = 'Prep' | 'Application' | 'Cleanup' | 'Site Conditions' | 'Finish Work' | 'Other'

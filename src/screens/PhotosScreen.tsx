@@ -16,7 +16,7 @@ const categories: PhotoCategory[] = ['Prep', 'Application', 'Cleanup', 'Site Con
 
 export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s: string) => void; initialProjectId?: string }) {
   const { currentUserEmail } = useAppStore()
-  const [viewMode, setViewMode] = useState<'sites' | 'projects'>('sites')
+  const [viewMode, setViewMode] = useState<'sites' | 'projects' | 'clock-out'>('sites')
   const [activeSite, setActiveSite] = useState<string | null>(initialProjectId ? null : null)
   const [activeProject, setActiveProject] = useState<string | null>(initialProjectId || null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
@@ -56,12 +56,25 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
       .map(p => [p.projectId, { id: p.projectId!, name: p.projectName || p.projectId! }])
   ).values())
 
+  // Extract unique employees for clock-out view
+  const clockOutPhotos = allPhotos.filter(p => p.isClockOut)
+  const uniqueEmployees = Array.from(new Set(clockOutPhotos.map(p => p.submittedBy))).sort()
+
   const currentProject = projects.find(p => p.id === activeProject)
 
   const filtered = allPhotos
     .filter(p => {
-      if (viewMode === 'projects' && activeProject) return p.projectId === activeProject
-      if (viewMode === 'sites' && activeSite) return p.siteId === activeSite
+      // Clock-out view: only show clock-out photos for the selected site
+      if (viewMode === 'clock-out' && activeSite) {
+        return p.isClockOut && p.siteId === activeSite
+      }
+      // Sites/Projects view: show non-clock-out photos
+      if (viewMode === 'projects' && activeProject) {
+        return !p.isClockOut && p.projectId === activeProject
+      }
+      if (viewMode === 'sites' && activeSite) {
+        return !p.isClockOut && p.siteId === activeSite
+      }
       return false
     })
     .filter(p => activeCategory === 'All' ? true : p.category === activeCategory)
@@ -128,6 +141,51 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
   return (
     <AppLayout noPad onNavigate={onNavigate}>
       <div className="pt-14 px-4">
+        {/* View mode tabs */}
+        {!activeSite && !activeProject && (
+          <div className="flex gap-2 mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide pb-2">
+            <button
+              onClick={() => {
+                setViewMode('sites')
+                setActiveCategory('All')
+              }}
+              className={`shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                viewMode === 'sites'
+                  ? 'bg-green-600 text-slate-900 border border-green-700'
+                  : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-600 dark:text-slate-400 border border-white/10'
+              }`}
+            >
+              Sites
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('projects')
+                setActiveCategory('All')
+              }}
+              className={`shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                viewMode === 'projects'
+                  ? 'bg-green-600 text-slate-900 border border-green-700'
+                  : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-600 dark:text-slate-400 border border-white/10'
+              }`}
+            >
+              Projects
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('clock-out')
+                setActiveCategory('All')
+              }}
+              className={`shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                viewMode === 'clock-out'
+                  ? 'bg-amber-600 text-white border border-amber-700'
+                  : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-600 dark:text-slate-400 border border-white/10'
+              }`}
+            >
+              ⏱️ Clock Out Photos
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-1">
           {(activeSite || activeProject) && (
             <button
@@ -139,17 +197,21 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
               }}
               className="flex items-center gap-1 text-green-600 text-sm -ml-1"
             >
-              <ChevronLeft size={16} /> {viewMode === 'projects' ? 'Projects' : 'Sites'}
+              <ChevronLeft size={16} /> {viewMode === 'projects' ? 'Projects' : viewMode === 'clock-out' ? 'Clock Out Photos' : 'Sites'}
             </button>
           )}
           <div className={(activeSite || activeProject) ? '' : 'flex-1'}>
             <h1 className="text-slate-800 dark:text-slate-100 text-2xl font-bold">
-              {activeProject ? currentProject?.name : currentSite?.name ?? 'Photos'}
+              {viewMode === 'clock-out'
+                ? (activeProject ? `${currentProject?.name} - Clock Out` : 'Clock Out Photos')
+                : (activeProject ? currentProject?.name : currentSite?.name ?? 'Photos')}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-              {activeSite || activeProject
-                ? `${filtered.length} photos`
-                : `${viewMode === 'projects' ? projects.length : sites.length} ${viewMode}`}
+              {viewMode === 'clock-out'
+                ? `${clockOutPhotos.length} clock-out photos from ${uniqueEmployees.length} employees`
+                : (activeSite || activeProject
+                  ? `${filtered.length} photos`
+                  : `${viewMode === 'projects' ? projects.length : sites.length} ${viewMode}`)}
             </p>
           </div>
           <div className="flex gap-2">
@@ -215,18 +277,20 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
         </div>
       </div>
 
-      {!activeSite && !activeProject ? (
-        /* Gallery */
+      {!activeSite && !activeProject && viewMode !== 'clock-out' ? (
+        /* Gallery - Sites or Projects view */
         <>
           <div className="px-4 mt-5 mb-4">
-            <p className="text-slate-600 dark:text-slate-400 text-sm">Click any site to view and manage photos</p>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">{viewMode === 'projects' ? 'Click any project to view and manage photos' : 'Click any site to view and manage photos'}</p>
           </div>
 
           {/* Gallery cards */}
           <div className="px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sites.map((item, i) => {
-                const itemPhotos = allPhotos.filter(p => p.siteId === item.id)
+              {(viewMode === 'projects' ? projects : sites).map((item, i) => {
+                const itemPhotos = viewMode === 'projects'
+                  ? allPhotos.filter(p => p.projectId === item.id && !p.isClockOut)
+                  : allPhotos.filter(p => p.siteId === item.id && !p.isClockOut)
                 const flagged = itemPhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
                 return (
                   <motion.button
@@ -234,7 +298,13 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08 }}
-                    onClick={() => setActiveSite(item.id)}
+                    onClick={() => {
+                      if (viewMode === 'projects') {
+                        setActiveProject(item.id)
+                      } else {
+                        setActiveSite(item.id)
+                      }
+                    }}
                     className="text-left bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors shadow-md"
                   >
                     {/* Photo strip preview */}
@@ -264,27 +334,168 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
             </div>
           </div>
         </>
+      ) : viewMode === 'clock-out' && !activeSite ? (
+        /* Clock Out Photos Dashboard - Grouped by Employee */
+        <>
+          <div className="px-4 mt-5 mb-4">
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Click any employee to view and manage their clock-out photos</p>
+          </div>
+
+          {/* Clock Out Gallery Cards */}
+          <div className="px-4">
+            {uniqueEmployees.length === 0 ? (
+              <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+                <Camera size={32} className="mx-auto mb-3 opacity-50" />
+                <p>No clock-out photos yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {uniqueEmployees.map((employeeName, i) => {
+                  const employeePhotos = clockOutPhotos.filter(p => p.submittedBy === employeeName)
+                  const sitesWorked = Array.from(new Set(employeePhotos.map(p => p.siteName))).sort()
+                  return (
+                    <motion.button
+                      key={employeeName}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      onClick={() => {
+                        setActiveSite(employeePhotos[0]?.siteId || '')
+                        setActiveCategory('All')
+                      }}
+                      className="text-left bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-amber-200 dark:border-amber-900/50 overflow-hidden active:bg-amber-100 dark:active:bg-amber-900/50 transition-colors shadow-md"
+                    >
+                      {/* Photo strip preview */}
+                      <div className="flex h-24 lg:h-32 gap-0.5 overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900 dark:to-amber-950">
+                        {employeePhotos.slice(0, 3).map((p, j) => (
+                          <div key={j} className="flex-1 overflow-hidden">
+                            <img src={p.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                        {employeePhotos.length === 0 && <div className="flex-1 flex items-center justify-center"><Camera size={24} className="text-amber-400 opacity-50" /></div>}
+                      </div>
+                      <div className="p-4">
+                        <p className="text-slate-900 dark:text-white font-semibold text-sm">{employeeName}</p>
+                        <p className="text-amber-700 dark:text-amber-300 text-xs mt-1">{employeePhotos.length} clock-out photos</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs mt-2">{sitesWorked.join(', ')}</p>
+                      </div>
+                    </motion.button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </>
       ) : (
         /* Photo gallery */
         <div>
-          {/* Category filters */}
-          <div className="flex gap-2 overflow-x-auto px-4 mt-4 pb-1 scrollbar-hide">
-            {(['All', ...categories] as const).map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-green-600 text-slate-900 border border-green-700' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          {/* Category filters - hide for clock-out view */}
+          {viewMode !== 'clock-out' && (
+            <div className="flex gap-2 overflow-x-auto px-4 mt-4 pb-1 scrollbar-hide">
+              {(['All', ...categories] as const).map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeCategory === cat ? 'bg-green-600 text-slate-900 border border-green-700' : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-400 dark:text-slate-500 border border-white/10 dark:border-white/5'}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {/* Grid by month */}
-          <div className="mt-3 space-y-6">
-            {Object.entries(photosByMonth).map(([month, photos]) => (
-              <div key={month}>
-                <h3 className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">{month}</h3>
+          {/* Clock-out view header with employee info */}
+          {viewMode === 'clock-out' && activeSite && (
+            <div className="px-4 mt-4 pb-3 border-b border-amber-200 dark:border-amber-900/30">
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                📊 Clock-out photos grouped by date
+              </p>
+            </div>
+          )}
+
+          {/* Grid by month - or by date for clock-out */}
+          <div className="mt-3 space-y-6 px-4">
+            {viewMode === 'clock-out' && activeSite
+              ? // Clock-out view: show only clock-out photos for this site, grouped by employee then date
+                (() => {
+                  const siteClockOutPhotos = clockOutPhotos.filter(p => p.siteId === activeSite)
+                  const photosByEmployeeAndMonth = siteClockOutPhotos.reduce((acc, photo) => {
+                    const employee = photo.submittedBy
+                    const date = new Date(photo.timestamp)
+                    const monthKey = `${date.toLocaleString('en-US', { month: 'short', year: 'numeric' })}`
+                    const groupKey = `${employee} - ${monthKey}`
+                    if (!acc[groupKey]) {
+                      acc[groupKey] = []
+                    }
+                    acc[groupKey].push(photo)
+                    return acc
+                  }, {} as Record<string, typeof siteClockOutPhotos>)
+
+                  return Object.entries(photosByEmployeeAndMonth).map(([groupKey, photos]) => (
+                    <div key={groupKey}>
+                      <h3 className="text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                        {groupKey}
+                      </h3>
+                      <div className="grid grid-cols-3 gap-0.5">
+                        {photos.map((photo, i) => (
+                          <motion.div
+                            key={photo.id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: i * 0.04 }}
+                            className="aspect-square relative overflow-hidden group"
+                          >
+                            <button
+                              onClick={() => {
+                                if (deleteMode) {
+                                  togglePhotoSelect(photo.id)
+                                } else {
+                                  setSelectedPhoto(photo)
+                                  setSelectedPhotoIndex(filtered.findIndex(p => p.id === photo.id))
+                                }
+                              }}
+                              className={`w-full h-full ${deleteMode && selectedForDelete.has(photo.id) ? 'ring-2 ring-red-500' : ''}`}
+                            >
+                              <img src={photo.thumbnailUrl} alt="" className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                              {/* AI flag */}
+                              {photo.aiFlags && photo.aiFlags.length > 0 && (
+                                <div className="absolute top-1 left-1 bg-amber-500/90 rounded-md p-0.5">
+                                  <AlertTriangle size={10} className="text-slate-800" />
+                                </div>
+                              )}
+                              {/* Clock out badge */}
+                              <div className="absolute top-1 right-1 bg-amber-500/90 rounded-md px-1.5 py-0.5">
+                                <p className="text-slate-800 text-[8px] font-semibold">⏱️ CLOCK-OUT</p>
+                              </div>
+                            </button>
+                            {deleteMode ? (
+                              <div className="absolute top-1 right-1 bg-red-500 rounded-md p-0.5">
+                                <div className={`w-4 h-4 rounded border-2 border-white flex items-center justify-center ${selectedForDelete.has(photo.id) ? 'bg-red-500' : ''}`}>
+                                  {selectedForDelete.has(photo.id) && <span className="text-white text-xs">✓</span>}
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  setEditingPhoto(photo)
+                                }}
+                                className="absolute top-1 right-1 bg-green-600/90 rounded-md p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Edit photo"
+                              >
+                                <Edit2 size={12} className="text-slate-900" />
+                              </button>
+                            )}
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                })()
+              : // Regular view: show photos by month
+                Object.entries(photosByMonth).map(([month, photos]) => (
+                  <div key={month}>
+                    <h3 className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">{month}</h3>
                 <div className="grid grid-cols-3 gap-0.5">
                   {photos.map((photo, i) => (
               <motion.div

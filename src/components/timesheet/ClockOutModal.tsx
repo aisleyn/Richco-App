@@ -102,6 +102,7 @@ export function ClockOutModal({ onClose, onConfirm }: Props) {
             submittedById: currentUserId || 'system',
             timestamp: Date.now(),
             category: 'Site Conditions',
+            isClockOut: true,  // Mark as clock-out photo for organization
           }
           return photoObj
         })
