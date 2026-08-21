@@ -73,18 +73,13 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard, onViewTimecard, 
       // Delete from Supabase time_entries table (for Power Automate)
       const deletedFromSupabase = await deleteTimeEntry(id)
 
-      if (deletedFromSupabase) {
-        // Delete from localStorage
-        const updated = allTimecards.filter(t => t.id !== id)
-        saveTimecards(updated, currentUserId)
-        setAllTimecards(updated)
-        console.log('[TimecardGrid] Deleted timecard from both localStorage and Supabase:', id)
-      } else {
-        alert('Failed to delete timecard. Please try again.')
-      }
+      // Delete from localStorage immediately regardless of Supabase result
+      const updated = allTimecards.filter(t => t.id !== id)
+      saveTimecards(updated, currentUserId)
+      setAllTimecards(updated)
+      console.log('[TimecardGrid] Deleted timecard from both localStorage and Supabase:', id)
     } catch (err) {
       console.error('[TimecardGrid] Error deleting timecard:', err)
-      alert('Error deleting timecard')
     }
   }
 

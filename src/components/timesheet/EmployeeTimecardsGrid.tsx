@@ -92,16 +92,28 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek, isAdmin = false
     if (!window.confirm('Are you sure you want to delete this timecard?')) return
 
     try {
-      const success = await deleteTimeEntry(timecardId)
-      if (success) {
-        // Refresh the data
-        setRefreshKey(prev => prev + 1)
-        // Close the detail modal if it's the one being deleted
-        if (selectedTimecard?.id === timecardId) {
-          setSelectedTimecard(null)
-        }
-        console.log('[EmployeeTimecardsGrid] Deleted timecard:', timecardId)
+      await deleteTimeEntry(timecardId)
+
+      // Remove from local state immediately
+      setEmployeeData(prevData =>
+        prevData.map(data => ({
+          ...data,
+          timecards: data.timecards.filter(tc => tc.id !== timecardId),
+          weekHours: data.timecards
+            .filter(tc => tc.id !== timecardId)
+            .reduce((sum, tc) => sum + (tc.total_hours || 0), 0),
+          weekOvertime: data.timecards
+            .filter(tc => tc.id !== timecardId)
+            .reduce((sum, tc) => sum + (tc.overtime_hours || 0), 0),
+        }))
+      )
+
+      // Close the detail modal if it's the one being deleted
+      if (selectedTimecard?.id === timecardId) {
+        setSelectedTimecard(null)
       }
+
+      console.log('[EmployeeTimecardsGrid] Deleted timecard:', timecardId)
     } catch (err) {
       console.error('[EmployeeTimecardsGrid] Failed to delete timecard:', err)
     }
