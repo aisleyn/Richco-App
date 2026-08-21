@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, X, ChevronRight, ImageIcon } from 'lucide-react'
-import { getEmployeeTimeEntries } from '../../services/supabase'
+import { Zap, X, ChevronRight, ImageIcon, Trash2 } from 'lucide-react'
+import { getEmployeeTimeEntries, deleteTimeEntry } from '../../services/supabase'
 import { useAppStore } from '../../store/appStore'
 import { ImageViewerModal } from '../ImageViewerModal'
 import type { TimesheetEntry } from '../../types'
@@ -25,6 +25,7 @@ interface TimeEntryData {
 interface EmployeeTimecardsGridProps {
   employees: any[]
   selectedWeek: Date
+  isAdmin?: boolean
 }
 
 interface EmployeeWeekData {
@@ -76,7 +77,7 @@ async function getCurrentUserTimeEntries(
   }
 }
 
-export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimecardsGridProps) {
+export function EmployeeTimecardsGrid({ employees, selectedWeek, isAdmin = false }: EmployeeTimecardsGridProps) {
   const { currentUserEmail, currentUserId } = useAppStore()
   const [employeeData, setEmployeeData] = useState<EmployeeWeekData[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -85,6 +86,26 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
   const [expandedPhotoUrl, setExpandedPhotoUrl] = useState<string | null>(null)
   const [expandedPhotoIndex, setExpandedPhotoIndex] = useState<number | null>(null)
   const [expandedTimecard, setExpandedTimecard] = useState<any | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const handleDeleteTimecard = async (timecardId: string, employeeId: string | number) => {
+    if (!window.confirm('Are you sure you want to delete this timecard?')) return
+
+    try {
+      const success = await deleteTimeEntry(timecardId)
+      if (success) {
+        // Refresh the data
+        setRefreshKey(prev => prev + 1)
+        // Close the detail modal if it's the one being deleted
+        if (selectedTimecard?.id === timecardId) {
+          setSelectedTimecard(null)
+        }
+        console.log('[EmployeeTimecardsGrid] Deleted timecard:', timecardId)
+      }
+    } catch (err) {
+      console.error('[EmployeeTimecardsGrid] Failed to delete timecard:', err)
+    }
+  }
 
   // Calculate week boundaries (Saturday to Friday)
   const getWeekBoundaries = (date: Date) => {
@@ -542,9 +563,22 @@ export function EmployeeTimecardsGrid({ employees, selectedWeek }: EmployeeTimec
                   </div>
                 )}
 
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      if (selectedTimecard && selectedEmployee) {
+                        handleDeleteTimecard(selectedTimecard.id, selectedEmployee.employee.id)
+                      }
+                    }}
+                    className="w-full mt-4 px-4 py-2 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 rounded-lg text-red-500 font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={16} /> Delete Shift
+                  </button>
+                )}
+
                 <button
                   onClick={() => setSelectedTimecard(null)}
-                  className="w-full mt-6 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-900 dark:text-white font-medium transition-colors"
+                  className="w-full mt-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-900 dark:text-white font-medium transition-colors"
                 >
                   Close
                 </button>

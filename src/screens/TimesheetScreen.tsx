@@ -364,6 +364,7 @@ export function TimesheetScreen({ onNavigate }: Props) {
             <EmployeeTimecardsGrid
               employees={employees}
               selectedWeek={selectedWeek}
+              isAdmin={isAdmin}
             />
           </motion.div>
         )}

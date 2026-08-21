@@ -184,6 +184,18 @@ export async function getEmployeeTimeEntries(
   }
 }
 
+export async function deleteTimeEntry(entryId: string): Promise<boolean> {
+  try {
+    console.log('[Supabase] Deleting time entry:', entryId)
+    await timeEntriesRequest('DELETE', `/time_entries?id=eq.${entryId}`, null, true)
+    console.log('[Supabase] Deleted time entry:', entryId)
+    return true
+  } catch (err) {
+    console.error('[Supabase] Failed to delete time entry:', entryId, err)
+    return false
+  }
+}
+
 export async function getActiveTimeEntry(employeeId: string): Promise<TimeEntry | null> {
   try {
     console.log('[Supabase] Fetching active time entry for', employeeId)
