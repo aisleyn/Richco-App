@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle, Download, Trash2, Calendar, Upload, FileUp } from 'lucide-react'
+import { Search, ChevronLeft, Send, X, Users, Plus, Edit2, MessageCircle, MessageSquare, Download, Trash2, Calendar, Upload, FileUp } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -167,7 +167,7 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
 }
 
 export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void }) {
-  const [tab, setTab] = useState<'directory' | 'messages'>('directory')
+  const [tab, setTab] = useState<'directory'>('directory')
   const [search, setSearch] = useState('')
   const [messageInput, setMessageInput] = useState('')
   const [employeeCommunicationInput, setEmployeeCommunicationInput] = useState('')
@@ -602,23 +602,18 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                     <Plus size={14} /> Add
                   </button>
                 )}
-                <div className="flex bg-bg-surface dark:bg-bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-700 p-0.5">
-                  {(['directory', 'messages'] as const).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setTab(t)}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors ${tab === t ? 'bg-green-600 text-slate-900' : 'text-slate-400 dark:text-slate-500'}`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  onClick={() => onNavigate?.('messages')}
+                  className="bg-green-600 hover:bg-green-700 text-slate-900 rounded-lg px-4 py-2 flex items-center gap-2 text-xs font-semibold transition-colors"
+                  title="View all messages"
+                >
+                  <MessageSquare size={14} /> Messages
+                </button>
               </div>
             </div>
 
-            {tab === 'directory' ? (
-              <>
-                {/* Search */}
+            <>
+              {/* Search */}
                 <div className="relative mb-6">
                   <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500" />
                   <input
@@ -1279,43 +1274,8 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                     <Users size={48} className="text-slate-300 mx-auto mb-4" />
                     <p className="text-slate-500 font-medium">Select an employee to view details</p>
                   </div>
-                )}
-              </>
-            ) : (
-              /* Messages tab */
-              <div className="space-y-2">
-                {conversations.size === 0 ? (
-                  <p className="text-slate-500 text-sm text-center py-8">No conversations yet. Click the message button on a crew member to start a conversation.</p>
-                ) : (
-                  Array.from(conversations.values()).map((conv, i) => (
-                    <motion.button
-                      key={conv.member.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      onClick={() => {
-                        const threadId = getThreadId(String(currentUserMember?.id ?? 'user'), String(conv.member.id))
-                        setActiveThreadId(threadId)
-                      }}
-                      className="w-full text-left bg-bg-surface rounded-xl border border-slate-200 p-4 flex items-center gap-3 active:bg-bg-elevated transition-colors shadow-md"
-                    >
-                      <Avatar name={`${conv.member.firstName} ${conv.member.lastName}`} size={44} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate text-slate-800">
-                          {conv.member.firstName} {conv.member.lastName}
-                        </p>
-                        <p className="text-slate-500 text-xs truncate mt-0.5">{conv.lastMessage?.body ?? 'No messages'}</p>
-                      </div>
-                      {conv.lastMessage && (
-                        <div className="flex-col items-end gap-1.5 shrink-0 hidden sm:flex">
-                          <p className="text-slate-600 text-[10px]">{formatDistanceToNow(conv.lastMessage.timestamp, { addSuffix: false })}</p>
-                        </div>
-                      )}
-                    </motion.button>
-                  ))
-                )}
-              </div>
-            )}
+              )}
+            </>
           </>
         )}
       </div>
