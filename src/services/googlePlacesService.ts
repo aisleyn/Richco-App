@@ -1,7 +1,8 @@
 // Google Places Autocomplete Service
 // Provides address suggestions as user types
+// Uses Supabase Edge Function proxy to avoid CORS issues
 
-const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
+const SUPABASE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_FUNCTION_URL
 
 interface PlacePrediction {
   place_id: string
@@ -20,7 +21,7 @@ interface PlaceDetails {
  * Get address predictions as user types
  */
 export async function getAddressPredictions(input: string): Promise<PlacePrediction[]> {
-  if (!input.trim() || !GOOGLE_PLACES_API_KEY) {
+  if (!input.trim() || !SUPABASE_FUNCTION_URL) {
     return []
   }
 
@@ -28,10 +29,9 @@ export async function getAddressPredictions(input: string): Promise<PlacePredict
     console.log('[GooglePlaces] Fetching predictions for:', input)
 
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?` +
-      `input=${encodeURIComponent(input)}` +
-      `&key=${GOOGLE_PLACES_API_KEY}` +
-      `&components=country:us` // Limit to US, modify as needed
+      `${SUPABASE_FUNCTION_URL}/google-places-proxy?` +
+      `type=autocomplete&` +
+      `input=${encodeURIComponent(input)}`
     )
 
     if (!response.ok) {
@@ -41,17 +41,12 @@ export async function getAddressPredictions(input: string): Promise<PlacePredict
 
     const data = await response.json()
 
-    if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-      console.error('[GooglePlaces] Error:', data.status, data.error_message)
+    if (data.error) {
+      console.error('[GooglePlaces] Error:', data.error)
       return []
     }
 
-    const predictions: PlacePrediction[] = (data.predictions || []).map((p: any) => ({
-      place_id: p.place_id,
-      description: p.description,
-      main_text: p.structured_formatting?.main_text || p.description,
-      secondary_text: p.structured_formatting?.secondary_text
-    }))
+    const predictions: PlacePrediction[] = (data.predictions || [])
 
     console.log('[GooglePlaces] ✅ Got', predictions.length, 'predictions')
     return predictions
@@ -65,7 +60,7 @@ export async function getAddressPredictions(input: string): Promise<PlacePredict
  * Get detailed information about a place (coordinates, formatted address)
  */
 export async function getPlaceDetails(placeId: string): Promise<PlaceDetails | null> {
-  if (!placeId || !GOOGLE_PLACES_API_KEY) {
+  if (!placeId || !SUPABASE_FUNCTION_URL) {
     return null
   }
 
@@ -73,10 +68,9 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails | n
     console.log('[GooglePlaces] Fetching details for place:', placeId)
 
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?` +
-      `place_id=${encodeURIComponent(placeId)}` +
-      `&fields=formatted_address,geometry` +
-      `&key=${GOOGLE_PLACES_API_KEY}`
+      `${SUPABASE_FUNCTION_URL}/google-places-proxy?` +
+      `type=details&` +
+      `place_id=${encodeURIComponent(placeId)}`
     )
 
     if (!response.ok) {
@@ -86,17 +80,12 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails | n
 
     const data = await response.json()
 
-    if (data.status !== 'OK') {
-      console.error('[GooglePlaces] Details error:', data.status)
+    if (data.error) {
+      console.error('[GooglePlaces] Details error:', data.error)
       return null
     }
 
-    const result = data.result
-    const details: PlaceDetails = {
-      address: result.formatted_address,
-      lat: result.geometry.location.lat,
-      lng: result.geometry.location.lng
-    }
+    const details: PlaceDetails = data
 
     console.log('[GooglePlaces] ✅ Got details:', details.address)
     return details
@@ -110,5 +99,5 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails | n
  * Check if Google Places API is available
  */
 export function isGooglePlacesAvailable(): boolean {
-  return !!GOOGLE_PLACES_API_KEY
+  return !!SUPABASE_FUNCTION_URL
 }
