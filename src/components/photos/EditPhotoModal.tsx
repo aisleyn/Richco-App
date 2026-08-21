@@ -9,12 +9,13 @@ const categories: PhotoCategory[] = ['Prep', 'Application', 'Cleanup', 'Site Con
 
 interface Props {
   photo: Photo
+  userEmail?: string
   onClose: () => void
   onUpdated: () => void
   onDeleted: () => void
 }
 
-export function EditPhotoModal({ photo, onClose, onUpdated, onDeleted }: Props) {
+export function EditPhotoModal({ photo, userEmail, onClose, onUpdated, onDeleted }: Props) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     category: photo.category,
@@ -39,7 +40,7 @@ export function EditPhotoModal({ photo, onClose, onUpdated, onDeleted }: Props) 
   }
 
   async function handleDelete() {
-    const success = await deletePhoto(photo.id, photo)
+    const success = await deletePhoto(photo.id, photo, userEmail)
     if (success) {
       onDeleted()
       onClose()

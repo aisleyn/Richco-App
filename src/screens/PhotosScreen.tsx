@@ -101,22 +101,22 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
     setSelectedForDelete(new Set())
   }
 
-  function handleBulkDelete() {
-    selectedForDelete.forEach(id => {
+  async function handleBulkDelete() {
+    for (const id of selectedForDelete) {
       const photo = allPhotos.find(p => p.id === id)
-      deletePhoto(id, photo)
-    })
+      await deletePhoto(id, photo, currentUserEmail)
+    }
     setSelectedForDelete(new Set())
     setDeleteMode(false)
     setRefresh(prev => prev + 1)
   }
 
-  function handleDeleteSite() {
+  async function handleDeleteSite() {
     if (activeSite) {
       const sitePhotos = allPhotos.filter(p => p.siteId === activeSite)
-      sitePhotos.forEach(photo => {
-        deletePhoto(photo.id, photo)
-      })
+      for (const photo of sitePhotos) {
+        await deletePhoto(photo.id, photo, currentUserEmail)
+      }
       setActiveSite(null)
       setDeleteMode(false)
       setSelectedForDelete(new Set())
@@ -486,6 +486,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
         {editingPhoto && (
           <EditPhotoModal
             photo={editingPhoto}
+            userEmail={currentUserEmail}
             onClose={() => setEditingPhoto(null)}
             onUpdated={() => setRefresh(prev => prev + 1)}
             onDeleted={() => setRefresh(prev => prev + 1)}

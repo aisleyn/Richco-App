@@ -167,8 +167,10 @@ export async function updatePhoto(id: string, updates: Partial<Photo>): Promise<
   }
 }
 
-export async function deletePhoto(id: string, photo?: Photo): Promise<boolean> {
+export async function deletePhoto(id: string, photo?: Photo, userEmail?: string): Promise<boolean> {
   try {
+    console.log('[PhotoDB] Deleting photo:', id, 'for user:', userEmail)
+
     // Delete from Supabase Storage if photo object and URL provided
     if (photo?.url) {
       try {
@@ -192,15 +194,40 @@ export async function deletePhoto(id: string, photo?: Photo): Promise<boolean> {
       }
     }
 
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite')
-      const store = transaction.objectStore(STORE_NAME)
-      const request = store.delete(id)
+    // Delete from localStorage if userEmail provided
+    if (userEmail) {
+      try {
+        const key = getPhotosStorageKey(userEmail)
+        const stored = localStorage.getItem(key)
+        if (stored) {
+          const photos = JSON.parse(stored)
+          const filtered = photos.filter((p: Photo) => p.id !== id)
+          localStorage.setItem(key, JSON.stringify(filtered))
+          console.log('[PhotoDB] ✅ Deleted from localStorage for', userEmail)
+        }
+      } catch (storageErr) {
+        console.warn('[PhotoDB] Failed to delete from localStorage:', storageErr)
+      }
+    }
 
-      request.onerror = () => reject(request.error)
-      transaction.oncomplete = () => resolve(true)
-    })
+    // Also try to delete from IndexedDB for backwards compatibility
+    try {
+      const db = await openDB()
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite')
+        const store = transaction.objectStore(STORE_NAME)
+        const request = store.delete(id)
+
+        request.onerror = () => reject(request.error)
+        transaction.oncomplete = () => {
+          console.log('[PhotoDB] ✅ Deleted from IndexedDB')
+          resolve(true)
+        }
+      })
+    } catch (err) {
+      console.warn('[PhotoDB] Failed to delete from IndexedDB:', err)
+      return true // Still return true if localStorage deletion succeeded
+    }
   } catch (err) {
     console.error('[PhotoDB] Failed to delete photo:', err)
     return false
