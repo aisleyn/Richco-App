@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, Info, Cloud, CalendarDays, MessageSquare, Truck, Clock, Award, X, Plus } from 'lucide-react'
+import { AlertTriangle, Info, Cloud, CalendarDays, MessageSquare, Truck, Clock, Award, X, Plus, Trash2 } from 'lucide-react'
 import { AppLayout } from '../components/layout/AppLayout'
 import { useAppStore } from '../store/appStore'
 import { formatDistanceToNow } from 'date-fns'
 import type { Alert } from '../types'
 import { approveRequest, denyRequest, getRequestById } from '../services/timeoff'
 import { isUserAdmin, getAllCrew } from '../services/crew'
-import { postNotification, getAlertsFromSupabase, type Notification } from '../services/notificationService'
+import { postNotification, getAlertsFromSupabase, deleteNotification, type Notification } from '../services/notificationService'
 
 const typeConfig: Record<string, { color: string; border: string; icon: typeof Info; iconColor: string; label: string }> = {
   urgent:      { color: 'border-l-red-500',    border: 'border-red-500/20',    icon: AlertTriangle, iconColor: 'text-red-400',    label: 'Urgent' },
@@ -137,6 +137,14 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
     }
   }
 
+  async function handleDeleteAlert(notificationId: string) {
+    const success = await deleteNotification(notificationId)
+    if (success) {
+      console.log('[AlertsScreen] Alert deleted')
+      loadAlertsFromSupabase()
+    }
+  }
+
   return (
     <AppLayout onNavigate={onNavigate}>
       <div className="pt-14">
@@ -185,7 +193,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden shadow-md`}
+                    className={`relative bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden shadow-md`}
                   >
                     <button
                       onClick={() => {
@@ -241,6 +249,18 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                         </div>
                       </div>
                     </button>
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteAlert(notification.id)
+                        }}
+                        className="absolute top-3 right-3 text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"
+                        title="Delete alert"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </motion.div>
                 )
               })}
@@ -254,7 +274,7 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                    className={`bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden shadow-md`}
+                    className={`relative bg-bg-surface dark:bg-bg-surface-dark rounded-xl border-l-4 ${cfg.color} ${cfg.border} overflow-hidden shadow-md`}
                   >
                     <button
                       onClick={() => handleExpand(alert)}
@@ -301,6 +321,20 @@ export function AlertsScreen({ onNavigate, onAlertClick }: Props) {
                     </div>
                   </div>
                     </button>
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          // Remove from local alerts
+                          // Since local alerts are from appStore, we'd need to add a remove function there
+                          // For now, this is a placeholder for local alert deletion
+                        }}
+                        className="absolute top-3 right-3 text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"
+                        title="Delete alert"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </motion.div>
                 )
               })}

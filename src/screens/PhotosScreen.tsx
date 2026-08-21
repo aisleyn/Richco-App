@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import type { Photo, PhotoCategory } from '../types'
 import { getStoredPhotos, deletePhoto } from '../services/photoDatabase'
 import { useAppStore } from '../store/appStore'
+import { isUserAdmin } from '../services/crew'
 import { BulkUploadModal } from '../components/photos/BulkUploadModal'
 import { EditPhotoModal } from '../components/photos/EditPhotoModal'
 import { ImportPhotosModal } from '../components/photos/ImportPhotosModal'
@@ -36,6 +37,15 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
   const [allPhotos, setAllPhotos] = useState<Photo[]>([])
   const [refresh, setRefresh] = useState(0)
   const [showDeleteSiteConfirm, setShowDeleteSiteConfirm] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const admin = await isUserAdmin(currentUserEmail)
+      setIsAdmin(admin)
+    }
+    checkAdminStatus()
+  }, [currentUserEmail])
 
   useEffect(() => {
     const loadPhotos = async () => {
@@ -199,7 +209,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
             </p>
           </div>
           <div className="flex gap-2">
-            {activeSite && !deleteMode && (
+            {activeSite && !deleteMode && isAdmin && (
               <>
                 <button
                   onClick={() => setShowDeleteSiteConfirm(true)}
