@@ -343,7 +343,7 @@ export function TimesheetScreen({ onNavigate }: Props) {
             <TimecardGrid
               key={timecardRefresh}
               isAdmin={isAdmin}
-              onEditTimecard={setEditingTimecard}
+              onEditTimecard={isAdmin ? setEditingTimecard : undefined}
               onViewTimecard={setViewingTimecard}
               selectedDate={selectedWeek}
             />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, ChevronUp, Edit2, Trash2 } from 'lucide-react'
 import { useAppStore } from '../../store/appStore'
+import { deleteTimeEntry } from '../../services/supabase'
 import type { TimesheetEntry } from '../../types'
 
 function fmt(ts: number) {
@@ -28,7 +29,7 @@ function saveTimecards(timecards: TimesheetEntry[], userId: string) {
 }
 
 interface TimecardGridProps {
-  isAdmin?: boolean
+  isAdmin: boolean  // Required - only admins can delete
   onEditTimecard?: (timecard: TimesheetEntry) => void
   onViewTimecard?: (timecard: TimesheetEntry) => void
   selectedDate?: Date
@@ -65,11 +66,26 @@ export function TimecardGrid({ isAdmin = false, onEditTimecard, onViewTimecard, 
   const monthCards = getCardsByDateRange(30, baseDate)
   const displayCards = showFullMonth ? monthCards : weekCards
 
-  function deleteTimecard(id: string) {
+  async function deleteTimecard(id: string) {
     if (!window.confirm('Are you sure you want to delete this timecard?')) return
-    const updated = allTimecards.filter(t => t.id !== id)
-    saveTimecards(updated, currentUserId)
-    setAllTimecards(updated)
+
+    try {
+      // Delete from Supabase time_entries table (for Power Automate)
+      const deletedFromSupabase = await deleteTimeEntry(id)
+
+      if (deletedFromSupabase) {
+        // Delete from localStorage
+        const updated = allTimecards.filter(t => t.id !== id)
+        saveTimecards(updated, currentUserId)
+        setAllTimecards(updated)
+        console.log('[TimecardGrid] Deleted timecard from both localStorage and Supabase:', id)
+      } else {
+        alert('Failed to delete timecard. Please try again.')
+      }
+    } catch (err) {
+      console.error('[TimecardGrid] Error deleting timecard:', err)
+      alert('Error deleting timecard')
+    }
   }
 
   if (allTimecards.length === 0) {
