@@ -36,10 +36,22 @@ if (!VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
  * Send push notification to a user via all their subscribed devices
  */
 Deno.serve(async (req) => {
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+
   try {
     // Only accept POST requests
     if (req.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 })
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders })
     }
 
     const payload: PushPayload = await req.json()
@@ -121,7 +133,10 @@ Deno.serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
       }
     )
   } catch (err) {
@@ -132,7 +147,10 @@ Deno.serve(async (req) => {
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
       }
     )
   }
