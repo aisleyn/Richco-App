@@ -16,7 +16,7 @@ const categories: PhotoCategory[] = ['Prep', 'Application', 'Cleanup', 'Site Con
 
 export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s: string) => void; initialProjectId?: string }) {
   const { currentUserEmail } = useAppStore()
-  const [viewMode, setViewMode] = useState<'sites' | 'projects' | 'clock-out'>('sites')
+  const [viewMode, setViewMode] = useState<'sites' | 'clock-out'>('sites')
   const [activeSite, setActiveSite] = useState<string | null>(initialProjectId ? null : null)
   const [activeProject, setActiveProject] = useState<string | null>(initialProjectId || null)
   const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'All'>('All')
@@ -68,10 +68,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
       if (viewMode === 'clock-out' && activeSite) {
         return p.isClockOut && p.siteId === activeSite
       }
-      // Sites/Projects view: show non-clock-out photos
-      if (viewMode === 'projects' && activeProject) {
-        return !p.isClockOut && p.projectId === activeProject
-      }
+      // Sites view: show non-clock-out photos
       if (viewMode === 'sites' && activeSite) {
         return !p.isClockOut && p.siteId === activeSite
       }
@@ -159,19 +156,6 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
             </button>
             <button
               onClick={() => {
-                setViewMode('projects')
-                setActiveCategory('All')
-              }}
-              className={`shrink-0 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                viewMode === 'projects'
-                  ? 'bg-green-600 text-slate-900 border border-green-700'
-                  : 'bg-bg-elevated dark:bg-bg-elevated-dark text-slate-600 dark:text-slate-400 border border-white/10'
-              }`}
-            >
-              Projects
-            </button>
-            <button
-              onClick={() => {
                 setViewMode('clock-out')
                 setActiveCategory('All')
               }}
@@ -197,21 +181,21 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
               }}
               className="flex items-center gap-1 text-green-600 text-sm -ml-1"
             >
-              <ChevronLeft size={16} /> {viewMode === 'projects' ? 'Projects' : viewMode === 'clock-out' ? 'Clock Out Photos' : 'Sites'}
+              <ChevronLeft size={16} /> {viewMode === 'clock-out' ? 'Clock Out Photos' : 'Sites'}
             </button>
           )}
           <div className={(activeSite || activeProject) ? '' : 'flex-1'}>
             <h1 className="text-slate-800 dark:text-slate-100 text-2xl font-bold">
               {viewMode === 'clock-out'
-                ? (activeProject ? `${currentProject?.name} - Clock Out` : 'Clock Out Photos')
-                : (activeProject ? currentProject?.name : currentSite?.name ?? 'Photos')}
+                ? 'Clock Out Photos'
+                : (currentSite?.name ?? 'Photos')}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
               {viewMode === 'clock-out'
                 ? `${clockOutPhotos.length} clock-out photos from ${uniqueEmployees.length} employees`
-                : (activeSite || activeProject
+                : (activeSite
                   ? `${filtered.length} photos`
-                  : `${viewMode === 'projects' ? projects.length : sites.length} ${viewMode}`)}
+                  : `${sites.length} sites`)}
             </p>
           </div>
           <div className="flex gap-2">
@@ -334,19 +318,17 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
             </div>
           </>
         ) : (
-          /* Gallery - Sites or Projects view */
+          /* Gallery - Sites view */
           <>
             <div className="px-4 mt-5 mb-4">
-              <p className="text-slate-600 dark:text-slate-400 text-sm">{viewMode === 'projects' ? 'Click any project to view and manage photos' : 'Click any site to view and manage photos'}</p>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Click any site to view and manage photos</p>
             </div>
 
           {/* Gallery cards */}
           <div className="px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(viewMode === 'projects' ? projects : sites).map((item, i) => {
-                const itemPhotos = viewMode === 'projects'
-                  ? allPhotos.filter(p => p.projectId === item.id && !p.isClockOut)
-                  : allPhotos.filter(p => p.siteId === item.id && !p.isClockOut)
+              {sites.map((item, i) => {
+                const itemPhotos = allPhotos.filter(p => p.siteId === item.id && !p.isClockOut)
                 const flagged = itemPhotos.filter(p => p.aiFlags && p.aiFlags.length > 0).length
                 return (
                   <motion.button
@@ -355,11 +337,7 @@ export function PhotosScreen({ onNavigate, initialProjectId }: { onNavigate?: (s
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08 }}
                     onClick={() => {
-                      if (viewMode === 'projects') {
-                        setActiveProject(item.id)
-                      } else {
-                        setActiveSite(item.id)
-                      }
+                      setActiveSite(item.id)
                     }}
                     className="text-left bg-bg-surface dark:bg-bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden active:bg-bg-elevated dark:active:bg-bg-elevated-dark transition-colors shadow-md"
                   >
