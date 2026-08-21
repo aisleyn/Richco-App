@@ -7,7 +7,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { getAllCrew, isUserAdmin, initializeCrew } from '../services/crew'
 import { uploadCrewFile, updateCrewMemberFiles, getEmployeeDocuments } from '../services/supabase'
 import { supabase } from '../services/supabaseAuth'
-import { AddCrewModal } from '../components/crew/AddCrewModal'
 import { EditCrewModal } from '../components/crew/EditCrewModal'
 import { DocumentUploadPreview } from '../components/crew/DocumentUploadPreview'
 import type { Message } from '../types'
@@ -172,7 +171,6 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
   const [messageInput, setMessageInput] = useState('')
   const [employeeCommunicationInput, setEmployeeCommunicationInput] = useState('')
   const [crew, setCrew] = useState<StoredCrewMember[]>([])
-  const [showAddCrew, setShowAddCrew] = useState(false)
   const [editingMember, setEditingMember] = useState<StoredCrewMember | null>(null)
   const [viewingProfile, setViewingProfile] = useState<StoredCrewMember | null>(null)
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
@@ -594,14 +592,6 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
             <div className="flex items-center justify-between mb-5">
               <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold">Employee Hub</h1>
               <div className="flex gap-3 items-center">
-                {isAdmin && (
-                  <button
-                    onClick={() => setShowAddCrew(true)}
-                    className="bg-green-600 hover:bg-green-700 text-slate-900 rounded-lg px-3 py-2 flex items-center gap-2 text-xs font-semibold transition-colors"
-                  >
-                    <Plus size={14} /> Add
-                  </button>
-                )}
                 <button
                   onClick={() => onNavigate?.('messages')}
                   className="bg-green-600 hover:bg-green-700 text-slate-900 rounded-lg px-4 py-2 flex items-center gap-2 text-xs font-semibold transition-colors"
@@ -1281,16 +1271,6 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
       </div>
 
       <AnimatePresence>
-        {showAddCrew && (
-          <AddCrewModal
-            onClose={() => setShowAddCrew(false)}
-            onCrewAdded={async () => {
-              const members = await getAllCrew()
-              setCrew(members)
-              setShowAddCrew(false)
-            }}
-          />
-        )}
         {editingMember && (
           <EditCrewModal
             member={editingMember}
