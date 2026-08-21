@@ -32,14 +32,20 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('[GooglePlacesProxy] Request received:', req.url)
+
     const url = new URL(req.url)
     const type = url.searchParams.get('type') // 'autocomplete' or 'details'
     const input = url.searchParams.get('input')
     const placeId = url.searchParams.get('place_id')
 
+    console.log('[GooglePlacesProxy] Type:', type, 'Input:', input, 'PlaceId:', placeId)
+    console.log('[GooglePlacesProxy] API Key available:', !!GOOGLE_PLACES_API_KEY)
+
     if (!GOOGLE_PLACES_API_KEY) {
+      console.error('[GooglePlacesProxy] Missing API key!')
       return new Response(
-        JSON.stringify({ error: 'Missing API key' }),
+        JSON.stringify({ error: 'Missing API key - GOOGLE_PLACES_API_KEY not set' }),
         { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       )
     }
@@ -52,21 +58,31 @@ Deno.serve(async (req) => {
         )
       }
 
-      // Call Google Places Autocomplete API
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?` +
-        `input=${encodeURIComponent(input)}` +
-        `&key=${GOOGLE_PLACES_API_KEY}` +
-        `&components=country:us`
-      )
+      try {
+        // Call Google Places Autocomplete API
+        const fetchUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${GOOGLE_PLACES_API_KEY}&components=country:us`
+        console.log('[GooglePlacesProxy] Calling Google Places API...')
 
-      const data = await response.json()
+        const response = await fetch(fetchUrl)
 
-      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-        console.error('[GooglePlaces] Error:', data.status, data.error_message)
+        console.log('[GooglePlacesProxy] Response status:', response.status)
+
+        const data = await response.json()
+
+        console.log('[GooglePlacesProxy] API response status:', data.status)
+
+        if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+          console.error('[GooglePlacesProxy] Error:', data.status, data.error_message)
+          return new Response(
+            JSON.stringify({ predictions: [] }),
+            { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          )
+        }
+      } catch (fetchErr) {
+        console.error('[GooglePlacesProxy] Fetch error:', fetchErr)
         return new Response(
-          JSON.stringify({ predictions: [] }),
-          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          JSON.stringify({ error: 'Failed to call Google Places API', details: fetchErr instanceof Error ? fetchErr.message : String(fetchErr) }),
+          { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         )
       }
 

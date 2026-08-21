@@ -19,80 +19,24 @@ interface PlaceDetails {
 
 /**
  * Get address predictions as user types
+ * Currently disabled due to API key configuration issues
+ * TODO: Fix Supabase secrets and re-enable
  */
 export async function getAddressPredictions(input: string): Promise<PlacePrediction[]> {
-  if (!input.trim() || !SUPABASE_FUNCTION_URL) {
-    return []
-  }
-
-  try {
-    console.log('[GooglePlaces] Fetching predictions for:', input)
-
-    const response = await fetch(
-      `${SUPABASE_FUNCTION_URL}/google-places-proxy?` +
-      `type=autocomplete&` +
-      `input=${encodeURIComponent(input)}`
-    )
-
-    if (!response.ok) {
-      console.error('[GooglePlaces] API error:', response.status)
-      return []
-    }
-
-    const data = await response.json()
-
-    if (data.error) {
-      console.error('[GooglePlaces] Error:', data.error)
-      return []
-    }
-
-    const predictions: PlacePrediction[] = (data.predictions || [])
-
-    console.log('[GooglePlaces] ✅ Got', predictions.length, 'predictions')
-    return predictions
-  } catch (err) {
-    console.error('[GooglePlaces] Exception fetching predictions:', err)
-    return []
-  }
+  // Temporarily disabled - return empty predictions to avoid blocking user input
+  // This allows typing without interruptions while we fix the backend
+  console.log('[GooglePlaces] Address autocomplete temporarily disabled')
+  return []
 }
 
 /**
  * Get detailed information about a place (coordinates, formatted address)
+ * Currently disabled due to API key configuration issues
  */
 export async function getPlaceDetails(placeId: string): Promise<PlaceDetails | null> {
-  if (!placeId || !SUPABASE_FUNCTION_URL) {
-    return null
-  }
-
-  try {
-    console.log('[GooglePlaces] Fetching details for place:', placeId)
-
-    const response = await fetch(
-      `${SUPABASE_FUNCTION_URL}/google-places-proxy?` +
-      `type=details&` +
-      `place_id=${encodeURIComponent(placeId)}`
-    )
-
-    if (!response.ok) {
-      console.error('[GooglePlaces] Details API error:', response.status)
-      return null
-    }
-
-    const data = await response.json()
-
-    if (data.error) {
-      console.error('[GooglePlaces] Details error:', data.error)
-      return null
-    }
-
-    const details: PlaceDetails = data
-
-    console.log('[GooglePlaces] ✅ Got details:', details.address)
-    return details
-  } catch (err) {
-    console.error('[GooglePlaces] Exception fetching details:', err)
-    return null
-  }
+  // Temporarily disabled - return null to avoid errors
+  console.log('[GooglePlaces] Place details API temporarily disabled')
+  return null
 }
 
 /**
