@@ -1,4 +1,4 @@
-import type { CrewMember } from '../types'
+import type { CrewMember, UserRole } from '../types'
 import {
   addCrewMember as supabaseAddCrewMember,
   getCrewMemberByEmail as supabaseGetCrewMemberByEmail,
@@ -6,6 +6,16 @@ import {
   updateCrewMember as supabaseUpdateCrewMember,
 } from './supabase'
 import { deleteCrewMember as authDeleteCrewMember, supabase } from './supabaseAuth'
+
+// Helper function to convert role to display label
+function getRoleLabel(role: UserRole): string {
+  const labels: Record<UserRole, string> = {
+    site_employee: 'Site Employee',
+    office_staff: 'Office Staff',
+    leadership: 'Leadership',
+  }
+  return labels[role] || role
+}
 
 export interface EmergencyContact {
   name: string
@@ -69,7 +79,7 @@ export async function getAllCrew(): Promise<StoredCrewMember[]> {
     lastName: m.lastName,
     email: m.email,
     role: m.role,
-    roleLabel: `${m.firstName} ${m.lastName}`,
+    roleLabel: getRoleLabel(m.role),
     phone: m.phone || '',
     status: m.status || 'available',
     isAdmin: m.isAdmin || false,
@@ -86,7 +96,7 @@ export async function getCrewMemberByEmail(email: string): Promise<StoredCrewMem
     lastName: member.lastName,
     email: member.email,
     role: member.role,
-    roleLabel: `${member.firstName} ${member.lastName}`,
+    roleLabel: getRoleLabel(member.role),
     phone: member.phone || '',
     status: member.status || 'available',
     isAdmin: member.isAdmin || false,
@@ -133,7 +143,7 @@ export async function addCrewMember(data: {
     lastName: result.lastName,
     email: result.email,
     role: result.role,
-    roleLabel: `${result.firstName} ${result.lastName}`,
+    roleLabel: getRoleLabel(result.role),
     phone: result.phone || '',
     status: result.status || 'available',
     isAdmin: result.isAdmin || false,
@@ -163,7 +173,7 @@ export async function updateCrewMember(
     lastName: result.lastName,
     email: result.email,
     role: result.role,
-    roleLabel: `${result.firstName} ${result.lastName}`,
+    roleLabel: getRoleLabel(result.role),
     phone: result.phone || '',
     status: result.status || 'available',
     isAdmin: result.isAdmin || false,

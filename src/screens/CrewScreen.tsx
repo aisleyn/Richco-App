@@ -653,12 +653,11 @@ export function CrewScreen({ onNavigate }: { onNavigate?: (s: string) => void })
                     <div className="flex items-start justify-between">
                       <div>
                         <h2 className="text-slate-900 dark:text-slate-100 text-2xl font-bold">{viewingProfile.firstName} {viewingProfile.lastName}</h2>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">{viewingProfile.roleLabel}</span>
-                          {viewingProfile.paymentType && (
+                        {viewingProfile.paymentType && (
+                          <div className="flex items-center gap-2 mt-2">
                             <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">{viewingProfile.paymentType === 'hourly' ? 'Hourly' : 'Salary'}</span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <button
